@@ -7,3 +7,4 @@ channels:
   - defaults
 dependencies:
   - bioconda::nextflow=21.04.0
+  - bioconda::bcftools=1.12
