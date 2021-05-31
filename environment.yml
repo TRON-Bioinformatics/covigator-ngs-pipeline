@@ -1,0 +1,9 @@
+# You can use this file to create a conda environment for this pipeline:
+#   conda env create -f environment.yml
+name: tronflow-template
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::nextflow=21.04.0
