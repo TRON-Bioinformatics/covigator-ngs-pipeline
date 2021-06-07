@@ -61,10 +61,12 @@ process alignment {
 	    file "${name}.bam"
 
     """
-    echo "${name}\t${fastq1}\t${fastq2}" > bwa_input_files.txt
-
+    # --input_files needs to be forced, otherwise it is inherited from profile in tests
     nextflow run tron-bioinformatics/tronflow-bwa -r ${params.tronflow_bwa_version} \
-    --input_files bwa_input_files.txt \
+    --input_name ${name} \
+    --input_fastq1 ${fastq1} \
+    --input_fastq2 ${fastq2} \
+    --input_files false \
     --algorithm mem \
     --library ${library} \
     --output . \
@@ -90,13 +92,14 @@ process bamPreprocessing {
 	    file "${name}.preprocessed.bai"
 
     """
-    echo "${name}\tnormal\t${bam}" > bam_preprocessing_input_files.txt
-
+    # --input_files, --known_indels1 and --known_indels2 needs to be forced, otherwise it is inherited from test profile
     nextflow run tron-bioinformatics/tronflow-bam-preprocessing -r ${params.tronflow_bam_preprocessing_version} \
-    --input_files bam_preprocessing_input_files.txt \
+    --input_bam ${bam} \
+    --input_files false \
     --output . \
     --reference ${params.reference} \
-    --skip_bqsr --skip_realignment --skip_metrics \
+    --skip_bqsr --skip_metrics \
+    --known_indels1 false --known_indels2 false \
     --prepare_bam_cpus ${params.cpus} --prepare_bam_memory ${params.memory} \
     --mark_duplicates_cpus ${params.cpus} --mark_duplicates_memory ${params.memory} \
     -profile ${workflow.profile} \
@@ -139,10 +142,10 @@ process variantNormalization {
 	    file "${name}.normalized.vcf"
 
     """
-    echo "${name}\t${vcf}" > vcf_normalization_input_files.txt
-
+    # --input_files needs to be forced, otherwise it is inherited from profile in tests
     nextflow run tron-bioinformatics/tronflow-variant-normalization -r ${params.tronflow_variant_normalization_version} \
-    --input_files vcf_normalization_input_files.txt \
+    --input_vcf ${vcf} \
+    --input_files false \
     --output . \
     --reference ${params.reference} \
     -profile ${workflow.profile} \
