@@ -119,7 +119,7 @@ process bamPreprocessing {
         set name, file(bam) from bam_files
 
     output:
-	    set name, file("${name}.preprocessed.bam") into preprocessed_bam_files
+	    set name, file("${name}.preprocessed.bam") into preprocessed_bams, preprocessed_bams2, preprocessed_bam3, preprocessed_bams4
 	    file "${name}.preprocessed.bai"
 
     """
@@ -141,7 +141,7 @@ process bamPreprocessing {
 	"""
 }
 
-process variantCalling {
+process variantCallingBcfTools {
     cpus params.cpus
     memory params.memory
     tag params.name
@@ -150,13 +150,41 @@ process variantCalling {
     }
 
     input:
-        set name, file(bam) from preprocessed_bam_files
+        set name, file(bam) from preprocessed_bams
 
     output:
-	    set name, file("${name}.vcf") into vcf_files
+	    set name, file("${name}.bcftools.bcf") into bcftools_vcfs
 
     """
-    bcftools mpileup -E -d 0 -A -f ${params.reference} -a AD ${bam} | bcftools call -mv --ploidy 1 -Ov -o ${name}.vcf
+    bcftools mpileup -E -d 0 -A -f ${params.reference} -a AD ${bam} | bcftools call -mv --ploidy 1 -Ob -o ${name}.bcftools.bcf
+    #bgzip ${name}.bcftools.vcf
+    #tabix -p vcf ${name}.bcftools.vcf.gz
+	"""
+}
+
+process variantCallingLofreq {
+    cpus params.cpus
+    memory params.memory
+    tag params.name
+    if (params.keep_intermediate) {
+        publishDir "${params.output}/${params.name}", mode: "copy"
+    }
+
+    input:
+        set name, file(bam) from preprocessed_bams2
+
+    output:
+	    set name, file("${name}.lofreq.bcf") into lofreq_vcfs
+
+    """
+    # TODO: use an inception here to avoid writing another BAM
+    lofreq indelqual --dindel --ref ${params.reference} -o ${name}.lofreq.bam ${bam}
+    lofreq call --min-bq 20 --min-alt-bq 20 --min-mq 20 --ref ${params.reference} --call-indels --out ${name}.lofreq.vcf ${name}.lofreq.bam
+    # we need this conversion, first tabix index and then convert to BCF to set the contig in the header which is not
+    # set by lofreq and bcftools complains about it
+    bgzip ${name}.lofreq.vcf
+    tabix -p vcf ${name}.lofreq.vcf.gz
+    bcftools view -Ob -o ${name}.lofreq.bcf ${name}.lofreq.vcf.gz
 	"""
 }
 
@@ -169,10 +197,10 @@ process variantNormalization {
     }
 
     input:
-        set name, file(vcf) from vcf_files
+        set name, file(vcf) from bcftools_vcfs.concat(lofreq_vcfs)
 
     output:
-	    set name, file("${name}.normalized.vcf") into normalized_vcf_files
+	    set name, file("${vcf.baseName}.normalized.vcf") into normalized_vcf_files
 
     """
     # --input_files needs to be forced, otherwise it is inherited from profile in tests
@@ -184,7 +212,7 @@ process variantNormalization {
     -profile ${workflow.profile} \
     -work-dir ${workflow.workDir}
 
-    mv ${name}/${name}.normalized.vcf ${name}.normalized.vcf
+    mv ${vcf.baseName}/${vcf.baseName}.normalized.vcf ${vcf.baseName}.normalized.vcf
 	"""
 }
 
@@ -198,9 +226,9 @@ process variantAnnotation {
         set name, file(vcf) from normalized_vcf_files
 
     output:
-	    set name, file("${name}.annotated.vcf") into annotated_vcf_files
+	    set name, file("${vcf.baseName}.annotated.vcf") into annotated_vcf_files
 
     """
-     bcftools csq --fasta-ref ${params.reference} --gff-annot ${params.gff} ${vcf} -o ${name}.annotated.vcf
+     bcftools csq --fasta-ref ${params.reference} --gff-annot ${params.gff} ${vcf} -o ${vcf.baseName}.annotated.vcf
     """
 }
