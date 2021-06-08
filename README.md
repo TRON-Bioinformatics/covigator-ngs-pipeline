@@ -37,23 +37,19 @@ gatk CreateSequenceDictionary -R reference.fasta
 $ nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
 Usage:
-    nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --input_files input_files
+    nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
 Input:
-    * input_files: the path to a tab-separated values file containing in each row the sample name and the FASTQ files.
-    For single-paired samples, the third column for fastq2 can be left empty, but the column needs to exist.
-    The input file does not have header!
-    Example input file:
-    name1	name1.1.fastq	name1.2.fastq
-    name2	name2.1.fastq	name2.2.fastq
-    
-    * output: the folder where to publish output
+    * --fastq1: the first input FASTQ file
+    * --name: the sample name, output files will be named after this name
+    * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
+    * --gff: the GFFv3 gene annotations file
+    * --output: the folder where to publish output
 
 Optional input:
-    * reference: the reference genome in FASTA format
-    * gff: the gene annotations in GFFv3 format
-    * memory: the ammount of memory used by each job (default: 3g)
-    * cpus: the number of CPUs used by each job (default: 1)
+    * --fastq2: the second input FASTQ file
+    * --memory: the ammount of memory used by each job (default: 3g)
+    * --cpus: the number of CPUs used by each job (default: 1)
 
 Output:
     * Output a normalized and annotated VCF file.

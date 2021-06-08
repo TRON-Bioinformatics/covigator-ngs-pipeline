@@ -3,6 +3,7 @@
 params.help= false
 params.fastq1 = false
 params.fastq2 = false
+params.name = false
 params.reference = false
 params.gff = false
 params.output = false
