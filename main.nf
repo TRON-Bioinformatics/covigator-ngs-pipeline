@@ -42,54 +42,83 @@ if (!params.fastq1) {
 
 library = "paired"
 if (!params.fastq2) {
-    params.fastq2 = ""
     library = "single"
 }
 
-process alignment {
-    cpus params.cpus
-    memory params.memory
-    tag "${name}"
-    publishDir "${params.output}", mode: "copy"
+if (library == "paired") {
+    process alignmentPairedEnd {
+        cpus params.cpus
+        memory params.memory
+        tag params.name
+        publishDir "${params.output}/${params.name}", mode: "copy"
 
-    input:
-        val name from params.name
-    	val fastq1 from params.fastq1
-    	val fastq2 from params.fastq2
+        input:
+            val name from params.name
+            file fastq1 from file(params.fastq1)
+            file fastq2 from file(params.fastq2)
 
-    output:
-	    set val("${name}"), val("${params.output}/${name}.bam") into bam_files
-	    file "${name}.bam"
+        output:
+            set name, file("${name}.bam") into bam_files
 
-    """
-    # --input_files needs to be forced, otherwise it is inherited from profile in tests
-    nextflow run tron-bioinformatics/tronflow-bwa -r ${params.tronflow_bwa_version} \
-    --input_name ${name} \
-    --input_fastq1 ${fastq1} \
-    --input_fastq2 ${fastq2} \
-    --input_files false \
-    --algorithm mem \
-    --library ${library} \
-    --output . \
-    --reference ${params.reference} \
-    --cpus ${task.cpus} --memory ${task.memory} \
-    -profile ${workflow.profile} \
-    -work-dir ${workflow.workDir}
-	"""
+        """
+        # --input_files needs to be forced, otherwise it is inherited from profile in tests
+        nextflow run tron-bioinformatics/tronflow-bwa -r ${params.tronflow_bwa_version} \
+        --input_name ${name} \
+        --input_fastq1 ${fastq1} \
+        --input_fastq2 ${fastq2} \
+        --input_files false \
+        --algorithm mem \
+        --library ${library} \
+        --output . \
+        --reference ${params.reference} \
+        --cpus ${task.cpus} --memory ${task.memory} \
+        -profile ${workflow.profile} \
+        -work-dir ${workflow.workDir}
+        """
+    }
+}
+else {
+    process alignmentSingleEnd {
+        cpus params.cpus
+        memory params.memory
+        tag params.name
+        publishDir "${params.output}/${params.name}", mode: "copy"
+
+        input:
+            val name from params.name
+            file fastq1 from file(params.fastq1)
+
+        output:
+            set name, file("${name}.bam") into bam_files
+
+        """
+        # --input_files needs to be forced, otherwise it is inherited from profile in tests
+        nextflow run tron-bioinformatics/tronflow-bwa -r ${params.tronflow_bwa_version} \
+        --input_name ${name} \
+        --input_fastq1 ${fastq1} \
+        --input_files false \
+        --algorithm mem \
+        --library ${library} \
+        --output . \
+        --reference ${params.reference} \
+        --cpus ${task.cpus} --memory ${task.memory} \
+        -profile ${workflow.profile} \
+        -work-dir ${workflow.workDir}
+        """
+    }
 }
 
 process bamPreprocessing {
     cpus params.cpus
     memory params.memory
-    tag "${name}"
-    publishDir "${params.output}", mode: "copy"
+    tag params.name
+    publishDir "${params.output}/${params.name}", mode: "copy"
 
     input:
-        set name, bam from bam_files
+        set name, file(bam) from bam_files
 
     output:
-	    set val("${name}"), val("${params.output}/${name}.preprocessed.bam") into preprocessed_bam_files
-	    file "${name}.preprocessed.bam"
+	    set name, file("${name}.preprocessed.bam") into preprocessed_bam_files
 	    file "${name}.preprocessed.bai"
 
     """
@@ -114,15 +143,14 @@ process bamPreprocessing {
 process variantCalling {
     cpus params.cpus
     memory params.memory
-    tag "${name}"
-    publishDir "${params.output}", mode: "copy"
+    tag params.name
+    publishDir "${params.output}/${params.name}", mode: "copy"
 
     input:
-        set name, bam from preprocessed_bam_files
+        set name, file(bam) from preprocessed_bam_files
 
     output:
-	    set val("${name}"), val("${params.output}/${name}.vcf") into vcf_files
-	    file "${name}.vcf"
+	    set name, file("${name}.vcf") into vcf_files
 
     """
     bcftools mpileup -E -d 0 -A -f ${params.reference} -a AD ${bam} | bcftools call -mv --ploidy 1 -Ov -o ${name}.vcf
@@ -132,15 +160,14 @@ process variantCalling {
 process variantNormalization {
     cpus params.cpus
     memory params.memory
-    tag "${name}"
-    publishDir "${params.output}", mode: "copy"
+    tag params.name
+    publishDir "${params.output}/${params.name}", mode: "copy"
 
     input:
-        set name, vcf from vcf_files
+        set name, file(vcf) from vcf_files
 
     output:
-	    set val("${name}"), val("${params.output}/${name}.normalized.vcf") into normalized_vcf_files
-	    file "${name}.normalized.vcf"
+	    set name, file("${name}.normalized.vcf") into normalized_vcf_files
 
     """
     # --input_files needs to be forced, otherwise it is inherited from profile in tests
@@ -159,15 +186,14 @@ process variantNormalization {
 process variantAnnotation {
     cpus params.cpus
     memory params.memory
-    tag "${name}"
-    publishDir "${params.output}", mode: "copy"
+    tag params.name
+    publishDir "${params.output}/${params.name}", mode: "copy"
 
     input:
-        set name, vcf from normalized_vcf_files
+        set name, file(vcf) from normalized_vcf_files
 
     output:
-	    set val("${name}"), val("${params.output}/${name}.vcf") into annotated_vcf_files
-	    file "${name}.annotated.vcf"
+	    set name, file("${name}.annotated.vcf") into annotated_vcf_files
 
     """
      bcftools csq --fasta-ref ${params.reference} --gff-annot ${params.gff} ${vcf} -o ${name}.annotated.vcf
