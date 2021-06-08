@@ -12,10 +12,16 @@ test:
 	nextflow main.nf -profile test,conda --name ERR4145453 \
 	--output output/test1 \
 	--fastq1 test_data/ERR4145453_1.fastq.gz \
-	--fastq2 test_data/ERR4145453_2.fastq.gz
+	--fastq2 test_data/ERR4145453_2.fastq.gz \
+	--keep_intermediate
 	nextflow main.nf -profile test,conda --name ERR4145453 \
 	--output output/test2 \
-	--fastq1 test_data/ERR4145453_1.fastq.gz
+	--fastq1 test_data/ERR4145453_1.fastq.gz \
+	--keep_intermediate
+	nextflow main.nf -profile test,conda --name ERR4145453 \
+	--output output/test3 \
+	--fastq1 test_data/ERR4145453_1.fastq.gz \
+	--fastq2 test_data/ERR4145453_2.fastq.gz
 
 
 check:
@@ -29,3 +35,4 @@ check:
 	test -s output/test2/ERR4145453/ERR4145453.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }
 	test -s output/test2/ERR4145453/ERR4145453.normalized.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }
 	test -s output/test2/ERR4145453/ERR4145453.annotated.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }
+	test -s output/test3/ERR4145453/ERR4145453.annotated.vcf || { echo "Missing test 3 VCF output file!"; exit 1; }

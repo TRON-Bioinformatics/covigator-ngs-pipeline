@@ -9,6 +9,7 @@ params.gff = false
 params.output = false
 params.memory = "3g"
 params.cpus = 1
+params.keep_intermediate = false
 
 if (params.help) {
     log.info params.help_message
@@ -50,7 +51,6 @@ if (library == "paired") {
         cpus params.cpus
         memory params.memory
         tag params.name
-        publishDir "${params.output}/${params.name}", mode: "copy"
 
         input:
             val name from params.name
@@ -82,7 +82,6 @@ else {
         cpus params.cpus
         memory params.memory
         tag params.name
-        publishDir "${params.output}/${params.name}", mode: "copy"
 
         input:
             val name from params.name
@@ -112,7 +111,9 @@ process bamPreprocessing {
     cpus params.cpus
     memory params.memory
     tag params.name
-    publishDir "${params.output}/${params.name}", mode: "copy"
+    if (params.keep_intermediate) {
+        publishDir "${params.output}/${params.name}", mode: "copy"
+    }
 
     input:
         set name, file(bam) from bam_files
@@ -144,7 +145,9 @@ process variantCalling {
     cpus params.cpus
     memory params.memory
     tag params.name
-    publishDir "${params.output}/${params.name}", mode: "copy"
+    if (params.keep_intermediate) {
+        publishDir "${params.output}/${params.name}", mode: "copy"
+    }
 
     input:
         set name, file(bam) from preprocessed_bam_files
@@ -161,7 +164,9 @@ process variantNormalization {
     cpus params.cpus
     memory params.memory
     tag params.name
-    publishDir "${params.output}/${params.name}", mode: "copy"
+    if (params.keep_intermediate) {
+        publishDir "${params.output}/${params.name}", mode: "copy"
+    }
 
     input:
         set name, file(vcf) from vcf_files
