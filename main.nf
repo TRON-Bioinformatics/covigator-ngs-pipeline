@@ -120,8 +120,9 @@ process bamPreprocessing {
         set name, file(bam) from bam_files
 
     output:
-	    set name, file("${name}.preprocessed.bam") into preprocessed_bams, preprocessed_bams2, preprocessed_bams3, preprocessed_bams4
-	    file "${name}.preprocessed.bai"
+	    set name, file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai") into preprocessed_bams,
+	        preprocessed_bams2, preprocessed_bams3, preprocessed_bams4, preprocessed_bams5
+
 
     """
     # --input_files, --known_indels1 and --known_indels2 needs to be forced, otherwise it is inherited from test profile
@@ -152,7 +153,7 @@ process variantCallingBcfTools {
     }
 
     input:
-        set name, file(bam) from preprocessed_bams
+        set name, file(bam), file(bai) from preprocessed_bams
 
     output:
 	    set name, file("${name}.bcftools.bcf") into bcftools_vcfs
@@ -184,7 +185,7 @@ process variantCallingLofreq {
     }
 
     input:
-        set name, file(bam) from preprocessed_bams2
+        set name, file(bam), file(bai) from preprocessed_bams2
 
     output:
 	    set name, file("${name}.lofreq2.vcf") into lofreq_vcfs
@@ -225,7 +226,7 @@ process variantCallingGatk {
     }
 
     input:
-        set name, file(bam) from preprocessed_bams3
+        set name, file(bam), file(bai) from preprocessed_bams3
 
     output:
 	    set name, file("${name}.gatk.vcf") into gatk_vcfs
@@ -249,7 +250,7 @@ process variantCallingIvar {
     publishDir "${params.output}/${params.name}", mode: "copy"
 
     input:
-        set name, file(bam) from preprocessed_bams4
+        set name, file(bam), file(bai) from preprocessed_bams4
 
     output:
 	    file("${name}.ivar.tsv")
@@ -301,6 +302,31 @@ process variantNormalization {
 	"""
 }
 
+process phasing {
+    cpus params.cpus
+    memory params.memory
+    tag params.name
+    if (params.keep_intermediate) {
+        publishDir "${params.output}/${params.name}", mode: "copy"
+    }
+
+    input:
+        set name, file(vcf), file(bam), file(bai) from normalized_vcf_files.combine(preprocessed_bams5, by:0)
+
+    output:
+	    set name, file("${vcf.baseName}.phased.vcf") into phased_variants
+
+    """
+    whatshap polyphase \
+    --ploidy 1 \
+    --indels \
+    --mapping-quality 20 \
+    --output ${vcf.baseName}.phased.vcf \
+    ${vcf} \
+    ${bam}
+    """
+}
+
 process variantAnnotation {
     cpus params.cpus
     memory params.memory
@@ -308,10 +334,10 @@ process variantAnnotation {
     publishDir "${params.output}/${params.name}", mode: "copy"
 
     input:
-        set name, file(vcf) from normalized_vcf_files
+        set name, file(vcf) from phased_variants
 
     output:
-	    set name, file("${vcf.baseName}.annotated.vcf") into annotated_vcf_files
+	    file("${vcf.baseName}.annotated.vcf")
 
     """
      bcftools csq --fasta-ref ${params.reference} --gff-annot ${params.gff} ${vcf} -o ${vcf.baseName}.annotated.vcf
