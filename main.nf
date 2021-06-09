@@ -187,7 +187,7 @@ process variantCallingLofreq {
         set name, file(bam) from preprocessed_bams2
 
     output:
-	    set name, file("${name}.lofreq.bcf") into lofreq_vcfs
+	    set name, file("${name}.lofreq2.vcf") into lofreq_vcfs
 
     """
     lofreq call \
@@ -202,6 +202,17 @@ process variantCallingLofreq {
     tabix -p vcf ${name}.lofreq.vcf.gz
 
     bcftools view -Ob -o ${name}.lofreq.bcf ${name}.lofreq.vcf.gz
+
+    # annotates low frequency and subclonal variants
+    bcftools filter \
+    --exclude 'INFO/AF < 0.2' \
+    --soft-filter LOW_FREQUENCY \
+    ${name}.lofreq.bcf > ${name}.lofreq.vcf
+
+    bcftools filter \
+    --exclude 'INFO/AF >= 0.2 && INFO/AF < 0.8' \
+    --soft-filter SUBCLONAL \
+    ${name}.lofreq.vcf > ${name}.lofreq2.vcf
 	"""
 }
 
