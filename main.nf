@@ -92,7 +92,8 @@ else {
 
         """
         # --input_files needs to be forced, otherwise it is inherited from profile in tests
-        nextflow run tron-bioinformatics/tronflow-bwa -r ${params.tronflow_bwa_version} \
+        nextflow run tron-bioinformatics/tronflow-bwa \
+        -r ${params.tronflow_bwa_version} \
         --input_name ${name} \
         --input_fastq1 ${fastq1} \
         --input_files false \
@@ -119,12 +120,13 @@ process bamPreprocessing {
         set name, file(bam) from bam_files
 
     output:
-	    set name, file("${name}.preprocessed.bam") into preprocessed_bams, preprocessed_bams2, preprocessed_bam3, preprocessed_bams4
+	    set name, file("${name}.preprocessed.bam") into preprocessed_bams, preprocessed_bams2, preprocessed_bams3, preprocessed_bams4
 	    file "${name}.preprocessed.bai"
 
     """
     # --input_files, --known_indels1 and --known_indels2 needs to be forced, otherwise it is inherited from test profile
-    nextflow run tron-bioinformatics/tronflow-bam-preprocessing -r ${params.tronflow_bam_preprocessing_version} \
+    nextflow run tron-bioinformatics/tronflow-bam-preprocessing \
+    -r ${params.tronflow_bam_preprocessing_version} \
     --input_bam ${bam} \
     --input_files false \
     --output . \
@@ -156,8 +158,8 @@ process variantCallingBcfTools {
 	    set name, file("${name}.bcftools.bcf") into bcftools_vcfs
 
     """
-    bcftools mpileup -E -d 0 -A -f ${params.reference} -a AD ${bam} | bcftools call -mv --ploidy 1 \
-    -Ob -o ${name}.bcftools.bcf
+    bcftools mpileup -E -d 0 -A -f ${params.reference} -a AD ${bam} | \
+    bcftools call -mv --ploidy 1 -Ob -o ${name}.bcftools.bcf
 	"""
 }
 
@@ -176,14 +178,44 @@ process variantCallingLofreq {
 	    set name, file("${name}.lofreq.bcf") into lofreq_vcfs
 
     """
-    lofreq call --min-bq 20 --min-alt-bq 20 --min-mq 20 \
+    lofreq call \
+    --min-bq 20 \
+    --min-alt-bq 20 \
+    --min-mq 20 \
     --ref ${params.reference} \
-    --call-indels <( lofreq indelqual --dindel --ref ${params.reference} ${bam} ) | \
+    --call-indels \
+    <( lofreq indelqual --dindel --ref ${params.reference} ${bam} ) | \
     bgzip -c > ${name}.lofreq.vcf.gz
 
     tabix -p vcf ${name}.lofreq.vcf.gz
 
     bcftools view -Ob -o ${name}.lofreq.bcf ${name}.lofreq.vcf.gz
+	"""
+}
+
+process variantCallingGatk {
+    cpus params.cpus
+    memory params.memory
+    tag params.name
+    if (params.keep_intermediate) {
+        publishDir "${params.output}/${params.name}", mode: "copy"
+    }
+
+    input:
+        set name, file(bam) from preprocessed_bams3
+
+    output:
+	    set name, file("${name}.gatk.vcf") into gatk_vcfs
+
+    """
+    gatk HaplotypeCaller \
+    --input $bam \
+    --output ${name}.gatk.vcf \
+    --reference ${params.reference} \
+    --ploidy 1 \
+    --min-base-quality-score 20 \
+    --minimum-mapping-quality 20 \
+    --annotation AlleleFraction
 	"""
 }
 
@@ -196,14 +228,15 @@ process variantNormalization {
     }
 
     input:
-        set name, file(vcf) from bcftools_vcfs.concat(lofreq_vcfs)
+        set name, file(vcf) from bcftools_vcfs.concat(lofreq_vcfs).concat(gatk_vcfs)
 
     output:
 	    set name, file("${vcf.baseName}.normalized.vcf") into normalized_vcf_files
 
     """
     # --input_files needs to be forced, otherwise it is inherited from profile in tests
-    nextflow run tron-bioinformatics/tronflow-variant-normalization -r ${params.tronflow_variant_normalization_version} \
+    nextflow run tron-bioinformatics/tronflow-variant-normalization \
+    -r ${params.tronflow_variant_normalization_version} \
     --input_vcf ${vcf} \
     --input_files false \
     --output . \
