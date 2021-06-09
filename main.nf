@@ -178,10 +178,11 @@ process variantCallingLofreq {
 
     """
     # TODO: use an inception here to avoid writing another BAM
-    lofreq indelqual --dindel --ref ${params.reference} -o ${name}.lofreq.bam ${bam}
-    lofreq call --min-bq 20 --min-alt-bq 20 --min-mq 20 --ref ${params.reference} --call-indels --out ${name}.lofreq.vcf ${name}.lofreq.bam
-    # we need this conversion, first tabix index and then convert to BCF to set the contig in the header which is not
-    # set by lofreq and bcftools complains about it
+
+    lofreq call --min-bq 20 --min-alt-bq 20 --min-mq 20 --ref ${params.reference} --call-indels \
+    --out ${name}.lofreq.vcf <( lofreq indelqual --dindel --ref ${params.reference} ${bam} )
+
+    # we need this format dance to set the contig in the header which is not set by lofreq and bcftools complains about it
     bgzip ${name}.lofreq.vcf
     tabix -p vcf ${name}.lofreq.vcf.gz
     bcftools view -Ob -o ${name}.lofreq.bcf ${name}.lofreq.vcf.gz
