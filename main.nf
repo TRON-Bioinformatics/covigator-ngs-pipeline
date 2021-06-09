@@ -7,6 +7,8 @@ params.name = false
 params.reference = false
 params.gff = false
 params.output = false
+params.min_mapping_quality = 20
+params.min_base_quality = 20
 params.memory = "3g"
 params.cpus = 1
 params.keep_intermediate = false
@@ -162,8 +164,8 @@ process variantCallingBcfTools {
     bcftools mpileup \
     --redo-BAQ \
     --max-depth 0 \
-    --min-BQ 20 \
-    --min-MQ 20 \
+    --min-BQ ${params.min_base_quality} \
+    --min-MQ ${params.min_mapping_quality} \
     --count-orphans \
     --fasta-ref ${params.reference} \
     --annotate AD ${bam} | \
@@ -192,9 +194,9 @@ process variantCallingLofreq {
 
     """
     lofreq call \
-    --min-bq 20 \
-    --min-alt-bq 20 \
-    --min-mq 20 \
+    --min-bq ${params.min_base_quality} \
+    --min-alt-bq ${params.min_base_quality} \
+    --min-mq ${params.min_mapping_quality} \
     --ref ${params.reference} \
     --call-indels \
     <( lofreq indelqual --dindel --ref ${params.reference} ${bam} ) | \
@@ -237,8 +239,8 @@ process variantCallingGatk {
     --output ${name}.gatk.vcf \
     --reference ${params.reference} \
     --ploidy 1 \
-    --min-base-quality-score 20 \
-    --minimum-mapping-quality 20 \
+    --min-base-quality-score ${params.min_base_quality} \
+    --minimum-mapping-quality ${params.min_mapping_quality} \
     --annotation AlleleFraction
 	"""
 }
@@ -261,12 +263,12 @@ process variantCallingIvar {
     --count-orphans \
     --max-depth 0 \
     --redo-BAQ \
-    --min-BQ 20 \
-    --min-MQ 20 \
+    --min-BQ ${params.min_base_quality} \
+    --min-MQ ${params.min_mapping_quality} \
     ${bam} | \
     ivar variants \
     -p ${name}.ivar \
-    -q 20 \
+    -q ${params.min_base_quality} \
     -t 0.03 \
     -r ${params.reference} \
     -g ${params.gff}
@@ -320,7 +322,7 @@ process phasing {
     whatshap polyphase \
     --ploidy 1 \
     --indels \
-    --mapping-quality 20 \
+    --mapping-quality ${params.min_mapping_quality} \
     --output ${vcf.baseName}.phased.vcf \
     ${vcf} \
     ${bam}
