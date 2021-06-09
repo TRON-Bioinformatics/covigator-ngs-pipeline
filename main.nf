@@ -208,12 +208,12 @@ process variantCallingLofreq {
     bcftools filter \
     --exclude 'INFO/AF < 0.2' \
     --soft-filter LOW_FREQUENCY \
-    ${name}.lofreq.bcf > ${name}.lofreq.vcf
+    ${name}.lofreq.bcf > ${name}.lofreq2.vcf
 
     bcftools filter \
     --exclude 'INFO/AF >= 0.2 && INFO/AF < 0.8' \
     --soft-filter SUBCLONAL \
-    ${name}.lofreq.vcf > ${name}.lofreq2.vcf
+    ${name}.lofreq2.vcf > ${name}.lofreq.vcf
 	"""
 }
 
