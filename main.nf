@@ -158,8 +158,20 @@ process variantCallingBcfTools {
 	    set name, file("${name}.bcftools.bcf") into bcftools_vcfs
 
     """
-    bcftools mpileup -E -d 0 -A -f ${params.reference} -a AD ${bam} | \
-    bcftools call -mv --ploidy 1 -Ob -o ${name}.bcftools.bcf
+    bcftools mpileup \
+    --redo-BAQ \
+    --max-depth 0 \
+    --min-BQ 20 \
+    --min-MQ 20 \
+    --count-orphans \
+    --fasta-ref ${params.reference} \
+    --annotate AD ${bam} | \
+    bcftools call \
+    --multiallelic-caller \
+    --variants-only \
+     --ploidy 1 \
+     --output-type b \
+     --output ${name}.bcftools.bcf
 	"""
 }
 
@@ -216,6 +228,36 @@ process variantCallingGatk {
     --min-base-quality-score 20 \
     --minimum-mapping-quality 20 \
     --annotation AlleleFraction
+	"""
+}
+
+process variantCallingIvar {
+    cpus params.cpus
+    memory params.memory
+    tag params.name
+    publishDir "${params.output}/${params.name}", mode: "copy"
+
+    input:
+        set name, file(bam) from preprocessed_bams4
+
+    output:
+	    file("${name}.ivar.tsv")
+
+    """
+    samtools mpileup \
+    -aa \
+    --count-orphans \
+    --max-depth 0 \
+    --redo-BAQ \
+    --min-BQ 20 \
+    --min-MQ 20 \
+    ${bam} | \
+    ivar variants \
+    -p ${name}.ivar \
+    -q 20 \
+    -t 0.03 \
+    -r ${params.reference} \
+    -g ${params.gff}
 	"""
 }
 
