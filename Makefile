@@ -25,12 +25,10 @@ test:
 
 
 check:
-	test -s output/test1/ERR4145453/ERR4145453.bam || { echo "Missing test 1 BAM output file!"; exit 1; }
 	test -s output/test1/ERR4145453/ERR4145453.preprocessed.bam || { echo "Missing test 1 BAM output file!"; exit 1; }
 	test -s output/test1/ERR4145453/ERR4145453.vcf || { echo "Missing test 1 VCF output file!"; exit 1; }
 	test -s output/test1/ERR4145453/ERR4145453.normalized.vcf || { echo "Missing test 1 VCF output file!"; exit 1; }
 	test -s output/test1/ERR4145453/ERR4145453.annotated.vcf || { echo "Missing test 1 VCF output file!"; exit 1; }
-	test -s output/test2/ERR4145453/ERR4145453.bam || { echo "Missing test 2 BAM output file!"; exit 1; }
 	test -s output/test2/ERR4145453/ERR4145453.preprocessed.bam || { echo "Missing test 2 BAM output file!"; exit 1; }
 	test -s output/test2/ERR4145453/ERR4145453.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }
 	test -s output/test2/ERR4145453/ERR4145453.normalized.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }

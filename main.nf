@@ -156,9 +156,8 @@ process variantCallingBcfTools {
 	    set name, file("${name}.bcftools.bcf") into bcftools_vcfs
 
     """
-    bcftools mpileup -E -d 0 -A -f ${params.reference} -a AD ${bam} | bcftools call -mv --ploidy 1 -Ob -o ${name}.bcftools.bcf
-    #bgzip ${name}.bcftools.vcf
-    #tabix -p vcf ${name}.bcftools.vcf.gz
+    bcftools mpileup -E -d 0 -A -f ${params.reference} -a AD ${bam} | bcftools call -mv --ploidy 1 \
+    -Ob -o ${name}.bcftools.bcf
 	"""
 }
 
@@ -177,14 +176,13 @@ process variantCallingLofreq {
 	    set name, file("${name}.lofreq.bcf") into lofreq_vcfs
 
     """
-    # TODO: use an inception here to avoid writing another BAM
+    lofreq call --min-bq 20 --min-alt-bq 20 --min-mq 20 \
+    --ref ${params.reference} \
+    --call-indels <( lofreq indelqual --dindel --ref ${params.reference} ${bam} ) | \
+    bgzip -c > ${name}.lofreq.vcf.gz
 
-    lofreq call --min-bq 20 --min-alt-bq 20 --min-mq 20 --ref ${params.reference} --call-indels \
-    --out ${name}.lofreq.vcf <( lofreq indelqual --dindel --ref ${params.reference} ${bam} )
-
-    # we need this format dance to set the contig in the header which is not set by lofreq and bcftools complains about it
-    bgzip ${name}.lofreq.vcf
     tabix -p vcf ${name}.lofreq.vcf.gz
+
     bcftools view -Ob -o ${name}.lofreq.bcf ${name}.lofreq.vcf.gz
 	"""
 }
