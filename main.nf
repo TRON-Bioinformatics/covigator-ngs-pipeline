@@ -206,18 +206,14 @@ process variantCallingLofreq {
 
     tabix -p vcf ${name}.lofreq.vcf.gz
 
-    bcftools view -Ob -o ${name}.lofreq.bcf ${name}.lofreq.vcf.gz
-
     # annotates low frequency and subclonal variants
+    bcftools view -Ob ${name}.lofreq.vcf.gz | \
     bcftools filter \
     --exclude 'INFO/AF < ${params.low_frequency_variant_threshold}' \
-    --soft-filter LOW_FREQUENCY \
-    ${name}.lofreq.bcf > ${name}.lofreq2.vcf
-
+    --soft-filter LOW_FREQUENCY - | \
     bcftools filter \
     --exclude 'INFO/AF >= ${params.low_frequency_variant_threshold} && INFO/AF < ${params.subclonal_variant_threshold}' \
-    --soft-filter SUBCLONAL \
-    ${name}.lofreq2.vcf > ${name}.lofreq.vcf
+    --soft-filter SUBCLONAL - > ${name}.lofreq.vcf
 	"""
 }
 

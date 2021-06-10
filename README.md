@@ -32,7 +32,7 @@ The LoFreq variants are annotated on the `FILTER` column using the reported vari
 (VAF) into `LOW_FREQUENCY`, `SUBCLONAL` and finally `PASS` variants correspond to clonal variants. By default, 
 variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VAF >= 20 % and < 80 % are considered 
 `SUBCLONAL`. This thresholds can be changed with the parameters `--low_frequency_variant_threshold` and
-`--subclonal_variant_threshold`.
+`--subclonal_variant_threshold`. 
 
 
 ## Requirements
@@ -62,6 +62,7 @@ Optional input:
     * --min_mapping_quality: minimum mapping quality to take a read into account (default: 20)
     * --low_frequency_variant_threshold: VAF threshold to mark a variant as low frequency (default: 0.2)
     * --subclonal_variant_threshold: VAF superior threshold to mark a variant as subclonal (default: 0.8)
+    * --strand_bias_threshold: threshold for the strand bias test Phred score (default: 20)
     * --memory: the ammount of memory used by each job (default: 3g)
     * --cpus: the number of CPUs used by each job (default: 1)
 
