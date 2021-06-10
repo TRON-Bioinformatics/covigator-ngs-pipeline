@@ -25,12 +25,12 @@ check:
 	test -s output/test1/ERR4145453/ERR4145453.bcftools.normalized.phased.annotated.vcf || { echo "Missing test 1 VCF output file!"; exit 1; }
 	test -s output/test1/ERR4145453/ERR4145453.gatk.normalized.phased.annotated.vcf || { echo "Missing test 1 VCF output file!"; exit 1; }
 	test -s output/test1/ERR4145453/ERR4145453.lofreq.normalized.phased.annotated.vcf || { echo "Missing test 1 VCF output file!"; exit 1; }
-	test -s output/test1/ERR4145453/ERR4145453.ivar.vcf || { echo "Missing test 1 VCF output file!"; exit 1; }
+	test -s output/test1/ERR4145453/ERR4145453.ivar.tsv || { echo "Missing test 1 VCF output file!"; exit 1; }
 	test -s output/test2/ERR4145453/ERR4145453.bcftools.normalized.phased.annotated.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }
 	test -s output/test2/ERR4145453/ERR4145453.gatk.normalized.phased.annotated.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }
 	test -s output/test2/ERR4145453/ERR4145453.lofreq.normalized.phased.annotated.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }
-	test -s output/test2/ERR4145453/ERR4145453.ivar.vcf || { echo "Missing test 2 VCF output file!"; exit 1; }
+	test -s output/test2/ERR4145453/ERR4145453.ivar.tsv || { echo "Missing test 2 VCF output file!"; exit 1; }
 	test -s output/test3/ERR4145453/ERR4145453.bcftools.normalized.phased.annotated.vcf || { echo "Missing test 3 VCF output file!"; exit 1; }
 	test -s output/test3/ERR4145453/ERR4145453.gatk.normalized.phased.annotated.vcf || { echo "Missing test 3 VCF output file!"; exit 1; }
 	test -s output/test3/ERR4145453/ERR4145453.lofreq.normalized.phased.annotated.vcf || { echo "Missing test 3 VCF output file!"; exit 1; }
-	test -s output/test3/ERR4145453/ERR4145453.ivar.vcf || { echo "Missing test 3 VCF output file!"; exit 1; }
+	test -s output/test3/ERR4145453/ERR4145453.ivar.tsv || { echo "Missing test 3 VCF output file!"; exit 1; }
