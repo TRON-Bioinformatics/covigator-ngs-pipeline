@@ -66,7 +66,7 @@ Optional input:
     * --cpus: the number of CPUs used by each job (default: 1)
 
 Output:
-    * Output a normalized, phased and annotated VCF file for each of BCFtools, iVar and lofreq
+    * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK and LoFreq
     * Output a TSV file output from iVar
 ```
 
