@@ -341,9 +341,13 @@ process variantAnnotation {
         set name, file(vcf) from phased_variants
 
     output:
-	    file("${vcf.baseName}.annotated.vcf")
+	    file("${vcf.baseName}.annotated.vcf.gz")
+	    file("${vcf.baseName}.annotated.vcf.gz.tbi")
 
     """
-     bcftools csq --fasta-ref ${params.reference} --gff-annot ${params.gff} ${vcf} -o ${vcf.baseName}.annotated.vcf
+     bcftools csq --fasta-ref ${params.reference} --gff-annot ${params.gff} ${vcf} | \
+     bgzip -c > ${vcf.baseName}.annotated.vcf.gz
+
+     tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
     """
 }
