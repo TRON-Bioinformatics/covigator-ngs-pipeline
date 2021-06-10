@@ -192,7 +192,7 @@ process variantCallingLofreq {
         set name, file(bam), file(bai) from preprocessed_bams2
 
     output:
-	    set name, file("${name}.lofreq2.vcf") into lofreq_vcfs
+	    set name, file("${name}.lofreq.vcf") into lofreq_vcfs
 
     """
     lofreq call \
