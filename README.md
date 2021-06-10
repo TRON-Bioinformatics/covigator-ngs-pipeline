@@ -48,8 +48,10 @@ Input:
 
 Optional input:
     * --fastq2: the second input FASTQ file
-    * --min_base_quality: minimum base call quality to take a base into account
-    * --min_mapping_quality: minimum mapping quality to take a read into account
+    * --min_base_quality: minimum base call quality to take a base into account (default: 20)
+    * --min_mapping_quality: minimum mapping quality to take a read into account (default: 20)
+    * --low_frequency_variant_threshold: VAF threshold to mark a variant as low frequency (default: 0.2)
+    * --subclonal_variant_threshold: VAF superior threshold to mark a variant as subclonal (default: 0.8)
     * --memory: the ammount of memory used by each job (default: 3g)
     * --cpus: the number of CPUs used by each job (default: 1)
 

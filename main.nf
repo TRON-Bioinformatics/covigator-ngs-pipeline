@@ -9,6 +9,8 @@ params.gff = false
 params.output = false
 params.min_mapping_quality = 20
 params.min_base_quality = 20
+params.low_frequency_variant_threshold = 0.2
+params.subclonal_variant_threshold = 0.8
 params.memory = "3g"
 params.cpus = 1
 params.keep_intermediate = false
@@ -208,12 +210,12 @@ process variantCallingLofreq {
 
     # annotates low frequency and subclonal variants
     bcftools filter \
-    --exclude 'INFO/AF < 0.2' \
+    --exclude 'INFO/AF < ${params.low_frequency_variant_threshold}' \
     --soft-filter LOW_FREQUENCY \
     ${name}.lofreq.bcf > ${name}.lofreq2.vcf
 
     bcftools filter \
-    --exclude 'INFO/AF >= 0.2 && INFO/AF < 0.8' \
+    --exclude 'INFO/AF >= ${params.low_frequency_variant_threshold} && INFO/AF < ${params.subclonal_variant_threshold}' \
     --soft-filter SUBCLONAL \
     ${name}.lofreq2.vcf > ${name}.lofreq.vcf
 	"""

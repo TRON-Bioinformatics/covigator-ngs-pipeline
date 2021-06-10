@@ -7,6 +7,7 @@ channels:
   - defaults
 dependencies:
   - bioconda::nextflow=21.04.0
+  - condaforge::openjdk=11.0.9.1
   - bioconda::bcftools=1.12
   - bioconda::lofreq=2.1.5
   - bioconda::gatk4=4.2.0.0
