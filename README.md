@@ -5,8 +5,11 @@ The Covigator NGS pipeline process SARS-CoV-2 FASTQ files into analysis ready VC
 The pipeline includes the following steps:
 - **Alignment**. `BWA mem` is used for the alignment of single or paired end samples.
 - **BAM preprocessing**. BAM files are prepared and duplicate reads are marked using GATK and Picard tools.
-- **Variant calling**. `bcftools mpileup` and `bcftools call` is employed to call variants.
+- **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
+  Subsequent processing of resulting VCF files is independent for each caller, except for iVar which does not produce a VCF file but a custom TSV file.
 - **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
+- **Variant phasing**. Although the ploidy of SARS-CoV-2 is 1, considering the existence of subclones it may be relevant to
+  phase the variants. This is done using WhatsHap.
 - **Variant consequence annotation**. `bcftools csq` is employed to annotate the variant consequences of variants.
 
 The alignment, BAM preprocessing and variant normalization pipelines were implemented in additional Nextflow pipelines within the TronFlow initiative. 
@@ -25,6 +28,13 @@ samtools faidx reference.fasta
 gatk CreateSequenceDictionary -R reference.fasta
 ```
 
+The LoFreq variants are annotated on the `FILTER` column using the reported variant allele frequency 
+(VAF) into `LOW_FREQUENCY`, `SUBCLONAL` and finally `PASS` variants correspond to clonal variants. By default, 
+variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VAF >= 20 % and < 80 % are considered 
+`SUBCLONAL`. This thresholds can be changed with the parameters `--low_frequency_variant_threshold` and
+`--subclonal_variant_threshold`. 
+
+
 ## Requirements
 
 - Nextflow >=19.10.0
@@ -37,26 +47,28 @@ gatk CreateSequenceDictionary -R reference.fasta
 $ nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
 Usage:
-    nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --input_files input_files
+    nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
 Input:
-    * input_files: the path to a tab-separated values file containing in each row the sample name and the FASTQ files.
-    For single-paired samples, the third column for fastq2 can be left empty, but the column needs to exist.
-    The input file does not have header!
-    Example input file:
-    name1	name1.1.fastq	name1.2.fastq
-    name2	name2.1.fastq	name2.2.fastq
-    
-    * output: the folder where to publish output
+    * --fastq1: the first input FASTQ file
+    * --name: the sample name, output files will be named after this name
+    * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
+    * --gff: the GFFv3 gene annotations file
+    * --output: the folder where to publish output
 
 Optional input:
-    * reference: the reference genome in FASTA format
-    * gff: the gene annotations in GFFv3 format
-    * memory: the ammount of memory used by each job (default: 3g)
-    * cpus: the number of CPUs used by each job (default: 1)
+    * --fastq2: the second input FASTQ file
+    * --min_base_quality: minimum base call quality to take a base into account (default: 20)
+    * --min_mapping_quality: minimum mapping quality to take a read into account (default: 20)
+    * --low_frequency_variant_threshold: VAF threshold to mark a variant as low frequency (default: 0.2)
+    * --subclonal_variant_threshold: VAF superior threshold to mark a variant as subclonal (default: 0.8)
+    * --strand_bias_threshold: threshold for the strand bias test Phred score (default: 20)
+    * --memory: the ammount of memory used by each job (default: 3g)
+    * --cpus: the number of CPUs used by each job (default: 1)
 
 Output:
-    * Output a normalized and annotated VCF file.
+    * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK and LoFreq
+    * Output a TSV file output from iVar
 ```
 
 
@@ -67,3 +79,7 @@ Output:
 - Adrian Tan, Gonçalo R. Abecasis and Hyun Min Kang. Unified Representation of Genetic Variants. Bioinformatics (2015) 31(13): 2202-2204](http://bioinformatics.oxfordjournals.org/content/31/13/2202) and uses bcftools [Li, H. (2011). A statistical framework for SNP calling, mutation discovery, association mapping and population genetical parameter estimation from sequencing data. Bioinformatics (Oxford, England), 27(21), 2987–2993. 10.1093/bioinformatics/btr509
 - Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, McCarthy SA, Davies RM, Li H. Twelve years of SAMtools and BCFtools. Gigascience. 2021 Feb 16;10(2):giab008. doi: 10.1093/gigascience/giab008. PMID: 33590861; PMCID: PMC7931819.
 - Van der Auwera GA, Carneiro M, Hartl C, Poplin R, del Angel G, Levy-Moonshine A, Jordan T, Shakir K, Roazen D, Thibault J, Banks E, Garimella K, Altshuler D, Gabriel S, DePristo M. (2013). From FastQ Data to High-Confidence Variant Calls: The Genome Analysis Toolkit Best Practices Pipeline. Curr Protoc Bioinformatics, 43:11.10.1-11.10.33. DOI: 10.1002/0471250953.bi1110s43.
+- Martin, M., Patterson, M., Garg, S., O Fischer, S., Pisanti, N., Klau, G., Schöenhuth, A., & Marschall, T. (2016). WhatsHap: fast and accurate read-based phasing. BioRxiv, 085050. https://doi.org/10.1101/085050
+- Danecek, P., & McCarthy, S. A. (2017). BCFtools/csq: haplotype-aware variant consequences. Bioinformatics, 33(13), 2037–2039. https://doi.org/10.1093/bioinformatics/btx100
+- Wilm, A., Aw, P. P. K., Bertrand, D., Yeo, G. H. T., Ong, S. H., Wong, C. H., Khor, C. C., Petric, R., Hibberd, M. L., & Nagarajan, N. (2012). LoFreq: A sequence-quality aware, ultra-sensitive variant caller for uncovering cell-population heterogeneity from high-throughput sequencing datasets. Nucleic Acids Research, 40(22), 11189–11201. https://doi.org/10.1093/nar/gks918
+- Grubaugh, N. D., Gangavarapu, K., Quick, J., Matteson, N. L., De Jesus, J. G., Main, B. J., Tan, A. L., Paul, L. M., Brackney, D. E., Grewal, S., Gurfield, N., Van Rompay, K. K. A., Isern, S., Michael, S. F., Coffey, L. L., Loman, N. J., & Andersen, K. G. (2019). An amplicon-based sequencing framework for accurately measuring intrahost virus diversity using PrimalSeq and iVar. Genome Biology, 20(1), 8. https://doi.org/10.1186/s13059-018-1618-7
