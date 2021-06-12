@@ -3,3 +3,6 @@ work
 .idea
 output
 condaenv
+.ipynb_checkpoints
+data
+data2
