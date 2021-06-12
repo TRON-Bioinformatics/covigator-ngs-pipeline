@@ -51,15 +51,42 @@ if (!params.fastq2) {
 }
 
 if (library == "paired") {
+
+    process readTrimmingPairedEnd {
+        cpus params.cpus
+        memory params.memory
+        tag params.name
+        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "*fastp_stats*"
+
+        input:
+            val name from params.name
+            file fastq1 from file(params.fastq1)
+            file fastq2 from file(params.fastq2)
+
+        output:
+            set name, file("${fastq1.baseName}.trimmed.fq.gz"), file("${fastq2.baseName}.trimmed.fq.gz") into trimmed_fastqs
+            file("${name}.fastp_stats.json")
+            file("${name}.fastp_stats.html")
+
+        """
+        # --input_files needs to be forced, otherwise it is inherited from profile in tests
+        fastp \
+        --in1 ${fastq1} \
+        --in2 ${fastq2} \
+        --out1 ${fastq1.baseName}.trimmed.fq.gz \
+        --out2 ${fastq2.baseName}.trimmed.fq.gz \
+        --json ${name}.fastp_stats.json \
+        --html ${name}.fastp_stats.html
+        """
+    }
+
     process alignmentPairedEnd {
         cpus params.cpus
         memory params.memory
         tag params.name
 
         input:
-            val name from params.name
-            file fastq1 from file(params.fastq1)
-            file fastq2 from file(params.fastq2)
+            set name, file(fastq1), file(fastq2) from trimmed_fastqs
 
         output:
             set name, file("${name}.bam") into bam_files
@@ -82,14 +109,39 @@ if (library == "paired") {
     }
 }
 else {
+
+    process readTrimmingSingleEnd {
+        cpus params.cpus
+        memory params.memory
+        tag params.name
+        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "*fastp_stats*"
+
+        input:
+            val name from params.name
+            file fastq1 from file(params.fastq1)
+
+        output:
+            set name, file("${fastq1.baseName}.trimmed.fq.gz") into trimmed_fastqs
+            file("${name}.fastp_stats.json")
+            file("${name}.fastp_stats.html")
+
+        """
+        # --input_files needs to be forced, otherwise it is inherited from profile in tests
+        fastp \
+        --in1 ${fastq1} \
+        --out1 ${fastq1.baseName}.trimmed.fq.gz \
+        --json ${name}.fastp_stats.json \
+        --html ${name}.fastp_stats.html
+        """
+    }
+
     process alignmentSingleEnd {
         cpus params.cpus
         memory params.memory
         tag params.name
 
         input:
-            val name from params.name
-            file fastq1 from file(params.fastq1)
+            set name, file(fastq1) from trimmed_fastqs
 
         output:
             set name, file("${name}.bam") into bam_files
