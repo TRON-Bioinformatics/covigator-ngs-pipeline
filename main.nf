@@ -29,10 +29,16 @@ if (!params.reference) {
     log.error "--reference is required"
     exit 1
 }
+else {
+    reference = file(params.reference)
+}
 
 if (!params.gff) {
     log.error "--gff is required"
     exit 1
+}
+else {
+    gff = file(params.gff)
 }
 
 if (!params.name) {
@@ -101,7 +107,7 @@ if (library == "paired") {
         --algorithm mem \
         --library ${library} \
         --output . \
-        --reference ${params.reference} \
+        --reference ${reference} \
         --cpus ${task.cpus} --memory ${task.memory} \
         -profile ${workflow.profile} \
         -work-dir ${workflow.workDir}
@@ -156,7 +162,7 @@ else {
         --algorithm mem \
         --library ${library} \
         --output . \
-        --reference ${params.reference} \
+        --reference ${reference} \
         --cpus ${task.cpus} --memory ${task.memory} \
         -profile ${workflow.profile} \
         -work-dir ${workflow.workDir}
@@ -187,7 +193,7 @@ process bamPreprocessing {
     --input_bam ${bam} \
     --input_files false \
     --output . \
-    --reference ${params.reference} \
+    --reference ${reference} \
     --skip_bqsr --skip_metrics \
     --known_indels1 false --known_indels2 false \
     --prepare_bam_cpus ${params.cpus} --prepare_bam_memory ${params.memory} \
@@ -221,7 +227,7 @@ process variantCallingBcfTools {
     --min-BQ ${params.min_base_quality} \
     --min-MQ ${params.min_mapping_quality} \
     --count-orphans \
-    --fasta-ref ${params.reference} \
+    --fasta-ref ${reference} \
     --annotate AD ${bam} | \
     bcftools call \
     --multiallelic-caller \
@@ -251,9 +257,9 @@ process variantCallingLofreq {
     --min-bq ${params.min_base_quality} \
     --min-alt-bq ${params.min_base_quality} \
     --min-mq ${params.min_mapping_quality} \
-    --ref ${params.reference} \
+    --ref ${reference} \
     --call-indels \
-    <( lofreq indelqual --dindel --ref ${params.reference} ${bam} ) | \
+    <( lofreq indelqual --dindel --ref ${reference} ${bam} ) | \
     bgzip -c > ${name}.lofreq.vcf.gz
 
     tabix -p vcf ${name}.lofreq.vcf.gz
@@ -287,7 +293,7 @@ process variantCallingGatk {
     gatk HaplotypeCaller \
     --input $bam \
     --output ${name}.gatk.vcf \
-    --reference ${params.reference} \
+    --reference ${reference} \
     --ploidy 1 \
     --min-base-quality-score ${params.min_base_quality} \
     --minimum-mapping-quality ${params.min_mapping_quality} \
@@ -320,8 +326,8 @@ process variantCallingIvar {
     -p ${name}.ivar \
     -q ${params.min_base_quality} \
     -t 0.03 \
-    -r ${params.reference} \
-    -g ${params.gff}
+    -r ${reference} \
+    -g ${gff}
 	"""
 }
 
@@ -346,7 +352,7 @@ process variantNormalization {
     --input_vcf ${vcf} \
     --input_files false \
     --output . \
-    --reference ${params.reference} \
+    --reference ${reference} \
     -profile ${workflow.profile} \
     -work-dir ${workflow.workDir}
 
@@ -393,7 +399,7 @@ process variantAnnotation {
 	    file("${vcf.baseName}.annotated.vcf.gz.tbi")
 
     """
-     bcftools csq --fasta-ref ${params.reference} --gff-annot ${params.gff} ${vcf} | \
+     bcftools csq --fasta-ref ${reference} --gff-annot ${gff} ${vcf} | \
      bgzip -c > ${vcf.baseName}.annotated.vcf.gz
 
      tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
