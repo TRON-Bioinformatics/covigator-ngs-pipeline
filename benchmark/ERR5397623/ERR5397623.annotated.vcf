@@ -1,0 +1,75 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##bcftoolsVersion=1.12+htslib-1.12
+##bcftoolsCommand=mpileup -E -d 0 -A -f /home/priesgo/.nextflow/assets/tron-bioinformatics/covigator-ngs-pipeline/test_data/Sars_cov_2.ASM985889v3.dna.toplevel.fa -a AD /home/priesgo/src/covigator-ngs-pipeline/benchmark/ERR5397623/ERR5397623.preprocessed.bam
+##reference=file:///home/priesgo/.nextflow/assets/tron-bioinformatics/covigator-ngs-pipeline/test_data/Sars_cov_2.ASM985889v3.dna.toplevel.fa
+##contig=<ID=MN908947.3,length=29903>
+##ALT=<ID=*,Description="Represents allele(s) other than observed.">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=IDV,Number=1,Type=Integer,Description="Maximum number of raw reads supporting an indel">
+##INFO=<ID=IMF,Number=1,Type=Float,Description="Maximum fraction of raw reads supporting an indel">
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw read depth">
+##INFO=<ID=VDB,Number=1,Type=Float,Description="Variant Distance Bias for filtering splice-site artefacts in RNA-seq data (bigger is better)",Version="3">
+##INFO=<ID=RPB,Number=1,Type=Float,Description="Mann-Whitney U test of Read Position Bias (bigger is better)">
+##INFO=<ID=MQB,Number=1,Type=Float,Description="Mann-Whitney U test of Mapping Quality Bias (bigger is better)">
+##INFO=<ID=BQB,Number=1,Type=Float,Description="Mann-Whitney U test of Base Quality Bias (bigger is better)">
+##INFO=<ID=MQSB,Number=1,Type=Float,Description="Mann-Whitney U test of Mapping Quality vs Strand Bias (bigger is better)">
+##INFO=<ID=SGB,Number=1,Type=Float,Description="Segregation based metric.">
+##INFO=<ID=MQ0F,Number=1,Type=Float,Description="Fraction of MQ0 reads (smaller is better)">
+##FORMAT=<ID=PL,Number=G,Type=Integer,Description="List of Phred-scaled genotype likelihoods">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Allelic depths (high-quality bases)">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##INFO=<ID=AC,Number=A,Type=Integer,Description="Allele count in genotypes for each ALT allele, in the same order as listed">
+##INFO=<ID=AN,Number=1,Type=Integer,Description="Total number of alleles in called genotypes">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="Number of high-quality ref-forward , ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=MQ,Number=1,Type=Integer,Description="Average mapping quality">
+##bcftools_callVersion=1.12+htslib-1.12
+##bcftools_callCommand=call -mv --ploidy 1 -Ov -o ERR5397623.vcf; Date=Mon Jun  7 15:52:25 2021
+##INFO=<ID=OLD_CLUMPED,Number=1,Type=String,Description="Original variant. Format: CHR|POS|REF|ALT|USED_ALT_IDX">
+##bcftools_normVersion=1.12+htslib-1.12
+##bcftools_normCommand=norm --multiallelics -any --check-ref e --fasta-ref /home/priesgo/.nextflow/assets/tron-bioinformatics/covigator-ngs-pipeline/test_data/Sars_cov_2.ASM985889v3.dna.toplevel.fa --old-rec-tag OLD_CLUMPED -; Date=Mon Jun  7 15:52:39 2021
+##FORMAT=<ID=PS,Number=1,Type=Integer,Description="ID for set of phased genotypes">
+##bcftools_normCommand=norm --rm-dup exact -o ERR5397623.normalized.vcf -; Date=Mon Jun  7 15:52:39 2021
+##bcftools/csqVersion=1.12+htslib-1.12
+##bcftools/csqCommand=csq --fasta-ref /home/priesgo/.nextflow/assets/tron-bioinformatics/covigator-ngs-pipeline/test_data/Sars_cov_2.ASM985889v3.dna.toplevel.fa --gff-annot /home/priesgo/.nextflow/assets/tron-bioinformatics/covigator-ngs-pipeline/test_data/Sars_cov_2.ASM985889v3.101.gff3 -o ERR5397623.annotated.vcf /home/priesgo/src/covigator-ngs-pipeline/benchmark/ERR5397623/ERR5397623.normalized.vcf; Date=Mon Jun  7 15:52:40 2021
+##INFO=<ID=BCSQ,Number=.,Type=String,Description="Haplotype-aware consequence annotation from BCFtools/csq, see http://samtools.github.io/bcftools/howtos/csq-calling.html for details. Format: Consequence|gene|transcript|biotype|strand|amino_acid_change|dna_change">
+##FORMAT=<ID=BCSQ,Number=.,Type=Integer,Description="Bitmask of indexes to INFO/BCSQ, with interleaved first/second haplotype. Use \"bcftools query -f'[%CHROM\t%POS\t%SAMPLE\t%TBCSQ\n]'\" to translate.">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	normal
+MN908947.3	241	.	C	T	225.417	.	DP=107;VDB=0.631715;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,66,32;MQ=60	GT:PL:AD	1:255,0:0,98
+MN908947.3	277	.	T	C	225.417	.	DP=105;VDB=0.301872;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,59,42;MQ=60;BCSQ=synonymous|ORF1ab|ENSSAST00005000003|protein_coding|+|4L|277T>C,synonymous|ORF1ab|ENSSAST00005000002|protein_coding|+|4L|277T>C	GT:PL:AD:BCSQ	1:255,0:0,101:5
+MN908947.3	913	.	C	T	225.417	.	DP=95;VDB=0.0116183;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,61,29;MQ=60;BCSQ=synonymous|ORF1ab|ENSSAST00005000003|protein_coding|+|216S|913C>T,synonymous|ORF1ab|ENSSAST00005000002|protein_coding|+|216S|913C>T	GT:PL:AD:BCSQ	1:255,0:0,90:5
+MN908947.3	2453	.	C	T	225.417	.	DP=99;VDB=0.726511;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,48,48;MQ=60;BCSQ=missense|ORF1ab|ENSSAST00005000003|protein_coding|+|730L>730F|2453C>T,missense|ORF1ab|ENSSAST00005000002|protein_coding|+|730L>730F|2453C>T	GT:PL:AD:BCSQ	1:255,0:0,96:5
+MN908947.3	3037	.	C	T	225.422	.	DP=112;VDB=0.047627;SGB=-0.693147;MQSB=0.979803;MQ0F=0;AC=1;AN=1;DP4=0,0,62,43;MQ=59;BCSQ=synonymous|ORF1ab|ENSSAST00005000003|protein_coding|+|924F|3037C>T,synonymous|ORF1ab|ENSSAST00005000002|protein_coding|+|924F|3037C>T	GT:PL:AD:BCSQ	1:255,0:0,104:5
+MN908947.3	3267	.	C	T	225.417	.	DP=104;VDB=0.728207;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,82,18;MQ=60;BCSQ=missense|ORF1ab|ENSSAST00005000003|protein_coding|+|1001T>1001I|3267C>T,missense|ORF1ab|ENSSAST00005000002|protein_coding|+|1001T>1001I|3267C>T	GT:PL:AD:BCSQ	1:255,0:0,100:5
+MN908947.3	4891	.	C	T	228.405	.	DP=104;VDB=0.413458;SGB=-0.693147;RPB=1;MQB=1;MQSB=1;BQB=1;MQ0F=0;AC=1;AN=1;DP4=0,1,47,49;MQ=60;BCSQ=synonymous|ORF1ab|ENSSAST00005000003|protein_coding|+|1542T|4891C>T,synonymous|ORF1ab|ENSSAST00005000002|protein_coding|+|1542T|4891C>T	GT:PL:AD:BCSQ	1:255,0:1,96:5
+MN908947.3	5388	.	C	A	225.417	.	DP=96;VDB=0.132707;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,67,19;MQ=60;BCSQ=missense|ORF1ab|ENSSAST00005000003|protein_coding|+|1708A>1708D|5388C>A,missense|ORF1ab|ENSSAST00005000002|protein_coding|+|1708A>1708D|5388C>A	GT:PL:AD:BCSQ	1:255,0:0,86:5
+MN908947.3	5986	.	C	T	225.417	.	DP=83;VDB=0.0647342;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,63,16;MQ=60;BCSQ=synonymous|ORF1ab|ENSSAST00005000003|protein_coding|+|1907F|5986C>T,synonymous|ORF1ab|ENSSAST00005000002|protein_coding|+|1907F|5986C>T	GT:PL:AD:BCSQ	1:255,0:0,79:5
+MN908947.3	6322	.	T	A	225.417	.	DP=102;VDB=0.367309;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,71,27;MQ=60;BCSQ=synonymous|ORF1ab|ENSSAST00005000003|protein_coding|+|2019V|6322T>A,synonymous|ORF1ab|ENSSAST00005000002|protein_coding|+|2019V|6322T>A	GT:PL:AD:BCSQ	1:255,0:0,98:5
+MN908947.3	6954	.	T	C	225.417	.	DP=90;VDB=0.201374;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,40,44;MQ=60;BCSQ=missense|ORF1ab|ENSSAST00005000003|protein_coding|+|2230I>2230T|6954T>C,missense|ORF1ab|ENSSAST00005000002|protein_coding|+|2230I>2230T|6954T>C	GT:PL:AD:BCSQ	1:255,0:0,84:5
+MN908947.3	9163	.	C	T	225.417	.	DP=106;VDB=0.102543;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,56,34;MQ=60;BCSQ=synonymous|ORF1ab|ENSSAST00005000003|protein_coding|+|2966N|9163C>T,synonymous|ORF1ab|ENSSAST00005000002|protein_coding|+|2966N|9163C>T	GT:PL:AD:BCSQ	1:255,0:0,90:5
+MN908947.3	11287	.	GTCTGGTTTT	G	228.408	.	INDEL;IDV=104;IMF=0.962963;DP=108;VDB=0.000667777;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=1,6,71,30;MQ=60;BCSQ=inframe_deletion|ORF1ab|ENSSAST00005000003|protein_coding|+|3674LSGF>3674L|11287GTCTGGTTTT>G,inframe_deletion|ORF1ab|ENSSAST00005000002|protein_coding|+|3674LSGF>3674L|11287GTCTGGTTTT>G	GT:PL:AD:BCSQ	1:255,0:7,101:5
+MN908947.3	14408	.	C	T	225.417	.	DP=106;VDB=0.249649;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,67,32;MQ=60;BCSQ=synonymous|ORF1ab|ENSSAST00005000002|protein_coding|+|4715L|14408C>T	GT:PL:AD:BCSQ	1:255,0:0,99:1
+MN908947.3	14676	.	C	T	225.417	.	DP=121;VDB=0.107184;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,95,23;MQ=60;BCSQ=missense|ORF1ab|ENSSAST00005000002|protein_coding|+|4804P>4801L|14676C>T	GT:PL:AD:BCSQ	1:255,0:0,118:1
+MN908947.3	15279	.	C	T	225.417	.	DP=83;VDB=0.0200448;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,60,15;MQ=60;BCSQ=missense|ORF1ab|ENSSAST00005000002|protein_coding|+|5005T>5002I|15279C>T	GT:PL:AD:BCSQ	1:255,0:0,75:1
+MN908947.3	16176	.	T	C	225.417	.	DP=72;VDB=0.999978;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,46,17;MQ=60;BCSQ=missense|ORF1ab|ENSSAST00005000002|protein_coding|+|5304L>5301P|16176T>C	GT:PL:AD:BCSQ	1:255,0:0,63:1
+MN908947.3	21764	.	ATACATG	A	228.36	.	INDEL;IDV=71;IMF=0.946667;DP=75;VDB=0.00709019;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=2,2,51,20;MQ=60;OLD_CLUMPED=MN908947.3|21764|ATACATGT|AT;BCSQ=inframe_deletion|S|ENSSAST00005000004|protein_coding|+|68IHV>68I|21764ATACATG>A	GT:PL:AD:BCSQ	1:255,0:4,71:1
+MN908947.3	21990	.	TTTA	T	141.204	.	INDEL;IDV=48;IMF=0.8;DP=60;VDB=0.999506;SGB=-0.693147;MQSB=0.986846;MQ0F=0;AC=1;AN=1;DP4=5,8,34,13;MQ=59;OLD_CLUMPED=MN908947.3|21990|TTTATTA|TTTA;BCSQ=inframe_deletion|S|ENSSAST00005000004|protein_coding|+|143VY>141V|21990TTTA>T	GT:PL:AD:BCSQ	1:255,87:13,47:1
+MN908947.3	21991	.	TTA	T	97.7941	.	INDEL;IDV=1;IMF=0.0175439;DP=57;VDB=0.999337;SGB=-0.69311;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=17,9,20,11;MQ=60;OLD_CLUMPED=MN908947.3|21991|TTAT|TT	GT:PL:AD	1:183,58:26,31
+MN908947.3	23063	.	A	T	225.417	.	DP=19;VDB=0.970247;SGB=-0.691153;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,6,12;MQ=60;BCSQ=missense|S|ENSSAST00005000004|protein_coding|+|501N>498Y|23063A>T	GT:PL:AD:BCSQ	1:255,0:0,18:1
+MN908947.3	23271	.	C	A	225.417	.	DP=120;VDB=0.849019;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,90,27;MQ=60;BCSQ=missense|S|ENSSAST00005000004|protein_coding|+|570A>567D|23271C>A	GT:PL:AD:BCSQ	1:255,0:0,117:1
+MN908947.3	23403	.	A	G	225.417	.	DP=116;VDB=0.255022;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,76,30;MQ=60;BCSQ=missense|S|ENSSAST00005000004|protein_coding|+|614D>611G|23403A>G	GT:PL:AD:BCSQ	1:255,0:0,106:1
+MN908947.3	23604	.	C	A	225.417	.	DP=102;VDB=0.122654;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,72,24;MQ=60;BCSQ=missense|S|ENSSAST00005000004|protein_coding|+|681P>678H|23604C>A	GT:PL:AD:BCSQ	1:255,0:0,96:1
+MN908947.3	23709	.	C	T	225.417	.	DP=105;VDB=0.00948335;SGB=-0.693147;MQSB=0.990148;MQ0F=0.00952381;AC=1;AN=1;DP4=0,0,60,40;MQ=59;BCSQ=missense|S|ENSSAST00005000004|protein_coding|+|716T>713I|23709C>T	GT:PL:AD:BCSQ	1:255,0:0,100:1
+MN908947.3	24506	.	T	G	225.417	.	DP=77;VDB=0.00632777;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,60,14;MQ=60;BCSQ=missense|S|ENSSAST00005000004|protein_coding|+|982S>979A|24506T>G	GT:PL:AD:BCSQ	1:255,0:0,74:1
+MN908947.3	24914	.	G	C	225.417	.	DP=120;VDB=0.827713;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,65,45;MQ=60;BCSQ=missense|S|ENSSAST00005000004|protein_coding|+|1118D>1115H|24914G>C	GT:PL:AD:BCSQ	1:255,0:0,110:1
+MN908947.3	27972	.	C	T	225.417	.	DP=104;VDB=0.903335;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,60,38;MQ=60;BCSQ=stop_gained|ORF8|ENSSAST00005000008|protein_coding|+|27Q>27*|27972C>T	GT:PL:AD:BCSQ	1:255,0:0,98:1
+MN908947.3	28048	.	G	T	225.417	.	DP=97;VDB=0.339895;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,46,43;MQ=60;BCSQ=*missense|ORF8|ENSSAST00005000008|protein_coding|+|52R>52I|28048G>T	GT:PL:AD:BCSQ	1:255,0:0,89:1
+MN908947.3	28111	.	A	G	225.417	.	DP=78;VDB=0.815;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,47,23;MQ=60;BCSQ=*missense|ORF8|ENSSAST00005000008|protein_coding|+|73Y>73C|28111A>G	GT:PL:AD:BCSQ	1:255,0:0,70:1
+MN908947.3	28270	.	TA	T	9.28705	.	INDEL;IDV=91;IMF=0.858491;DP=106;VDB=0.741118;SGB=-0.693147;MQSB=0.993956;MQ0F=0;AC=1;AN=1;DP4=19,10,55,22;MQ=59;OLD_CLUMPED=MN908947.3|28270|TAAAA|TAAA	GT:PL:AD	1:113,77:29,77
+MN908947.3	28280	.	G	C	225.417	.	DP=91;VDB=0.0245211;SGB=-0.693147;MQSB=0.992166;MQ0F=0;AC=1;AN=1;DP4=0,0,60,28;MQ=59;BCSQ=missense|N|ENSSAST00005000005|protein_coding|+|3D>3L|28280G>C+28281A>T+28282T>A	GT:PL:AD:BCSQ	1:255,0:0,88:1
+MN908947.3	28281	.	A	T	228.367	.	DP=91;VDB=0.0109476;SGB=-0.693147;RPB=0.836342;MQB=0.620315;MQSB=0.992166;BQB=0.299824;MQ0F=0;AC=1;AN=1;DP4=2,1,58,27;MQ=59;BCSQ=@28280	GT:PL:AD:BCSQ	1:255,0:3,85:1
+MN908947.3	28282	.	T	A	225.417	.	DP=92;VDB=0.0227728;SGB=-0.693147;MQSB=0.992166;MQ0F=0;AC=1;AN=1;DP4=0,0,60,28;MQ=59;BCSQ=@28280	GT:PL:AD:BCSQ	1:255,0:0,88:1
+MN908947.3	28881	.	G	A	225.422	.	DP=98;VDB=0.0635294;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,59,36;MQ=60;BCSQ=missense|N|ENSSAST00005000005|protein_coding|+|203R>203K|28881G>A+28882G>A	GT:PL:AD:BCSQ	1:255,0:0,94:1
+MN908947.3	28882	.	G	A	225.417	.	DP=98;VDB=0.0651209;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,59,36;MQ=60;BCSQ=@28881	GT:PL:AD:BCSQ	1:255,0:0,95:1
+MN908947.3	28883	.	G	C	225.417	.	DP=99;VDB=0.0583443;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,59,36;MQ=60;BCSQ=missense|N|ENSSAST00005000005|protein_coding|+|204G>204R|28883G>C	GT:PL:AD:BCSQ	1:255,0:0,95:1
+MN908947.3	28977	.	C	T	225.417	.	DP=63;VDB=0.004806;SGB=-0.693147;MQSB=1;MQ0F=0;AC=1;AN=1;DP4=0,0,31,29;MQ=60;BCSQ=missense|N|ENSSAST00005000005|protein_coding|+|235S>235F|28977C>T	GT:PL:AD:BCSQ	1:255,0:0,60:1
