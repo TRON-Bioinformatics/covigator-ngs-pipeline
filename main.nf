@@ -6,7 +6,7 @@ params.fastq2 = false
 params.name = false
 params.reference = false
 params.gff = false
-params.output = false
+params.output = "."
 params.min_mapping_quality = 20
 params.min_base_quality = 20
 params.low_frequency_variant_threshold = 0.2
@@ -183,7 +183,7 @@ process bamPreprocessing {
 
     output:
 	    set name, file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai") into preprocessed_bams,
-	        preprocessed_bams2, preprocessed_bams3, preprocessed_bams4, preprocessed_bams5
+	        preprocessed_bams2, preprocessed_bams3, preprocessed_bams4
 
 
     """
@@ -360,31 +360,6 @@ process variantNormalization {
 	"""
 }
 
-process phasing {
-    cpus params.cpus
-    memory params.memory
-    tag params.name
-    if (params.keep_intermediate) {
-        publishDir "${params.output}/${params.name}", mode: "copy"
-    }
-
-    input:
-        set name, file(vcf), file(bam), file(bai) from normalized_vcf_files.combine(preprocessed_bams5, by:0)
-
-    output:
-	    set name, file("${vcf.baseName}.phased.vcf") into phased_variants
-
-    """
-    whatshap polyphase \
-    --ploidy 1 \
-    --indels \
-    --mapping-quality ${params.min_mapping_quality} \
-    --output ${vcf.baseName}.phased.vcf \
-    ${vcf} \
-    ${bam}
-    """
-}
-
 process variantAnnotation {
     cpus params.cpus
     memory params.memory
@@ -392,14 +367,14 @@ process variantAnnotation {
     publishDir "${params.output}/${params.name}", mode: "copy"
 
     input:
-        set name, file(vcf) from phased_variants
+        set name, file(vcf) from normalized_vcf_files
 
     output:
 	    file("${vcf.baseName}.annotated.vcf.gz")
 	    file("${vcf.baseName}.annotated.vcf.gz.tbi")
 
     """
-     bcftools csq --fasta-ref ${reference} --gff-annot ${gff} ${vcf} | \
+     bcftools csq --fasta-ref ${reference} --gff-annot ${gff} --phase s ${vcf} | \
      bgzip -c > ${vcf.baseName}.annotated.vcf.gz
 
      tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
