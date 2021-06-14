@@ -374,9 +374,13 @@ process variantAnnotation {
 	    file("${vcf.baseName}.annotated.vcf.gz.tbi")
 
     """
-     bcftools csq --fasta-ref ${reference} --gff-annot ${gff} --phase s ${vcf} | \
-     bgzip -c > ${vcf.baseName}.annotated.vcf.gz
+    # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
+    cp ${params.snpeff_config} .
 
-     tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
+    snpEff eff -dataDir ${params.snpeff_data} \
+    Sars_cov_2.ASM985889v3.101  ${vcf} | \
+    bgzip -c > ${vcf.baseName}.annotated.vcf.gz
+
+    tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
     """
 }
