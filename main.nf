@@ -232,9 +232,14 @@ process variantCallingBcfTools {
     bcftools call \
     --multiallelic-caller \
     --variants-only \
-     --ploidy 1 \
-     --output-type b \
-     --output ${name}.bcftools.bcf
+     --ploidy 1 | \
+    bcftools filter \
+    --exclude 'INFO/IMF < ${params.low_frequency_variant_threshold}' \
+    --soft-filter LOW_FREQUENCY - | \
+    bcftools filter \
+    --exclude 'INFO/IMF >= ${params.low_frequency_variant_threshold} && INFO/IMF < ${params.subclonal_variant_threshold}' \
+    --soft-filter SUBCLONAL \
+     --output-type b - > ${name}.bcftools.bcf
 	"""
 }
 
@@ -380,7 +385,12 @@ process variantAnnotation {
     snpEff eff -dataDir ${params.snpeff_data} \
     -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
     Sars_cov_2.ASM985889v3.101  ${vcf} | \
-    bgzip -c > ${vcf.baseName}.annotated.vcf.gz
+    bgzip -c > ${vcf.baseName}.annotated_snpeff.vcf.gz
+
+    bcftools annotate \
+    --annotations ${params.problematic_sites} \
+    --columns FILTER \
+    --output-type b ${vcf.baseName}.annotated_snpeff.vcf.gz > ${vcf.baseName}.annotated.vcf.gz
 
     tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
     """
