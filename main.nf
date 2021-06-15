@@ -385,12 +385,13 @@ process variantAnnotation {
     snpEff eff -dataDir ${params.snpeff_data} \
     -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
     Sars_cov_2.ASM985889v3.101  ${vcf} | \
-    bgzip -c > ${vcf.baseName}.annotated_snpeff.vcf.gz
+    bgzip -c > ${vcf.baseName}.annotated.vcf.gz
 
-    bcftools annotate \
-    --annotations ${params.problematic_sites} \
-    --columns FILTER \
-    --output-type b ${vcf.baseName}.annotated_snpeff.vcf.gz > ${vcf.baseName}.annotated.vcf.gz
+    # TODO: include this step for GISAID data
+    #bcftools annotate \
+    #--annotations ${params.problematic_sites} \
+    #--columns FILTER \
+    #--output-type b - > ${vcf.baseName}.annotated.vcf.gz
 
     tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
     """
