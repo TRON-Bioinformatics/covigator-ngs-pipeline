@@ -6,7 +6,7 @@ params.fastq2 = false
 params.name = false
 params.reference = false
 params.gff = false
-params.output = false
+params.output = "."
 params.min_mapping_quality = 20
 params.min_base_quality = 20
 params.low_frequency_variant_threshold = 0.2
@@ -29,10 +29,16 @@ if (!params.reference) {
     log.error "--reference is required"
     exit 1
 }
+else {
+    reference = file(params.reference)
+}
 
 if (!params.gff) {
     log.error "--gff is required"
     exit 1
+}
+else {
+    gff = file(params.gff)
 }
 
 if (!params.name) {
@@ -101,7 +107,7 @@ if (library == "paired") {
         --algorithm mem \
         --library ${library} \
         --output . \
-        --reference ${params.reference} \
+        --reference ${reference} \
         --cpus ${task.cpus} --memory ${task.memory} \
         -profile ${workflow.profile} \
         -work-dir ${workflow.workDir}
@@ -156,7 +162,7 @@ else {
         --algorithm mem \
         --library ${library} \
         --output . \
-        --reference ${params.reference} \
+        --reference ${reference} \
         --cpus ${task.cpus} --memory ${task.memory} \
         -profile ${workflow.profile} \
         -work-dir ${workflow.workDir}
@@ -177,7 +183,7 @@ process bamPreprocessing {
 
     output:
 	    set name, file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai") into preprocessed_bams,
-	        preprocessed_bams2, preprocessed_bams3, preprocessed_bams4, preprocessed_bams5
+	        preprocessed_bams2, preprocessed_bams3, preprocessed_bams4
 
 
     """
@@ -187,7 +193,7 @@ process bamPreprocessing {
     --input_bam ${bam} \
     --input_files false \
     --output . \
-    --reference ${params.reference} \
+    --reference ${reference} \
     --skip_bqsr --skip_metrics \
     --known_indels1 false --known_indels2 false \
     --prepare_bam_cpus ${params.cpus} --prepare_bam_memory ${params.memory} \
@@ -221,14 +227,19 @@ process variantCallingBcfTools {
     --min-BQ ${params.min_base_quality} \
     --min-MQ ${params.min_mapping_quality} \
     --count-orphans \
-    --fasta-ref ${params.reference} \
+    --fasta-ref ${reference} \
     --annotate AD ${bam} | \
     bcftools call \
     --multiallelic-caller \
     --variants-only \
-     --ploidy 1 \
-     --output-type b \
-     --output ${name}.bcftools.bcf
+     --ploidy 1 | \
+    bcftools filter \
+    --exclude 'INFO/IMF < ${params.low_frequency_variant_threshold}' \
+    --soft-filter LOW_FREQUENCY - | \
+    bcftools filter \
+    --exclude 'INFO/IMF >= ${params.low_frequency_variant_threshold} && INFO/IMF < ${params.subclonal_variant_threshold}' \
+    --soft-filter SUBCLONAL \
+     --output-type b - > ${name}.bcftools.bcf
 	"""
 }
 
@@ -251,9 +262,9 @@ process variantCallingLofreq {
     --min-bq ${params.min_base_quality} \
     --min-alt-bq ${params.min_base_quality} \
     --min-mq ${params.min_mapping_quality} \
-    --ref ${params.reference} \
+    --ref ${reference} \
     --call-indels \
-    <( lofreq indelqual --dindel --ref ${params.reference} ${bam} ) | \
+    <( lofreq indelqual --dindel --ref ${reference} ${bam} ) | \
     bgzip -c > ${name}.lofreq.vcf.gz
 
     tabix -p vcf ${name}.lofreq.vcf.gz
@@ -287,7 +298,7 @@ process variantCallingGatk {
     gatk HaplotypeCaller \
     --input $bam \
     --output ${name}.gatk.vcf \
-    --reference ${params.reference} \
+    --reference ${reference} \
     --ploidy 1 \
     --min-base-quality-score ${params.min_base_quality} \
     --minimum-mapping-quality ${params.min_mapping_quality} \
@@ -320,8 +331,8 @@ process variantCallingIvar {
     -p ${name}.ivar \
     -q ${params.min_base_quality} \
     -t 0.03 \
-    -r ${params.reference} \
-    -g ${params.gff}
+    -r ${reference} \
+    -g ${gff}
 	"""
 }
 
@@ -346,37 +357,12 @@ process variantNormalization {
     --input_vcf ${vcf} \
     --input_files false \
     --output . \
-    --reference ${params.reference} \
+    --reference ${reference} \
     -profile ${workflow.profile} \
     -work-dir ${workflow.workDir}
 
     mv ${vcf.baseName}/${vcf.baseName}.normalized.vcf ${vcf.baseName}.normalized.vcf
 	"""
-}
-
-process phasing {
-    cpus params.cpus
-    memory params.memory
-    tag params.name
-    if (params.keep_intermediate) {
-        publishDir "${params.output}/${params.name}", mode: "copy"
-    }
-
-    input:
-        set name, file(vcf), file(bam), file(bai) from normalized_vcf_files.combine(preprocessed_bams5, by:0)
-
-    output:
-	    set name, file("${vcf.baseName}.phased.vcf") into phased_variants
-
-    """
-    whatshap polyphase \
-    --ploidy 1 \
-    --indels \
-    --mapping-quality ${params.min_mapping_quality} \
-    --output ${vcf.baseName}.phased.vcf \
-    ${vcf} \
-    ${bam}
-    """
 }
 
 process variantAnnotation {
@@ -386,16 +372,27 @@ process variantAnnotation {
     publishDir "${params.output}/${params.name}", mode: "copy"
 
     input:
-        set name, file(vcf) from phased_variants
+        set name, file(vcf) from normalized_vcf_files
 
     output:
 	    file("${vcf.baseName}.annotated.vcf.gz")
 	    file("${vcf.baseName}.annotated.vcf.gz.tbi")
 
     """
-     bcftools csq --fasta-ref ${params.reference} --gff-annot ${params.gff} ${vcf} | \
-     bgzip -c > ${vcf.baseName}.annotated.vcf.gz
+    # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
+    cp ${params.snpeff_config} .
 
-     tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
+    snpEff eff -dataDir ${params.snpeff_data} \
+    -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
+    Sars_cov_2.ASM985889v3.101  ${vcf} | \
+    bgzip -c > ${vcf.baseName}.annotated.vcf.gz
+
+    # TODO: include this step for GISAID data
+    #bcftools annotate \
+    #--annotations ${params.problematic_sites} \
+    #--columns FILTER \
+    #--output-type b - > ${vcf.baseName}.annotated.vcf.gz
+
+    tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
     """
 }
