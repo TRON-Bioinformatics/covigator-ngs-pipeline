@@ -2,4 +2,4 @@
 
 input_vcf=$1
 
-bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\n' --output ${input_vcf%.*}.tab $input_vcf
+bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%FILTER\n' --output ${input_vcf%.*}.tab $input_vcf
