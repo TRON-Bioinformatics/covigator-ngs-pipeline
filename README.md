@@ -1,5 +1,7 @@
 # Covigator NGS pipeline
 
+[![DOI](https://zenodo.org/badge/374669617.svg)](https://zenodo.org/badge/latestdoi/374669617)
+
 The Covigator NGS pipeline process SARS-CoV-2 FASTQ files into analysis ready VCF files. The pipeline is implemented in the Nextflow framework (Di Tommaso, 2017).
 
 The pipeline includes the following steps:
