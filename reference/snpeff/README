@@ -1,0 +1,7 @@
+## SnpEff
+
+A SnpEff genome was prepared using the command below after copying the adequate resources in the folder `snpeff/Sars_cov_2.ASM985889v3.101`. 
+These files are renamed copies of the DNA FASTA and the GFFv3 file downloaded from Ensembl
+```
+snpEff build -gff3 -v Sars_cov_2.ASM985889v3.101 -dataDir .
+```

@@ -1,68 +1,35 @@
 ##gff-version 3
-##sequence-region   MN908947.3 1 29903
-#!genome-build ENA ASM985889v3
-#!genome-version ASM985889v3
-#!genome-date 2020-01
-#!genome-build-accession NCBI:GCA_009858895.3
-MN908947.3	ASM985889v3	region	1	29903	.	.	.	ID=region:MN908947.3;Alias=NC_045512.2,NC_045512v2
-###
-MN908947.3	ensembl	gene	266	13483	.	+	.	ID=gene:ENSSASG00005000003;Name=ORF1ab;biotype=protein_coding;description=ORF1a polyprotein%3BORF1ab polyprotein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740578];gene_id=ENSSASG00005000003;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	266	13483	.	+	.	ID=transcript:ENSSAST00005000003;Parent=gene:ENSSASG00005000003;Name=ORF1a;biotype=protein_coding;transcript_id=ENSSAST00005000003;version=1
-MN908947.3	ensembl	exon	266	13483	.	+	.	Parent=transcript:ENSSAST00005000003;Name=ENSSASE00005000003;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000003;rank=1;version=1
-MN908947.3	ensembl	CDS	266	13483	.	+	0	ID=CDS:ENSSASP00005000003;Parent=transcript:ENSSAST00005000003;protein_id=ENSSASP00005000003
-###
-MN908947.3	ensembl	gene	266	21555	.	+	.	ID=gene:ENSSASG00005000002;Name=ORF1ab;biotype=protein_coding;description=ORF1a polyprotein%3BORF1ab polyprotein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740578];gene_id=ENSSASG00005000002;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	266	21555	.	+	.	ID=transcript:ENSSAST00005000002;Parent=gene:ENSSASG00005000002;Name=ORF1ab;biotype=protein_coding;transcript_id=ENSSAST00005000002;version=1
-MN908947.3	ensembl	exon	266	21555	.	+	.	Parent=transcript:ENSSAST00005000002;Name=ENSSASE00005000002;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000002;rank=1;version=1
-MN908947.3	ensembl	CDS	266	21555	.	+	0	ID=CDS:ENSSASP00005000002;Parent=transcript:ENSSAST00005000002;protein_id=ENSSASP00005000002
-###
-MN908947.3	ensembl	gene	21563	25384	.	+	.	ID=gene:ENSSASG00005000004;Name=S;biotype=protein_coding;description=surface glycoprotein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740568];gene_id=ENSSASG00005000004;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	21563	25384	.	+	.	ID=transcript:ENSSAST00005000004;Parent=gene:ENSSASG00005000004;Name=S;biotype=protein_coding;transcript_id=ENSSAST00005000004;version=1
-MN908947.3	ensembl	exon	21563	25384	.	+	.	Parent=transcript:ENSSAST00005000004;Name=ENSSASE00005000004;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000004;rank=1;version=1
-MN908947.3	ensembl	CDS	21563	25384	.	+	0	ID=CDS:ENSSASP00005000004;Parent=transcript:ENSSAST00005000004;protein_id=ENSSASP00005000004
-###
-MN908947.3	ensembl	gene	25393	26220	.	+	.	ID=gene:ENSSASG00005000006;Name=ORF3a;biotype=protein_coding;description=ORF3a protein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740569];gene_id=ENSSASG00005000006;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	25393	26220	.	+	.	ID=transcript:ENSSAST00005000006;Parent=gene:ENSSASG00005000006;Name=ORF3a;biotype=protein_coding;transcript_id=ENSSAST00005000006;version=1
-MN908947.3	ensembl	exon	25393	26220	.	+	.	Parent=transcript:ENSSAST00005000006;Name=ENSSASE00005000006;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000006;rank=1;version=1
-MN908947.3	ensembl	CDS	25393	26220	.	+	0	ID=CDS:ENSSASP00005000006;Parent=transcript:ENSSAST00005000006;protein_id=ENSSASP00005000006
-###
-MN908947.3	ensembl	gene	26245	26472	.	+	.	ID=gene:ENSSASG00005000010;Name=E;biotype=protein_coding;description=envelope protein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740570];gene_id=ENSSASG00005000010;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	26245	26472	.	+	.	ID=transcript:ENSSAST00005000010;Parent=gene:ENSSASG00005000010;Name=E;biotype=protein_coding;transcript_id=ENSSAST00005000010;version=1
-MN908947.3	ensembl	exon	26245	26472	.	+	.	Parent=transcript:ENSSAST00005000010;Name=ENSSASE00005000010;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000010;rank=1;version=1
-MN908947.3	ensembl	CDS	26245	26472	.	+	0	ID=CDS:ENSSASP00005000010;Parent=transcript:ENSSAST00005000010;protein_id=ENSSASP00005000010
-###
-MN908947.3	ensembl	gene	26523	27191	.	+	.	ID=gene:ENSSASG00005000007;Name=M;biotype=protein_coding;description=membrane glycoprotein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740571];gene_id=ENSSASG00005000007;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	26523	27191	.	+	.	ID=transcript:ENSSAST00005000007;Parent=gene:ENSSASG00005000007;Name=M;biotype=protein_coding;transcript_id=ENSSAST00005000007;version=1
-MN908947.3	ensembl	exon	26523	27191	.	+	.	Parent=transcript:ENSSAST00005000007;Name=ENSSASE00005000007;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000007;rank=1;version=1
-MN908947.3	ensembl	CDS	26523	27191	.	+	0	ID=CDS:ENSSASP00005000007;Parent=transcript:ENSSAST00005000007;protein_id=ENSSASP00005000007
-###
-MN908947.3	ensembl	gene	27202	27387	.	+	.	ID=gene:ENSSASG00005000011;Name=ORF6;biotype=protein_coding;description=ORF6 protein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740572];gene_id=ENSSASG00005000011;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	27202	27387	.	+	.	ID=transcript:ENSSAST00005000011;Parent=gene:ENSSASG00005000011;Name=ORF6;biotype=protein_coding;transcript_id=ENSSAST00005000011;version=1
-MN908947.3	ensembl	exon	27202	27387	.	+	.	Parent=transcript:ENSSAST00005000011;Name=ENSSASE00005000011;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000011;rank=1;version=1
-MN908947.3	ensembl	CDS	27202	27387	.	+	0	ID=CDS:ENSSASP00005000011;Parent=transcript:ENSSAST00005000011;protein_id=ENSSASP00005000011
-###
-MN908947.3	ensembl	gene	27394	27759	.	+	.	ID=gene:ENSSASG00005000009;Name=ORF7a;biotype=protein_coding;description=ORF7a protein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740573];gene_id=ENSSASG00005000009;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	27394	27759	.	+	.	ID=transcript:ENSSAST00005000009;Parent=gene:ENSSASG00005000009;Name=ORF7a;biotype=protein_coding;transcript_id=ENSSAST00005000009;version=1
-MN908947.3	ensembl	exon	27394	27759	.	+	.	Parent=transcript:ENSSAST00005000009;Name=ENSSASE00005000009;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000009;rank=1;version=1
-MN908947.3	ensembl	CDS	27394	27759	.	+	0	ID=CDS:ENSSASP00005000009;Parent=transcript:ENSSAST00005000009;protein_id=ENSSASP00005000009
-###
-MN908947.3	ensembl	gene	27756	27887	.	+	.	ID=gene:ENSSASG00005000012;Name=ORF7b;biotype=protein_coding;description=ORF7b [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740574];gene_id=ENSSASG00005000012;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	27756	27887	.	+	.	ID=transcript:ENSSAST00005000012;Parent=gene:ENSSASG00005000012;Name=ORF7b;biotype=protein_coding;transcript_id=ENSSAST00005000012;version=1
-MN908947.3	ensembl	exon	27756	27887	.	+	.	Parent=transcript:ENSSAST00005000012;Name=ENSSASE00005000012;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000012;rank=1;version=1
-MN908947.3	ensembl	CDS	27756	27887	.	+	0	ID=CDS:ENSSASP00005000012;Parent=transcript:ENSSAST00005000012;protein_id=ENSSASP00005000012
-###
-MN908947.3	ensembl	gene	27894	28259	.	+	.	ID=gene:ENSSASG00005000008;Name=ORF8;biotype=protein_coding;description=ORF8 protein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740577];gene_id=ENSSASG00005000008;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	27894	28259	.	+	.	ID=transcript:ENSSAST00005000008;Parent=gene:ENSSASG00005000008;Name=ORF8;biotype=protein_coding;transcript_id=ENSSAST00005000008;version=1
-MN908947.3	ensembl	exon	27894	28259	.	+	.	Parent=transcript:ENSSAST00005000008;Name=ENSSASE00005000008;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000008;rank=1;version=1
-MN908947.3	ensembl	CDS	27894	28259	.	+	0	ID=CDS:ENSSASP00005000008;Parent=transcript:ENSSAST00005000008;protein_id=ENSSASP00005000008
-###
-MN908947.3	ensembl	gene	28274	29533	.	+	.	ID=gene:ENSSASG00005000005;Name=N;biotype=protein_coding;description=nucleocapsid phosphoprotein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740575];gene_id=ENSSASG00005000005;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	28274	29533	.	+	.	ID=transcript:ENSSAST00005000005;Parent=gene:ENSSASG00005000005;Name=N;biotype=protein_coding;transcript_id=ENSSAST00005000005;version=1
-MN908947.3	ensembl	exon	28274	29533	.	+	.	Parent=transcript:ENSSAST00005000005;Name=ENSSASE00005000005;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000005;rank=1;version=1
-MN908947.3	ensembl	CDS	28274	29533	.	+	0	ID=CDS:ENSSASP00005000005;Parent=transcript:ENSSAST00005000005;protein_id=ENSSASP00005000005
-###
-MN908947.3	ensembl	gene	29558	29674	.	+	.	ID=gene:ENSSASG00005000013;Name=ORF10;biotype=protein_coding;description=ORF10 protein [Source:NCBI gene (formerly Entrezgene)%3BAcc:43740576];gene_id=ENSSASG00005000013;logic_name=ensembl_covid;version=1
-MN908947.3	ensembl	mRNA	29558	29674	.	+	.	ID=transcript:ENSSAST00005000013;Parent=gene:ENSSASG00005000013;Name=ORF10;biotype=protein_coding;transcript_id=ENSSAST00005000013;version=1
-MN908947.3	ensembl	exon	29558	29674	.	+	.	Parent=transcript:ENSSAST00005000013;Name=ENSSASE00005000013;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=ENSSASE00005000013;rank=1;version=1
-MN908947.3	ensembl	CDS	29558	29674	.	+	0	ID=CDS:ENSSASP00005000013;Parent=transcript:ENSSAST00005000013;protein_id=ENSSASP00005000013
+#!gff-spec-version 1.21
+#!processor NCBI annotwriter
+#!genome-build ASM985889v3
+#!genome-build-accession NCBI_Assembly:GCF_009858895.2
+##sequence-region MN908947.3 1 29903
+##species https://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=2697049
+MN908947.3	RefSeq	region	1	29903	.	+	.	ID=MN908947.3:1..29903;Dbxref=taxon:2697049;collection-date=Dec-2019;country=China;gbkey=Src;genome=genomic;isolate=Wuhan-Hu-1;mol_type=genomic RNA;nat-host=Homo sapiens
+MN908947.3	RefSeq	five_prime_UTR	1	265	.	+	.	ID=id-MN908947.3:1..265;Parent=gene-GU280_gp01;gbkey=5'UTR;
+MN908947.3	RefSeq	gene	266	21555	.	+	.	ID=gene-GU280_gp01;Dbxref=GeneID:43740578;Name=ORF1ab;gbkey=Gene;gene=ORF1ab;gene_biotype=protein_coding;locus_tag=GU280_gp01
+MN908947.3	RefSeq	CDS	266	13468	.	+	0	ID=cds-YP_009724389.1;Parent=gene-GU280_gp01;Dbxref=Genbank:YP_009724389.1,GeneID:43740578;Name=YP_009724389.1;Note=pp1ab%3B translated by -1 ribosomal frameshift;exception=ribosomal slippage;gbkey=CDS;gene=ORF1ab;locus_tag=GU280_gp01;product=ORF1ab polyprotein;protein_id=YP_009724389.1
+MN908947.3	RefSeq	CDS	13468	21555	.	+	0	ID=cds-YP_009724389.1;Parent=gene-GU280_gp01;Dbxref=Genbank:YP_009724389.1,GeneID:43740578;Name=YP_009724389.1;Note=pp1ab%3B translated by -1 ribosomal frameshift;exception=ribosomal slippage;gbkey=CDS;gene=ORF1ab;locus_tag=GU280_gp01;product=ORF1ab polyprotein;protein_id=YP_009724389.1
+MN908947.3	RefSeq	CDS	266	13483	.	+	0	ID=cds-YP_009725295.1;Parent=gene-GU280_gp01;Dbxref=Genbank:YP_009725295.1,GeneID:43740578;Name=YP_009725295.1;Note=pp1a;gbkey=CDS;gene=ORF1ab;locus_tag=GU280_gp01;product=orf1a polyprotein;protein_id=YP_009725295.1
+MN908947.3	RefSeq	gene	21563	25384	.	+	.	ID=gene-GU280_gp02;Dbxref=GeneID:43740568;Name=S;gbkey=Gene;gene=S;gene_biotype=protein_coding;locus_tag=GU280_gp02
+MN908947.3	RefSeq	CDS	21563	25384	.	+	0	ID=cds-YP_009724390.1;Parent=gene-GU280_gp02;Dbxref=Genbank:YP_009724390.1,GeneID:43740568;Name=YP_009724390.1;Note=structural protein%3B spike protein;gbkey=CDS;gene=S;locus_tag=GU280_gp02;product=surface glycoprotein;protein_id=YP_009724390.1
+MN908947.3	RefSeq	gene	25393	26220	.	+	.	ID=gene-GU280_gp03;Dbxref=GeneID:43740569;Name=ORF3a;gbkey=Gene;gene=ORF3a;gene_biotype=protein_coding;locus_tag=GU280_gp03
+MN908947.3	RefSeq	CDS	25393	26220	.	+	0	ID=cds-YP_009724391.1;Parent=gene-GU280_gp03;Dbxref=Genbank:YP_009724391.1,GeneID:43740569;Name=YP_009724391.1;gbkey=CDS;gene=ORF3a;locus_tag=GU280_gp03;product=ORF3a protein;protein_id=YP_009724391.1
+MN908947.3	RefSeq	gene	26245	26472	.	+	.	ID=gene-GU280_gp04;Dbxref=GeneID:43740570;Name=E;gbkey=Gene;gene=E;gene_biotype=protein_coding;locus_tag=GU280_gp04
+MN908947.3	RefSeq	CDS	26245	26472	.	+	0	ID=cds-YP_009724392.1;Parent=gene-GU280_gp04;Dbxref=Genbank:YP_009724392.1,GeneID:43740570;Name=YP_009724392.1;Note=ORF4%3B structural protein%3B E protein;gbkey=CDS;gene=E;locus_tag=GU280_gp04;product=envelope protein;protein_id=YP_009724392.1
+MN908947.3	RefSeq	gene	26523	27191	.	+	.	ID=gene-GU280_gp05;Dbxref=GeneID:43740571;Name=M;gbkey=Gene;gene=M;gene_biotype=protein_coding;locus_tag=GU280_gp05
+MN908947.3	RefSeq	CDS	26523	27191	.	+	0	ID=cds-YP_009724393.1;Parent=gene-GU280_gp05;Dbxref=Genbank:YP_009724393.1,GeneID:43740571;Name=YP_009724393.1;Note=ORF5%3B structural protein;gbkey=CDS;gene=M;locus_tag=GU280_gp05;product=membrane glycoprotein;protein_id=YP_009724393.1
+MN908947.3	RefSeq	gene	27202	27387	.	+	.	ID=gene-GU280_gp06;Dbxref=GeneID:43740572;Name=ORF6;gbkey=Gene;gene=ORF6;gene_biotype=protein_coding;locus_tag=GU280_gp06
+MN908947.3	RefSeq	CDS	27202	27387	.	+	0	ID=cds-YP_009724394.1;Parent=gene-GU280_gp06;Dbxref=Genbank:YP_009724394.1,GeneID:43740572;Name=YP_009724394.1;gbkey=CDS;gene=ORF6;locus_tag=GU280_gp06;product=ORF6 protein;protein_id=YP_009724394.1
+MN908947.3	RefSeq	gene	27394	27759	.	+	.	ID=gene-GU280_gp07;Dbxref=GeneID:43740573;Name=ORF7a;gbkey=Gene;gene=ORF7a;gene_biotype=protein_coding;locus_tag=GU280_gp07
+MN908947.3	RefSeq	CDS	27394	27759	.	+	0	ID=cds-YP_009724395.1;Parent=gene-GU280_gp07;Dbxref=Genbank:YP_009724395.1,GeneID:43740573;Name=YP_009724395.1;gbkey=CDS;gene=ORF7a;locus_tag=GU280_gp07;product=ORF7a protein;protein_id=YP_009724395.1
+MN908947.3	RefSeq	gene	27756	27887	.	+	.	ID=gene-GU280_gp08;Dbxref=GeneID:43740574;Name=ORF7b;gbkey=Gene;gene=ORF7b;gene_biotype=protein_coding;locus_tag=GU280_gp08
+MN908947.3	RefSeq	CDS	27756	27887	.	+	0	ID=cds-YP_009725296.1;Parent=gene-GU280_gp08;Dbxref=Genbank:YP_009725296.1,GeneID:43740574;Name=YP_009725296.1;gbkey=CDS;gene=ORF7b;locus_tag=GU280_gp08;product=ORF7b;protein_id=YP_009725296.1
+MN908947.3	RefSeq	gene	27894	28259	.	+	.	ID=gene-GU280_gp09;Dbxref=GeneID:43740577;Name=ORF8;gbkey=Gene;gene=ORF8;gene_biotype=protein_coding;locus_tag=GU280_gp09
+MN908947.3	RefSeq	CDS	27894	28259	.	+	0	ID=cds-YP_009724396.1;Parent=gene-GU280_gp09;Dbxref=Genbank:YP_009724396.1,GeneID:43740577;Name=YP_009724396.1;gbkey=CDS;gene=ORF8;locus_tag=GU280_gp09;product=ORF8 protein;protein_id=YP_009724396.1
+MN908947.3	RefSeq	gene	28274	29533	.	+	.	ID=gene-GU280_gp10;Dbxref=GeneID:43740575;Name=N;gbkey=Gene;gene=N;gene_biotype=protein_coding;locus_tag=GU280_gp10
+MN908947.3	RefSeq	CDS	28274	29533	.	+	0	ID=cds-YP_009724397.2;Parent=gene-GU280_gp10;Dbxref=Genbank:YP_009724397.2,GeneID:43740575;Name=YP_009724397.2;Note=ORF9%3B structural protein;gbkey=CDS;gene=N;locus_tag=GU280_gp10;product=nucleocapsid phosphoprotein;protein_id=YP_009724397.2
+MN908947.3	RefSeq	gene	29558	29674	.	+	.	ID=gene-GU280_gp11;Dbxref=GeneID:43740576;Name=ORF10;gbkey=Gene;gene=ORF10;gene_biotype=protein_coding;locus_tag=GU280_gp11
+MN908947.3	RefSeq	CDS	29558	29674	.	+	0	ID=cds-YP_009725255.1;Parent=gene-GU280_gp11;Dbxref=Genbank:YP_009725255.1,GeneID:43740576;Name=YP_009725255.1;gbkey=CDS;gene=ORF10;locus_tag=GU280_gp11;product=ORF10 protein;protein_id=YP_009725255.1
+MN908947.3	RefSeq	three_prime_UTR	29675	29903	.	+	.	ID=id-MN908947.3:29675..29903;gbkey=3'UTR
 ###

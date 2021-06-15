@@ -6,3 +6,4 @@ condaenv
 .ipynb_checkpoints
 data
 data2
+benchmark*
