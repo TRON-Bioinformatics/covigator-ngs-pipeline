@@ -99,7 +99,7 @@ if (library == "paired") {
 
         """
         # --input_files needs to be forced, otherwise it is inherited from profile in tests
-        nextflow run tron-bioinformatics/tronflow-bwa -r ${params.tronflow_bwa_version} \
+        nextflow run ${params.tronflow_bwa} \
         --input_name ${name} \
         --input_fastq1 ${fastq1} \
         --input_fastq2 ${fastq2} \
@@ -154,8 +154,7 @@ else {
 
         """
         # --input_files needs to be forced, otherwise it is inherited from profile in tests
-        nextflow run tron-bioinformatics/tronflow-bwa \
-        -r ${params.tronflow_bwa_version} \
+        nextflow run ${params.tronflow_bwa} \
         --input_name ${name} \
         --input_fastq1 ${fastq1} \
         --input_files false \
@@ -188,8 +187,7 @@ process bamPreprocessing {
 
     """
     # --input_files, --known_indels1 and --known_indels2 needs to be forced, otherwise it is inherited from test profile
-    nextflow run tron-bioinformatics/tronflow-bam-preprocessing \
-    -r ${params.tronflow_bam_preprocessing_version} \
+    nextflow run ${params.tronflow_bam_preprocessing} \
     --input_bam ${bam} \
     --input_files false \
     --output . \
@@ -352,8 +350,7 @@ process variantNormalization {
 
     """
     # --input_files needs to be forced, otherwise it is inherited from profile in tests
-    nextflow run tron-bioinformatics/tronflow-variant-normalization \
-    -r ${params.tronflow_variant_normalization_version} \
+    nextflow run ${params.tronflow_variant_normalization} \
     --input_vcf ${vcf} \
     --input_files false \
     --output . \
