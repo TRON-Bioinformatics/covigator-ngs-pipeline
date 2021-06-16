@@ -11,9 +11,7 @@ The pipeline includes the following steps:
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
   Subsequent processing of resulting VCF files is independent for each caller, except for iVar which does not produce a VCF file but a custom TSV file.
 - **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
-- **Variant phasing**. Although the ploidy of SARS-CoV-2 is 1, considering the existence of subclones it may be relevant to
-  phase the variants. This is done using WhatsHap.
-- **Variant consequence annotation**. `bcftools csq` is employed to annotate the variant consequences of variants.
+- **Variant consequence annotation**. `SnpEff` is employed to annotate the variant consequences of variants.
 
 The alignment, BAM preprocessing and variant normalization pipelines were implemented in additional Nextflow pipelines within the TronFlow initiative. 
 The full details are available in their respective repositories:
@@ -35,7 +33,7 @@ The LoFreq variants are annotated on the `FILTER` column using the reported vari
 (VAF) into `LOW_FREQUENCY`, `SUBCLONAL` and finally `PASS` variants correspond to clonal variants. By default, 
 variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VAF >= 20 % and < 80 % are considered 
 `SUBCLONAL`. This thresholds can be changed with the parameters `--low_frequency_variant_threshold` and
-`--subclonal_variant_threshold`. 
+`--subclonal_variant_threshold`. Indels called by BCFtools are also annotated by VAF, but not SNVs.
 
 
 ## Requirements
