@@ -1,10 +1,11 @@
-# Covigator NGS pipeline
+# Covigator pipeline
 
 [![DOI](https://zenodo.org/badge/374669617.svg)](https://zenodo.org/badge/latestdoi/374669617)
 
-The Covigator NGS pipeline process SARS-CoV-2 FASTQ files into analysis ready VCF files. The pipeline is implemented in the Nextflow framework (Di Tommaso, 2017).
+The Covigator pipeline process SARS-CoV-2 FASTQ or FASTA files into annotated and normalized analysis ready VCF files. 
+The pipeline is implemented in the Nextflow framework (Di Tommaso, 2017).
 
-The pipeline includes the following steps:
+When FASTQ files are provided the pipeline includes the following steps:
 - **Trimming**. `fastp` is used to trim reads with default values.
 - **Alignment**. `BWA mem` is used for the alignment of single or paired end samples.
 - **BAM preprocessing**. BAM files are prepared and duplicate reads are marked using GATK and Picard tools.
@@ -13,7 +14,20 @@ The pipeline includes the following steps:
 - **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
 - **Variant consequence annotation**. `SnpEff` is employed to annotate the variant consequences of variants.
 
-The alignment, BAM preprocessing and variant normalization pipelines were implemented in additional Nextflow pipelines within the TronFlow initiative. 
+Both single end and paired end FASTQ files are supported.
+
+When a FASTA file is provided with a single assembly sequence the pipeline includes the following steps:
+- **Variant calling**. A Smith-Waterman global alignment is performed against the reference sequence to call SNVs and 
+  indels. Indels longer than 50 bp and at the beginning or end of the assembly sequence are excluded. Any mutation where
+  either reference or assembly contain a N is excluded.
+- **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
+- **Variant consequence annotation**. `SnpEff` is employed to annotate the variant consequences of variants.
+
+The FASTA file is expected to contain a single assembly sequence. 
+Bear in mind that only clonal variants can be called on the assembly.
+
+The alignment, BAM preprocessing and variant normalization pipelines were implemented in additional Nextflow pipelines 
+within the TronFlow initiative. 
 The full details are available in their respective repositories:
 - https://github.com/TRON-Bioinformatics/tronflow-bwa (https://doi.org/10.5281/zenodo.4722852)
 - https://github.com/TRON-Bioinformatics/tronflow-bam-preprocessing (https://doi.org/10.5281/zenodo.4810918)
@@ -51,10 +65,11 @@ Usage:
     nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
 Input:
-    * --fastq1: the first input FASTQ file
+    * --fastq1: the first input FASTQ file (not compatible with --fasta)
+    * --fasta: the FASTA file containing the assembly sequence (not compatible with --fastq1)
     * --name: the sample name, output files will be named after this name
     * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
-    * --gff: the GFFv3 gene annotations file
+    * --gff: the GFFv3 gene annotations file (only optional with --fastq1)
     * --output: the folder where to publish output
 
 Optional input:
@@ -63,12 +78,12 @@ Optional input:
     * --min_mapping_quality: minimum mapping quality to take a read into account (default: 20)
     * --low_frequency_variant_threshold: VAF threshold to mark a variant as low frequency (default: 0.2)
     * --subclonal_variant_threshold: VAF superior threshold to mark a variant as subclonal (default: 0.8)
-    * --strand_bias_threshold: threshold for the strand bias test Phred score (default: 20)
     * --memory: the ammount of memory used by each job (default: 3g)
     * --cpus: the number of CPUs used by each job (default: 1)
 
 Output:
-    * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK and LoFreq
+    * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK and LoFreq when FASTQ files are
+    provided or a single VCF obtained from a global alignment when a FASTA file is provided
     * Output a TSV file output from iVar
 ```
 
