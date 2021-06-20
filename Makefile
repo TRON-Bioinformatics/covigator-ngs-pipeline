@@ -8,6 +8,7 @@ clean:
 
 test:
 	nextflow main.nf --help
+	nextflow main.nf -profile test,conda --initialize
 	nextflow main.nf -profile test,conda --name ERR4145453 \
 	--output output/test1 \
 	--fastq1 test_data/ERR4145453_1.fastq.gz \

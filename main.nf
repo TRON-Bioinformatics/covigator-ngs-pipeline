@@ -1,10 +1,25 @@
 #!/usr/bin/env nextflow
 
 params.help= false
+params.initialize = false
+if (params.initialize) {
+    params.fastq1 = "$baseDir/test_data/ERR4145453_1.fastq.gz"
+    params.skip_bcftools = true
+    params.skip_ivar = true
+    params.skip_gatk = true
+    params.name = "init"
+}
+else {
+    params.fastq1 = false
+    params.skip_ivar = false
+    params.skip_bcftools = false
+    params.skip_gatk = false
+    params.name = false
+}
+
+params.skip_lofreq = false
 params.fasta = false
-params.fastq1 = false
 params.fastq2 = false
-params.name = false
 params.reference = false
 params.gff = false
 params.output = "."
@@ -53,6 +68,11 @@ if (!params.fastq1 && !params.fasta) {
 }
 else if (params.fastq1 && params.fasta) {
     log.error "provide only --fastq1 or --fasta"
+    exit 1
+}
+
+if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_lofreq) {
+    log.error "enable at least one variant caller"
     exit 1
 }
 
@@ -210,137 +230,148 @@ if (params.fastq1) {
         """
     }
 
-    process variantCallingBcfTools {
-        cpus params.cpus
-        memory params.memory
-        tag params.name
-        if (params.keep_intermediate) {
-            publishDir "${params.output}/${params.name}", mode: "copy"
+    vcfs_to_normalize = null
+
+    if (!params.skip_bcftools) {
+        process variantCallingBcfTools {
+            cpus params.cpus
+            memory params.memory
+            tag params.name
+            if (params.keep_intermediate) {
+                publishDir "${params.output}/${params.name}", mode: "copy"
+            }
+
+            input:
+                set name, file(bam), file(bai) from preprocessed_bams
+
+            output:
+                set name, file("${name}.bcftools.bcf") into bcftools_vcfs
+
+            """
+            bcftools mpileup \
+            --redo-BAQ \
+            --max-depth 0 \
+            --min-BQ ${params.min_base_quality} \
+            --min-MQ ${params.min_mapping_quality} \
+            --count-orphans \
+            --fasta-ref ${reference} \
+            --annotate AD ${bam} | \
+            bcftools call \
+            --multiallelic-caller \
+            --variants-only \
+             --ploidy 1 | \
+            bcftools filter \
+            --exclude 'INFO/IMF < ${params.low_frequency_variant_threshold}' \
+            --soft-filter LOW_FREQUENCY - | \
+            bcftools filter \
+            --exclude 'INFO/IMF >= ${params.low_frequency_variant_threshold} && INFO/IMF < ${params.subclonal_variant_threshold}' \
+            --soft-filter SUBCLONAL \
+             --output-type b - > ${name}.bcftools.bcf
+            """
         }
-
-        input:
-            set name, file(bam), file(bai) from preprocessed_bams
-
-        output:
-            set name, file("${name}.bcftools.bcf") into bcftools_vcfs
-
-        """
-        bcftools mpileup \
-        --redo-BAQ \
-        --max-depth 0 \
-        --min-BQ ${params.min_base_quality} \
-        --min-MQ ${params.min_mapping_quality} \
-        --count-orphans \
-        --fasta-ref ${reference} \
-        --annotate AD ${bam} | \
-        bcftools call \
-        --multiallelic-caller \
-        --variants-only \
-         --ploidy 1 | \
-        bcftools filter \
-        --exclude 'INFO/IMF < ${params.low_frequency_variant_threshold}' \
-        --soft-filter LOW_FREQUENCY - | \
-        bcftools filter \
-        --exclude 'INFO/IMF >= ${params.low_frequency_variant_threshold} && INFO/IMF < ${params.subclonal_variant_threshold}' \
-        --soft-filter SUBCLONAL \
-         --output-type b - > ${name}.bcftools.bcf
-        """
+        vcfs_to_normalize = vcfs_to_normalize == null? bcftools_vcfs : vcfs_to_normalize.concat(bcftools_vcfs)
     }
 
-    process variantCallingLofreq {
-        cpus params.cpus
-        memory params.memory
-        tag params.name
-        if (params.keep_intermediate) {
-            publishDir "${params.output}/${params.name}", mode: "copy"
+    if (!params.skip_lofreq) {
+        process variantCallingLofreq {
+            cpus params.cpus
+            memory params.memory
+            tag params.name
+            if (params.keep_intermediate) {
+                publishDir "${params.output}/${params.name}", mode: "copy"
+            }
+
+            input:
+                set name, file(bam), file(bai) from preprocessed_bams2
+
+            output:
+                set name, file("${name}.lofreq.vcf") into lofreq_vcfs
+
+            """
+            lofreq call \
+            --min-bq ${params.min_base_quality} \
+            --min-alt-bq ${params.min_base_quality} \
+            --min-mq ${params.min_mapping_quality} \
+            --ref ${reference} \
+            --call-indels \
+            <( lofreq indelqual --dindel --ref ${reference} ${bam} ) | \
+            bgzip -c > ${name}.lofreq.vcf.gz
+
+            tabix -p vcf ${name}.lofreq.vcf.gz
+
+            # annotates low frequency and subclonal variants
+            bcftools view -Ob ${name}.lofreq.vcf.gz | \
+            bcftools filter \
+            --exclude 'INFO/AF < ${params.low_frequency_variant_threshold}' \
+            --soft-filter LOW_FREQUENCY - | \
+            bcftools filter \
+            --exclude 'INFO/AF >= ${params.low_frequency_variant_threshold} && INFO/AF < ${params.subclonal_variant_threshold}' \
+            --soft-filter SUBCLONAL - > ${name}.lofreq.vcf
+            """
         }
-
-        input:
-            set name, file(bam), file(bai) from preprocessed_bams2
-
-        output:
-            set name, file("${name}.lofreq.vcf") into lofreq_vcfs
-
-        """
-        lofreq call \
-        --min-bq ${params.min_base_quality} \
-        --min-alt-bq ${params.min_base_quality} \
-        --min-mq ${params.min_mapping_quality} \
-        --ref ${reference} \
-        --call-indels \
-        <( lofreq indelqual --dindel --ref ${reference} ${bam} ) | \
-        bgzip -c > ${name}.lofreq.vcf.gz
-
-        tabix -p vcf ${name}.lofreq.vcf.gz
-
-        # annotates low frequency and subclonal variants
-        bcftools view -Ob ${name}.lofreq.vcf.gz | \
-        bcftools filter \
-        --exclude 'INFO/AF < ${params.low_frequency_variant_threshold}' \
-        --soft-filter LOW_FREQUENCY - | \
-        bcftools filter \
-        --exclude 'INFO/AF >= ${params.low_frequency_variant_threshold} && INFO/AF < ${params.subclonal_variant_threshold}' \
-        --soft-filter SUBCLONAL - > ${name}.lofreq.vcf
-        """
+        vcfs_to_normalize = vcfs_to_normalize == null? lofreq_vcfs : vcfs_to_normalize.concat(lofreq_vcfs)
     }
 
-    process variantCallingGatk {
-        cpus params.cpus
-        memory params.memory
-        tag params.name
-        if (params.keep_intermediate) {
-            publishDir "${params.output}/${params.name}", mode: "copy"
+    if (!params.skip_gatk) {
+        process variantCallingGatk {
+            cpus params.cpus
+            memory params.memory
+            tag params.name
+            if (params.keep_intermediate) {
+                publishDir "${params.output}/${params.name}", mode: "copy"
+            }
+
+            input:
+                set name, file(bam), file(bai) from preprocessed_bams3
+
+            output:
+                set name, file("${name}.gatk.vcf") into gatk_vcfs
+
+            """
+            gatk HaplotypeCaller \
+            --input $bam \
+            --output ${name}.gatk.vcf \
+            --reference ${reference} \
+            --ploidy 1 \
+            --min-base-quality-score ${params.min_base_quality} \
+            --minimum-mapping-quality ${params.min_mapping_quality} \
+            --annotation AlleleFraction
+            """
         }
-
-        input:
-            set name, file(bam), file(bai) from preprocessed_bams3
-
-        output:
-            set name, file("${name}.gatk.vcf") into gatk_vcfs
-
-        """
-        gatk HaplotypeCaller \
-        --input $bam \
-        --output ${name}.gatk.vcf \
-        --reference ${reference} \
-        --ploidy 1 \
-        --min-base-quality-score ${params.min_base_quality} \
-        --minimum-mapping-quality ${params.min_mapping_quality} \
-        --annotation AlleleFraction
-        """
+        vcfs_to_normalize = vcfs_to_normalize == null? gatk_vcfs : vcfs_to_normalize.concat(gatk_vcfs)
     }
 
-    process variantCallingIvar {
-        cpus params.cpus
-        memory params.memory
-        tag params.name
-        publishDir "${params.output}/${params.name}", mode: "copy"
+    if (!params.skip_ivar) {
+        process variantCallingIvar {
+            cpus params.cpus
+            memory params.memory
+            tag params.name
+            publishDir "${params.output}/${params.name}", mode: "copy"
 
-        input:
-            set name, file(bam), file(bai) from preprocessed_bams4
+            input:
+                set name, file(bam), file(bai) from preprocessed_bams4
 
-        output:
-            file("${name}.ivar.tsv")
+            output:
+                file("${name}.ivar.tsv")
 
-        """
-        samtools mpileup \
-        -aa \
-        --count-orphans \
-        --max-depth 0 \
-        --redo-BAQ \
-        --min-BQ ${params.min_base_quality} \
-        --min-MQ ${params.min_mapping_quality} \
-        ${bam} | \
-        ivar variants \
-        -p ${name}.ivar \
-        -q ${params.min_base_quality} \
-        -t 0.03 \
-        -r ${reference} \
-        -g ${gff}
-        """
+            """
+            samtools mpileup \
+            -aa \
+            --count-orphans \
+            --max-depth 0 \
+            --redo-BAQ \
+            --min-BQ ${params.min_base_quality} \
+            --min-MQ ${params.min_mapping_quality} \
+            ${bam} | \
+            ivar variants \
+            -p ${name}.ivar \
+            -q ${params.min_base_quality} \
+            -t 0.03 \
+            -r ${reference} \
+            -g ${gff}
+            """
+        }
     }
-
-    vcfs_to_normalize = bcftools_vcfs.concat(lofreq_vcfs).concat(gatk_vcfs)
 }
 else if (params.fasta) {
 

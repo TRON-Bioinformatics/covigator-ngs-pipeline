@@ -58,6 +58,15 @@ variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VA
 
 ## How to run it
 
+If you are going to use it with the conda environments, first initialize the environments by running:
+```
+nextflow main.nf -profile conda --initialize
+```
+
+This will create the necessary conda environments under `work/conda`. 
+This initialization is required under every work folder when using more than one variant caller.
+
+Then run the application as follows:
 ```
 $ nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
@@ -80,6 +89,11 @@ Optional input:
     * --subclonal_variant_threshold: VAF superior threshold to mark a variant as subclonal (default: 0.8)
     * --memory: the ammount of memory used by each job (default: 3g)
     * --cpus: the number of CPUs used by each job (default: 1)
+    * --initialize: start the initialization of the conda environments
+    * -- skip_lofreq: skips calling variants with LoFreq
+    * -- skip_gatk: skips calling variants with GATK
+    * -- skip_bcftools: skips calling variants with BCFTools
+    * -- skip_ivar: skips calling variants with iVar
 
 Output:
     * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK and LoFreq when FASTQ files are
@@ -110,9 +124,9 @@ A workaround to this situation is to clone the tronflow dependencies and let cov
 For instance:
 ```
 cd /covigator/dependencies
-git clone --branch v1.4.0 https://github.com/TRON-Bioinformatics/tronflow-bwa.git
+git clone --branch v1.4.1 https://github.com/TRON-Bioinformatics/tronflow-bwa.git
 git clone --branch v1.5.0 https://github.com/TRON-Bioinformatics/tronflow-bam-preprocessing.git
-git clone --branch v1.1.0 https://github.com/TRON-Bioinformatics/tronflow-variant-normalization.git
+git clone --branch v1.1.1 https://github.com/TRON-Bioinformatics/tronflow-variant-normalization.git
 ```
 
 And then use the following parameters:
