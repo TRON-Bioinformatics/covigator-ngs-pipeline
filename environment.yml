@@ -1,11 +1,13 @@
 # You can use this file to create a conda environment for this pipeline:
 #   conda env create -f environment.yml
-name: covigator-ngs-pipeline
+name: covigator-pipeline
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
+  - conda-forge::python=3.8.5
+  - conda-forge::biopython=1.76
   - bioconda::nextflow=21.04.0
   - bioconda::bcftools=1.12
   - bioconda::lofreq=2.1.5

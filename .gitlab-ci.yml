@@ -3,7 +3,9 @@ image: openjdk:8u292-jre-buster
 
 before_script:
   - java -version
-  - apt-get update && apt-get --assume-yes install wget make procps
+  - apt-get update && apt-get --assume-yes install wget make procps software-properties-common
+  #- apt-get --assume-yes install python3 python3-pip
+  #- pip3 install biopython==1.76
   - wget -qO- https://get.nextflow.io | bash && cp nextflow /usr/local/bin/nextflow
   - nextflow help
   - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
