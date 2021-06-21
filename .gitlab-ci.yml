@@ -4,7 +4,8 @@ image: openjdk:8u292-jre-buster
 before_script:
   - java -version
   - apt-get update && apt-get --assume-yes install wget make procps
-  - apt-get --assume-yes install python3-pip python3.8-dev python3.8-distutils python3.8-venv
+  - add-apt-repository --yes ppa:deadsnakes/ppa
+  - apt-get --assume-yes install python3-pip python3.8
   - pip install biopython==1.76
   - wget -qO- https://get.nextflow.io | bash && cp nextflow /usr/local/bin/nextflow
   - nextflow help
