@@ -6,7 +6,6 @@ from Bio import Align, SeqIO
 from Bio.Align import PairwiseAlignment
 from typing import List
 
-from Bio.Alphabet import IUPAC
 
 CHROMOSOME = "MN908947.3"
 
@@ -90,7 +89,7 @@ class AssemblyVariantCaller:
         return variants
 
     def _is_ambiguous_base(self, base):
-        return base not in IUPAC.unambiguous_dna.letters
+        return base not in "ACGT"
 
 
 
