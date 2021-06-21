@@ -5,7 +5,8 @@ before_script:
   - java -version
   - apt-get update && apt-get --assume-yes install wget make procps software-properties-common
   - add-apt-repository --yes ppa:deadsnakes/ppa
-  - apt-get --assume-yes install python3-pip python3.8
+  - apt-get -yq update
+  - apt-get --assume-yes install python3-pip python3.8-dev
   - pip install biopython==1.76
   - wget -qO- https://get.nextflow.io | bash && cp nextflow /usr/local/bin/nextflow
   - nextflow help
