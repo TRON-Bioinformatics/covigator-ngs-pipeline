@@ -11,6 +11,8 @@ before_script:
   - bash Miniconda3-latest-Linux-x86_64.sh -b && cp /root/miniconda3/bin/* /usr/local/bin/
   - rm -f Miniconda3-latest-Linux-x86_64.sh
   - conda --version
+  - conda install conda-forge::python=3.8.5
+  - conda install conda-forge::biopython=1.76
 
 stages:
   - test
