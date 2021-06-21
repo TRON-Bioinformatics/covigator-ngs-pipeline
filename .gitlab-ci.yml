@@ -13,6 +13,7 @@ before_script:
   - conda --version
   - conda install --yes conda-forge::python=3.8.5
   - conda install --yes conda-forge::biopython=1.76
+  - conda init
 
 stages:
   - test
