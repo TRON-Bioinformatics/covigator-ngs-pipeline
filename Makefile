@@ -24,7 +24,7 @@ test:
 	#nextflow main.nf -profile test,conda --name hCoV-19_NTXX \
 	#--output output/test4 \
 	#--fasta test_data/hCoV-19_NTXX.fasta
-	python3 -m unittest bin/test_assembly_variant_caller.py
+	python -m unittest bin/test_assembly_variant_caller.py
 
 check:
 	test -s output/test1/ERR4145453/ERR4145453.bcftools.normalized.annotated.vcf.gz || { echo "Missing test 1 VCF output file!"; exit 1; }
