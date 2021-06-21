@@ -3,7 +3,7 @@ image: openjdk:8u292-jre-buster
 
 before_script:
   - java -version
-  - apt-get update && apt-get --assume-yes install wget make procps
+  - apt-get update && apt-get --assume-yes install wget make procps software-properties-common
   - add-apt-repository --yes ppa:deadsnakes/ppa
   - apt-get --assume-yes install python3-pip python3.8
   - pip install biopython==1.76
