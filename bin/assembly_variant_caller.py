@@ -18,7 +18,7 @@ class Variant:
 
     def to_vcf_line(self):
         # transform 0-based position to 1-based position
-        return CHROMOSOME, str(self.position + 1), ".", self.reference, self.alternate, ".", "PASS", "."
+        return [CHROMOSOME, str(self.position + 1), ".", self.reference, self.alternate, ".", "PASS", "."]
 
 
 class AssemblyVariantCaller:
@@ -57,7 +57,7 @@ class AssemblyVariantCaller:
             if prev_ref_end is not None and prev_ref_end != ref_start:
                 # deletion
                 if ref_start - prev_ref_end <= 50:  # skips deletions longer than 50 bp
-                    ref = reference[prev_ref_end - 1: ref_start]
+                    ref = str(reference[prev_ref_end - 1: ref_start])
                     if not any(self._is_ambiguous_base(r) for r in ref):  # do not call deletions with Ns
                         variants.append(Variant(
                             position=prev_ref_end - 1,
@@ -67,7 +67,7 @@ class AssemblyVariantCaller:
                 # insertion
                 if alt_start - prev_alt_end <= 50:  # skips insertions longer than 50 bp
                     ref = reference[prev_ref_end - 1]
-                    alt = alternate[prev_alt_end:alt_start]
+                    alt = str(alternate[prev_alt_end:alt_start])
                     # do not call insertions with ambiguous bases
                     if not self._is_ambiguous_base(ref) and not any(self._is_ambiguous_base(a) for a in alt):
                         variants.append(Variant(
@@ -92,7 +92,6 @@ class AssemblyVariantCaller:
         return base not in "ACGT"
 
 
-
 def write_vcf(mutations, output_vcf):
     with open(output_vcf, "w") as vcf_out:
         header = (
@@ -103,8 +102,8 @@ def write_vcf(mutations, output_vcf):
         )
         for row in header:
             vcf_out.write(row + "\n")
-        for row in mutations:
-            vcf_out.write("\t".join(row.to_vcf_line()) + "\n")
+        for mutation in mutations:
+            vcf_out.write("\t".join(mutation.to_vcf_line()) + "\n")
 
 
 def main():

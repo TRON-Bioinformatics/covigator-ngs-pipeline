@@ -411,20 +411,23 @@ process variantNormalization {
         set name, file(vcf) from vcfs_to_normalize
 
     output:
-	    set name, file("${vcf.baseName}.normalized.vcf") into normalized_vcf_files
+      set name, file("${vcf.baseName}.normalized.vcf") into normalized_vcf_files
 
+    script:
     """
-    # --input_files needs to be forced, otherwise it is inherited from profile in tests
-    nextflow run ${params.tronflow_variant_normalization} \
-    --input_vcf ${vcf} \
-    --input_files false \
-    --output . \
-    --reference ${reference} \
-    -profile ${workflow.profile} \
-    -work-dir ${workflow.workDir}
+    # initial sort of the VCF
+    bcftools sort ${vcf} | \
 
-    mv ${vcf.baseName}/${vcf.baseName}.normalized.vcf ${vcf.baseName}.normalized.vcf
-	"""
+    # checks reference genome, decompose multiallelics, trim and left align indels
+    bcftools norm --multiallelics -any --check-ref e --fasta-ref ${params.reference} \
+    --old-rec-tag OLD_CLUMPED - | \
+
+    # decompose complex variants
+    vt decompose_blocksub -a -p - | \
+
+    # remove duplicates after normalisation
+    bcftools norm --rm-dup exact -o ${vcf.baseName}.normalized.vcf -
+    """
 }
 
 process variantAnnotation {
