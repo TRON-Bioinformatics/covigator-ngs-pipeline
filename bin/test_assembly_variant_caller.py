@@ -49,3 +49,17 @@ class TestCountryParser(TestCase):
         self.assertEqual(snv.alternate, "GT")
         self.assertEqual(snv.position, 9)
 
+    def test_ambiguous_bases(self):
+        caller = AssemblyVariantCaller()
+        # no mutations
+        variants = caller.call_variants(sequence="ACGTACGT", reference="ACGTACGT")
+        self.assertEqual(len(variants), 0)
+        # ambiguous calls
+        variants = caller.call_variants(sequence="ACGTWCGT", reference="ACGTACGT")
+        self.assertEqual(len(variants), 0)
+        variants = caller.call_variants(sequence="ACGTNCGT", reference="ACGTACGT")
+        self.assertEqual(len(variants), 0)
+        variants = caller.call_variants(sequence="ACGTAAAZRCCCCGT", reference="ACGTACGT")
+        self.assertEqual(len(variants), 0)
+
+
