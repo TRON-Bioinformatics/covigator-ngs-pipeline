@@ -57,7 +57,7 @@ variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VA
 
 ## Requirements
 
-- Nextflow >=19.10.0
+- Nextflow >= 19.10.0
 - Java >= 8
 - Conda >=4.9
 
