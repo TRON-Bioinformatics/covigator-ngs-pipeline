@@ -1,6 +1,11 @@
-# Covigator pipeline
+![CoVigator logo](images/CoVigator_logo_txt_nobg.png "CoVigator logo")
+
+# Covigator NGS pipeline: full variant detection pipeline for Sars-CoV-2
 
 [![DOI](https://zenodo.org/badge/374669617.svg)](https://zenodo.org/badge/latestdoi/374669617)
+[![License](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/MIT)
+[![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-Nextflow-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](https://www.nextflow.io/)
+
 
 The Covigator pipeline process SARS-CoV-2 FASTQ or FASTA files into annotated and normalized analysis ready VCF files. 
 The pipeline is implemented in the Nextflow framework (Di Tommaso, 2017).
