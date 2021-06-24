@@ -10,7 +10,7 @@
 The Covigator pipeline processes SARS-CoV-2 FASTQ or FASTA files into annotated and normalized analysis ready VCF files. 
 The pipeline is implemented in the Nextflow framework (Di Tommaso, 2017).
 
-**Possible inputs**
+## Possible inputs
 
 - FASTQ files, either one FASTQ file for single end or two FASTQ files for paired end
 
@@ -18,7 +18,7 @@ or
 
 - FASTA file with an assembly (ie: a single DNA sequence)
 
-**Outputs**
+## Outputs
 
 - Multiple VCF files from different variant callers when FASTQ files are provided
 
@@ -27,7 +27,7 @@ or
 - A single VCF file from the global alignment of the assembly agains the reference genome
 
 
-**Pipeline details**
+## Pipeline details
 
 When FASTQ files are provided the pipeline includes the following steps:
 - **Trimming**. `fastp` is used to trim reads with default values. This step also includes QC filtering.
