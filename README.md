@@ -7,11 +7,11 @@
 [![Powered by NumFOCUS](https://img.shields.io/badge/powered%20by-Nextflow-orange.svg?style=flat&colorA=E1523D&colorB=007D8A)](https://www.nextflow.io/)
 
 
-The Covigator pipeline process SARS-CoV-2 FASTQ or FASTA files into annotated and normalized analysis ready VCF files. 
+The Covigator pipeline processes SARS-CoV-2 FASTQ or FASTA files into annotated and normalized analysis ready VCF files. 
 The pipeline is implemented in the Nextflow framework (Di Tommaso, 2017).
 
 When FASTQ files are provided the pipeline includes the following steps:
-- **Trimming**. `fastp` is used to trim reads with default values.
+- **Trimming**. `fastp` is used to trim reads with default values. This step also includes QC filtering.
 - **Alignment**. `BWA mem` is used for the alignment of single or paired end samples.
 - **BAM preprocessing**. BAM files are prepared and duplicate reads are marked using GATK and Picard tools.
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
