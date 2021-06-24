@@ -10,6 +10,25 @@
 The Covigator pipeline processes SARS-CoV-2 FASTQ or FASTA files into annotated and normalized analysis ready VCF files. 
 The pipeline is implemented in the Nextflow framework (Di Tommaso, 2017).
 
+**Possible inputs**
+
+- FASTQ files, either one FASTQ file for single end or two FASTQ files for paired end
+
+or
+
+- FASTA file with an assembly (ie: a single DNA sequence)
+
+**Outputs**
+
+- Multiple VCF files from different variant callers when FASTQ files are provided
+
+or
+
+- A single VCF file from the global alignment of the assembly agains the reference genome
+
+
+**Pipeline details**
+
 When FASTQ files are provided the pipeline includes the following steps:
 - **Trimming**. `fastp` is used to trim reads with default values. This step also includes QC filtering.
 - **Alignment**. `BWA mem` is used for the alignment of single or paired end samples.
@@ -63,15 +82,22 @@ variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VA
 
 ## How to run it
 
-If you are going to use it with the conda environments, first initialize the environments by running:
+For paired end reads:
 ```
-nextflow main.nf -profile conda --initialize
+nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --fastq1 <FASTQ_FILE> --fastq2 <FASTQ_FILE> --name example_run --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
 ```
 
-This will create the necessary conda environments under `work/conda`. 
-This initialization is required under every work folder when using more than one variant caller.
+For single end reads:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --fastq1 <FASTQ_FILE> --name example_run --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
+```
 
-Then run the application as follows:
+For assembly:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --fasta <FASTA_FILE> --name example_run --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
+```
+
+All options available using `--help`:
 ```
 $ nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
@@ -105,6 +131,16 @@ Output:
     provided or a single VCF obtained from a global alignment when a FASTA file is provided
     * Output a TSV file output from iVar
 ```
+
+### Initializing the conda environments
+
+If you are planning to use it concurrently on multiple samples with conda, first initialize the environments by running:
+```
+nextflow main.nf -profile conda --initialize
+```
+
+This will create the necessary conda environments under `work/conda`. 
+This initialization is required under every work folder when using more than one variant caller.
 
 
 ## References
