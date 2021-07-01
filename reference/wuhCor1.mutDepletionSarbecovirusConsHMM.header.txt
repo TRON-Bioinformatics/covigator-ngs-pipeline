@@ -1,0 +1,1 @@
+##INFO=<ID=CONS_HMM_SARBECOVIRUS,Number=1,Type=Integer,Description="30 ConsHMM conservation states learned from the Sarbecovirus sequence alignment (https://github.com/ernstlab/ConsHMM_CoV)">

@@ -38,7 +38,9 @@ When FASTQ files are provided the pipeline includes the following steps:
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
   Subsequent processing of resulting VCF files is independent for each caller, except for iVar which does not produce a VCF file but a custom TSV file.
 - **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
-- **Variant consequence annotation**. `SnpEff` is employed to annotate the variant consequences of variants.
+- **Variant annotation**. `SnpEff` is employed to annotate the variant consequences of variants, 
+  `bcftools annotate` is employed to annotate ConsHMM conservation of within SARS-CoV-2, compared to other Sarbecovirus 
+  and compared to other vertebrate corona virus (Kwon, 2021).
 
 Both single end and paired end FASTQ files are supported.
 
@@ -46,8 +48,8 @@ When a FASTA file is provided with a single assembly sequence the pipeline inclu
 - **Variant calling**. A Smith-Waterman global alignment is performed against the reference sequence to call SNVs and 
   indels. Indels longer than 50 bp and at the beginning or end of the assembly sequence are excluded. Any mutation where
   either reference or assembly contain a N is excluded.
-- **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
-- **Variant consequence annotation**. `SnpEff` is employed to annotate the variant consequences of variants.
+- **Variant normalization**. Same as described above.
+- **Variant consequence annotation**. Same as described above.
 
 The FASTA file is expected to contain a single assembly sequence. 
 Bear in mind that only clonal variants can be called on the assembly.
@@ -158,3 +160,4 @@ conda environment.
 - Wilm, A., Aw, P. P. K., Bertrand, D., Yeo, G. H. T., Ong, S. H., Wong, C. H., Khor, C. C., Petric, R., Hibberd, M. L., & Nagarajan, N. (2012). LoFreq: A sequence-quality aware, ultra-sensitive variant caller for uncovering cell-population heterogeneity from high-throughput sequencing datasets. Nucleic Acids Research, 40(22), 11189–11201. https://doi.org/10.1093/nar/gks918
 - Grubaugh, N. D., Gangavarapu, K., Quick, J., Matteson, N. L., De Jesus, J. G., Main, B. J., Tan, A. L., Paul, L. M., Brackney, D. E., Grewal, S., Gurfield, N., Van Rompay, K. K. A., Isern, S., Michael, S. F., Coffey, L. L., Loman, N. J., & Andersen, K. G. (2019). An amplicon-based sequencing framework for accurately measuring intrahost virus diversity using PrimalSeq and iVar. Genome Biology, 20(1), 8. https://doi.org/10.1186/s13059-018-1618-7
 - Shifu Chen, Yanqing Zhou, Yaru Chen, Jia Gu; fastp: an ultra-fast all-in-one FASTQ preprocessor, Bioinformatics, Volume 34, Issue 17, 1 September 2018, Pages i884–i890, https://doi.org/10.1093/bioinformatics/bty560
+- Kwon, S. Bin, & Ernst, J. (2021). Single-nucleotide conservation state annotation of the SARS-CoV-2 genome. Communications Biology, 4(1), 1–11. https://doi.org/10.1038/s42003-021-02231-w

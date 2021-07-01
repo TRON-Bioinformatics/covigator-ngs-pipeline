@@ -1,0 +1,1 @@
+##INFO=<ID=CONS_HMM_SARS_COV_2,Number=1,Type=Integer,Description="Mutation depletion score track based on significant enrichment/depletion of nonsingleton SARS-CoV-2 mutations (https://github.com/ernstlab/ConsHMM_CoV)">

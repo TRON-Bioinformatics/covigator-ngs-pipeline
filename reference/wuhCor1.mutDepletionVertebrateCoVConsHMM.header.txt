@@ -1,0 +1,1 @@
+##INFO=<ID=CONS_HMM_VERTEBRATE_COV,Number=1,Type=Integer,Description="30 ConsHMM conservation states learned from the vertebrate CoV sequence alignment (https://github.com/ernstlab/ConsHMM_CoV)">

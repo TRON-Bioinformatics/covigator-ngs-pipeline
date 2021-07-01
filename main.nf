@@ -35,6 +35,7 @@ params.mismatch_score = -1
 params.open_gap_score = -3
 params.extend_gap_score = -0.1
 params.chromosome = "MN908947.3"
+params.skip_sarscov2_annotations = false
 
 if (params.help) {
     log.info params.help_message
@@ -80,6 +81,16 @@ if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_
     log.error "enable at least one variant caller"
     exit 1
 }
+
+if (!params.skip_sarscov2_annotations) {
+    conservation_sarscov2 = file(params.conservation_sarscov2)
+    conservation_sarscov2_header = file(params.conservation_sarscov2_header)
+    conservation_sarbecovirus = file(params.conservation_sarbecovirus)
+    conservation_sarbecovirus_header = file(params.conservation_sarbecovirus_header)
+    conservation_vertebrate = file(params.conservation_vertebrate)
+    conservation_vertebrate_header = file(params.conservation_vertebrate_header)
+}
+
 
 library = "paired"
 if (!params.fastq2) {
@@ -459,34 +470,77 @@ process variantNormalization {
     """
 }
 
-process variantAnnotation {
-    cpus params.cpus
-    memory params.memory
-    tag params.name
-    publishDir "${params.output}/${params.name}", mode: "copy"
+if (params.skip_sarscov2_annotations) {
+    process variantAnnotation {
+        cpus params.cpus
+        memory params.memory
+        tag params.name
+        publishDir "${params.output}/${params.name}", mode: "copy"
 
-    input:
-        set name, file(vcf) from normalized_vcf_files
+        input:
+            set name, file(vcf) from normalized_vcf_files
 
-    output:
-	    file("${vcf.baseName}.annotated.vcf.gz")
-	    file("${vcf.baseName}.annotated.vcf.gz.tbi")
+        output:
+            file("${vcf.baseName}.annotated.vcf.gz")
+            file("${vcf.baseName}.annotated.vcf.gz.tbi")
 
-    """
-    # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
-    cp ${params.snpeff_config} .
+        """
+        # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
+        cp ${params.snpeff_config} .
 
-    snpEff eff -dataDir ${params.snpeff_data} \
-    -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
-    Sars_cov_2.ASM985889v3.101  ${vcf} | \
-    bgzip -c > ${vcf.baseName}.annotated.vcf.gz
+        snpEff eff -dataDir ${params.snpeff_data} \
+        -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
+        Sars_cov_2.ASM985889v3.101  ${vcf} | \
+        bgzip -c > ${vcf.baseName}.annotated.vcf.gz
 
-    # TODO: include this step for GISAID data
-    #bcftools annotate \
-    #--annotations ${params.problematic_sites} \
-    #--columns FILTER \
-    #--output-type b - > ${vcf.baseName}.annotated.vcf.gz
+        tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
+        """
+    }
+} else {
+    process variantSarsCov2Annotation {
+        cpus params.cpus
+        memory params.memory
+        tag params.name
+        publishDir "${params.output}/${params.name}", mode: "copy"
 
-    tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
-    """
+        input:
+            set name, file(vcf) from normalized_vcf_files
+
+        output:
+            file("${vcf.baseName}.annotated.vcf.gz")
+            file("${vcf.baseName}.annotated.vcf.gz.tbi")
+
+        """
+        # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
+        cp ${params.snpeff_config} .
+
+        snpEff eff -dataDir ${params.snpeff_data} \
+        -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
+        Sars_cov_2.ASM985889v3.101  ${vcf} | \
+        bgzip -c | \
+        bcftools annotate \
+        --annotations ${conservation_sarscov2} \
+        --header-lines ${conservation_sarscov2_header} \
+        -c CHROM,FROM,TO,CONS_HMM_SARS_COV_2 \
+        --output-type z - | \
+        bcftools annotate \
+        --annotations ${conservation_sarbecovirus} \
+        --header-lines ${conservation_sarbecovirus_header} \
+        -c CHROM,FROM,TO,CONS_HMM_SARBECOVIRUS \
+        --output-type z - | \
+        bcftools annotate \
+        --annotations ${conservation_vertebrate} \
+        --header-lines ${conservation_vertebrate_header} \
+        -c CHROM,FROM,TO,CONS_HMM_VERTEBRATE_COV \
+        --output-type z - > ${vcf.baseName}.annotated.vcf.gz
+
+        # TODO: include this step for GISAID data
+        #bcftools annotate \
+        #--annotations ${params.problematic_sites} \
+        #--columns FILTER \
+        #--output-type b - > ${vcf.baseName}.annotated.vcf.gz
+
+        tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
+        """
+    }
 }
