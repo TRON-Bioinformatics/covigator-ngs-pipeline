@@ -129,19 +129,9 @@ if (params.fastq1) {
                 set name, file("${name}.bam") into bam_files
 
             """
-            # --input_files needs to be forced, otherwise it is inherited from profile in tests
-            nextflow run ${params.tronflow_bwa} \
-            --input_name ${name} \
-            --input_fastq1 ${fastq1} \
-            --input_fastq2 ${fastq2} \
-            --input_files false \
-            --algorithm mem \
-            --library ${library} \
-            --output . \
-            --reference ${reference} \
-            --cpus ${task.cpus} --memory ${task.memory} \
-            -profile ${workflow.profile} \
-            -work-dir ${workflow.workDir}
+            bwa mem -t ${task.cpus} ${reference} ${fastq1} ${fastq2} | \
+            samtools view -uS - | \
+            samtools sort - > ${name}.bam
             """
         }
     }
@@ -184,18 +174,9 @@ if (params.fastq1) {
                 set name, file("${name}.bam") into bam_files
 
             """
-            # --input_files needs to be forced, otherwise it is inherited from profile in tests
-            nextflow run ${params.tronflow_bwa} \
-            --input_name ${name} \
-            --input_fastq1 ${fastq1} \
-            --input_files false \
-            --algorithm mem \
-            --library ${library} \
-            --output . \
-            --reference ${reference} \
-            --cpus ${task.cpus} --memory ${task.memory} \
-            -profile ${workflow.profile} \
-            -work-dir ${workflow.workDir}
+            bwa mem -t ${task.cpus} ${reference} ${fastq1} | \
+            samtools view -uS - | \
+            samtools sort - > ${name}.bam
             """
         }
     }

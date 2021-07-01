@@ -16,3 +16,5 @@ dependencies:
   - bioconda::fastp=0.20.1
   - bioconda::snpeff=5.0
   - bioconda::vt=0.57721
+  - bioconda::bwa=0.7.17
+  - bioconda::samtools=1.12
