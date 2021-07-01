@@ -26,6 +26,12 @@ test:
 	--fasta test_data/hCoV-19_NTXX.fasta
 	#python3 -m unittest bin/test_assembly_variant_caller.py
 
+quick_test:
+	nextflow main.nf -profile test,conda --name ERR4145453 \
+	--output output/test1 \
+	--fastq1 test_data/ERR4145453_1.fastq.gz \
+	--fastq2 test_data/ERR4145453_2.fastq.gz
+
 check:
 	test -s output/test1/ERR4145453/ERR4145453.bcftools.normalized.annotated.vcf.gz || { echo "Missing test 1 VCF output file!"; exit 1; }
 	test -s output/test1/ERR4145453/ERR4145453.gatk.normalized.annotated.vcf.gz || { echo "Missing test 1 VCF output file!"; exit 1; }

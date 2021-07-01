@@ -30,6 +30,11 @@ params.subclonal_variant_threshold = 0.8
 params.memory = "3g"
 params.cpus = 1
 params.keep_intermediate = false
+params.match_score = 2
+params.mismatch_score = -1
+params.open_gap_score = -3
+params.extend_gap_score = -0.1
+params.chromosome = "MN908947.3"
 
 if (params.help) {
     log.info params.help_message
@@ -394,7 +399,12 @@ else if (params.fasta) {
         assembly_variant_caller.py \
         --fasta ${fasta} \
         --reference ${reference} \
-        --output-vcf ${name}.assembly.vcf
+        --output-vcf ${name}.assembly.vcf \
+        --match-score $params.match_score \
+        --mismatch-score $params.mismatch_score \
+        --open-gap-score $params.open_gap_score \
+        --extend-gap-score $params.extend_gap_score \
+        --chromosome $params.chromosome
         """
     }
 }
