@@ -189,6 +189,8 @@ if (params.fastq1) {
             publishDir "${params.output}/${params.name}", mode: "copy"
         }
         publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.deduplication_metrics.txt"
+        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.coverage.tsv"
+        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.depth.tsv"
 
         input:
             set name, file(bam) from bam_files
@@ -197,6 +199,8 @@ if (params.fastq1) {
             set name, file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai") into preprocessed_bams,
                 preprocessed_bams2, preprocessed_bams3, preprocessed_bams4
             file "${name}.deduplication_metrics.txt"
+            file "${name}.coverage.tsv"
+            file "${name}.depth.tsv"
 
 
         """
@@ -243,6 +247,10 @@ if (params.fastq1) {
 	    --consensusDeterminationModel USE_SW \
 	    --LODThresholdForCleaning 0.4 \
 	    --maxReadsInMemory 600000
+
+	    samtools coverage ${name}.preprocessed.bam > ${name}.coverage.tsv
+
+	    samtools depth -s -d 0 -H ${name}.preprocessed.bam > ${name}.depth.tsv
         """
     }
 

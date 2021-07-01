@@ -33,6 +33,8 @@ When FASTQ files are provided the pipeline includes the following steps:
 - **Trimming**. `fastp` is used to trim reads with default values. This step also includes QC filtering.
 - **Alignment**. `BWA mem` is used for the alignment of single or paired end samples.
 - **BAM preprocessing**. BAM files are prepared and duplicate reads are marked using GATK and Picard tools.
+- **Coverage analysis**. `samtools coverage` and `samtools depth` are used to compute the horizontal and vertical 
+  coverage respectively.
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
   Subsequent processing of resulting VCF files is independent for each caller, except for iVar which does not produce a VCF file but a custom TSV file.
 - **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
