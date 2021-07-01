@@ -219,13 +219,12 @@ if (params.fastq1) {
 
         gatk MarkDuplicates \
         --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=tmp' \
-        --INPUT  ${bam.baseName}.prepared.bam \
+        --INPUT ${bam.baseName}.prepared.bam \
         --METRICS_FILE ${name}.deduplication_metrics.txt \
-        --OUTPUT ${bam.baseName}.dedup.bam \
-        --REMOVE_DUPLICATES true
-
+        --OUTPUT /dev/stdout \
+        --REMOVE_DUPLICATES true | \
         gatk SortSam \
-        --INPUT ${bam.baseName}.dedup.bam \
+        --INPUT /dev/stdin \
         --OUTPUT ${bam.baseName}.dedup.sorted.bam \
         --SORT_ORDER coordinate
 
