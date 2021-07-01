@@ -188,6 +188,7 @@ if (params.fastq1) {
         if (params.keep_intermediate) {
             publishDir "${params.output}/${params.name}", mode: "copy"
         }
+        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.deduplication_metrics.txt"
 
         input:
             set name, file(bam) from bam_files
@@ -195,24 +196,54 @@ if (params.fastq1) {
         output:
             set name, file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai") into preprocessed_bams,
                 preprocessed_bams2, preprocessed_bams3, preprocessed_bams4
+            file "${name}.deduplication_metrics.txt"
 
 
         """
-        # --input_files, --known_indels1 and --known_indels2 needs to be forced, otherwise it is inherited from test profile
-        nextflow run ${params.tronflow_bam_preprocessing} \
-        --input_bam ${bam} \
-        --input_files false \
-        --output . \
-        --reference ${reference} \
-        --skip_bqsr --skip_metrics \
-        --known_indels1 false --known_indels2 false \
-        --prepare_bam_cpus ${params.cpus} --prepare_bam_memory ${params.memory} \
-        --mark_duplicates_cpus ${params.cpus} --mark_duplicates_memory ${params.memory} \
-        -profile ${workflow.profile} \
-        -work-dir ${workflow.workDir}
+        gatk CleanSam \
+        --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
+        --INPUT ${bam} \
+        --OUTPUT /dev/stdout | \
+        gatk AddOrReplaceReadGroups \
+        --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
+        --VALIDATION_STRINGENCY SILENT \
+        --INPUT /dev/stdin \
+        --OUTPUT ${bam.baseName}.prepared.bam \
+        --REFERENCE_SEQUENCE ${reference} \
+        --RGPU 1 \
+        --RGID 1 \
+        --RGSM ${name} \
+        --RGLB 1 \
+        --RGPL ILLUMINA \
+        --SORT_ORDER queryname
 
-        mv ${name}/${name}.preprocessed.bam ${name}.preprocessed.bam
-        mv ${name}/${name}.preprocessed.bai ${name}.preprocessed.bai
+        gatk MarkDuplicates \
+        --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=tmp' \
+        --INPUT  ${bam.baseName}.prepared.bam \
+        --METRICS_FILE ${name}.deduplication_metrics.txt \
+        --OUTPUT ${bam.baseName}.dedup.bam \
+        --REMOVE_DUPLICATES true
+
+        gatk SortSam \
+        --INPUT ${bam.baseName}.dedup.bam \
+        --OUTPUT ${bam.baseName}.dedup.sorted.bam \
+        --SORT_ORDER coordinate
+
+        gatk BuildBamIndex --INPUT ${bam.baseName}.dedup.sorted.bam
+
+        gatk3 -Xmx${params.memory} -Djava.io.tmpdir=tmp -T RealignerTargetCreator \
+	    --input_file ${bam.baseName}.dedup.sorted.bam \
+	    --out ${bam.baseName}.RA.intervals \
+	    --reference_sequence ${reference}
+
+	    gatk3 -Xmx${params.memory} -Djava.io.tmpdir=tmp -T IndelRealigner \
+	    --input_file ${bam.baseName}.dedup.sorted.bam \
+	    --out ${name}.preprocessed.bam \
+	    --reference_sequence ${reference} \
+	    --targetIntervals ${bam.baseName}.RA.intervals \
+	    --consensusDeterminationModel USE_SW \
+	    --LODThresholdForCleaning 0.4 \
+	    --maxReadsInMemory 600000
         """
     }
 
