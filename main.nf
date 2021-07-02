@@ -89,6 +89,10 @@ if (!params.skip_sarscov2_annotations) {
     conservation_sarbecovirus_header = file(params.conservation_sarbecovirus_header)
     conservation_vertebrate = file(params.conservation_vertebrate)
     conservation_vertebrate_header = file(params.conservation_vertebrate_header)
+    pfam_names = file(params.pfam_names)
+    pfam_descriptions = file(params.pfam_descriptions)
+    pfam_names_header = file(params.pfam_names_header)
+    pfam_descriptions_header = file(params.pfam_descriptions_header)
 }
 
 
@@ -532,6 +536,16 @@ if (params.skip_sarscov2_annotations) {
         --annotations ${conservation_vertebrate} \
         --header-lines ${conservation_vertebrate_header} \
         -c CHROM,FROM,TO,CONS_HMM_VERTEBRATE_COV \
+        --output-type z - | \
+        bcftools annotate \
+        --annotations ${pfam_names} \
+        --header-lines ${pfam_names_header} \
+        -c CHROM,FROM,TO,PFAM_NAME \
+        --output-type z - | \
+        bcftools annotate \
+        --annotations ${pfam_descriptions} \
+        --header-lines ${pfam_descriptions_header} \
+        -c CHROM,FROM,TO,PFAM_DESCRIPTION \
         --output-type z - > ${vcf.baseName}.annotated.vcf.gz
 
         # TODO: include this step for GISAID data
