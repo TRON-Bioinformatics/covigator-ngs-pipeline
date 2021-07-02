@@ -494,7 +494,7 @@ if (params.skip_sarscov2_annotations) {
 
         snpEff eff -dataDir ${params.snpeff_data} \
         -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
-        Sars_cov_2.ASM985889v3.101  ${vcf} | \
+        ${params.snpeff_organism}  ${vcf} | \
         bgzip -c > ${vcf.baseName}.annotated.vcf.gz
 
         tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
