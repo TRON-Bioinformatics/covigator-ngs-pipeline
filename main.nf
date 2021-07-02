@@ -244,6 +244,7 @@ if (params.fastq1) {
         --REMOVE_DUPLICATES true
 
         gatk SortSam \
+        --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=tmp' \
         --INPUT ${bam.baseName}.dedup.bam \
         --OUTPUT ${bam.baseName}.dedup.sorted.bam \
         --SORT_ORDER coordinate
