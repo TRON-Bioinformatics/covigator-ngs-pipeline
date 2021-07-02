@@ -24,7 +24,7 @@ or
 
 or
 
-- A single VCF file from the global alignment of the assembly agains the reference genome
+- A single VCF file from the global alignment of the assembly against the reference genome
 
 
 ## Pipeline details
@@ -39,8 +39,7 @@ When FASTQ files are provided the pipeline includes the following steps:
   Subsequent processing of resulting VCF files is independent for each caller, except for iVar which does not produce a VCF file but a custom TSV file.
 - **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
 - **Variant annotation**. `SnpEff` is employed to annotate the variant consequences of variants, 
-  `bcftools annotate` is employed to annotate ConsHMM conservation of within SARS-CoV-2, compared to other Sarbecovirus 
-  and compared to other vertebrate corona virus (Kwon, 2021).
+  `bcftools annotate` is employed to add additional annotations.
 
 Both single end and paired end FASTQ files are supported.
 
@@ -49,7 +48,7 @@ When a FASTA file is provided with a single assembly sequence the pipeline inclu
   indels. Indels longer than 50 bp and at the beginning or end of the assembly sequence are excluded. Any mutation where
   either reference or assembly contain a N is excluded.
 - **Variant normalization**. Same as described above.
-- **Variant consequence annotation**. Same as described above.
+- **Variant annotation**. Same as described above.
 
 The FASTA file is expected to contain a single assembly sequence. 
 Bear in mind that only clonal variants can be called on the assembly.
@@ -76,6 +75,25 @@ The LoFreq variants are annotated on the `FILTER` column using the reported vari
 variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VAF >= 20 % and < 80 % are considered 
 `SUBCLONAL`. This thresholds can be changed with the parameters `--low_frequency_variant_threshold` and
 `--subclonal_variant_threshold`. Indels called by BCFtools are also annotated by VAF, but not SNVs.
+
+All variant calls are additionally annotated with:
+- ConsHMM conservation scores as reported in (Kwon, 2021)
+- Pfam domains as reported in Ensemble annotations.
+
+A variant in the output VCF will look as follows:
+```
+MN908947.3      21680   .       G       A       250     LOW_FREQUENCY   DP=1252;AF=0.015176;SB=4;DP4=551,679,11,8;ANN=A|missense_variant|MODERATE|S|gene-GU280_gp02|transcript|TRANSCRIPT_gene-GU280_gp02|protein_coding|1/1|c.118G>A|p.D40N|118/3822|118/3822|40/1273||;CONS_HMM_SARS_COV_2=0.57215;CONS_HMM_SARBECOVIRUS=0.57215;CONS_HMM_VERTEBRATE_COV=0;PFAM_NAME=bCoV_S1_N;PFAM_DESCRIPTION=Betacoronavirus-like spike glycoprotein S1, N-terminal
+```
+
+Where:
+- `INFO/DP` is the number of reads overlapping this position
+- `INFO/AF` is the VAF as reported by LoFreq (only avalable in LoFreq calls)
+- `INFO/ANN` are the SnpEff consequence annotations
+- `INFO/CONS_HMM_SARS_COV_2` is the ConsHMM conservation score in SARS-CoV-2
+- `INFO/CONS_HMM_SARBECOVIRUS` is the ConsHMM conservation score among Sarbecovirus
+- `INFO/CONS_HMM_VERTEBRATE_COV` is the ConsHMM conservation score among vertebrate Corona virus
+- `INFO/PFAM_NAME` is the Interpro name for the overlapping Pfam domains
+- `INFO/PFAM_DESCRIPTION` is the Interpro description for the overlapping Pfam domains
 
 
 ## Requirements
