@@ -6,8 +6,11 @@ from Bio import Align, SeqIO
 from Bio.Align import PairwiseAlignment
 from typing import List
 
-
-CHROMOSOME = "MN908947.3"
+DEFAULT_EXTEND_GAP_SCORE = -0.1
+DEFAULT_OPEN_GAP_SCORE = -3
+DEFAULT_MISMATCH_SCORE = 1
+DEFAULT_MATCH_SCORE = 2
+DEFAULT_CHROMOSOME = "MN908947.3"
 
 
 @dataclass
@@ -16,12 +19,18 @@ class Variant:
     reference: str
     alternate: str
 
-    def to_vcf_line(self):
+    def to_vcf_line(self, chromosome):
         # transform 0-based position to 1-based position
-        return [CHROMOSOME, str(self.position + 1), ".", self.reference, self.alternate, ".", "PASS", "."]
+        return [chromosome, str(self.position + 1), ".", self.reference, self.alternate, ".", "PASS", "."]
 
 
 class AssemblyVariantCaller:
+
+    def __init__(self, match_score, mismatch_score, open_gap_score, extend_gap_score):
+        self.match_score = match_score
+        self.mismatch_score = mismatch_score
+        self.open_gap_score = open_gap_score
+        self.extend_gap_score = extend_gap_score
 
     def call_variants(self, sequence: str, reference: str) -> List[Variant]:
         alignment = self._run_alignment(sequence=sequence, reference=reference)
@@ -31,10 +40,10 @@ class AssemblyVariantCaller:
     def _run_alignment(self, sequence: str, reference: str) -> PairwiseAlignment:
         aligner = Align.PairwiseAligner()
         aligner.mode = 'global'
-        aligner.match = 2
-        aligner.mismatch = -1
-        aligner.open_gap_score = -3
-        aligner.extend_gap_score = -0.1
+        aligner.match = self.match_score
+        aligner.mismatch = self.mismatch_score
+        aligner.open_gap_score = self.open_gap_score
+        aligner.extend_gap_score = self.extend_gap_score
         aligner.target_end_gap_score = 0.0
         aligner.query_end_gap_score = 0.0
         alignments = aligner.align(reference, sequence)
@@ -92,18 +101,18 @@ class AssemblyVariantCaller:
         return base not in "ACGT"
 
 
-def write_vcf(mutations, output_vcf):
+def write_vcf(mutations, output_vcf, chromosome):
     with open(output_vcf, "w") as vcf_out:
         header = (
             "##fileformat=VCFv4.0",
             "##FILTER=<ID=PASS,Description=\"All filters passed\">",
-            "##contig=<ID=MN908947.3>",
+            "##contig=<ID={chromosome}>".format(chromosome=chromosome),
             "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"
         )
         for row in header:
             vcf_out.write(row + "\n")
         for mutation in mutations:
-            vcf_out.write("\t".join(mutation.to_vcf_line()) + "\n")
+            vcf_out.write("\t".join(mutation.to_vcf_line(chromosome=chromosome)) + "\n")
 
 
 def main():
@@ -117,6 +126,18 @@ def main():
     parser.add_argument("--output-vcf", dest="output_vcf",
                         help="The path to the output VCF",
                         required=True)
+    parser.add_argument("--match-score", dest="match_score", help="The score for a matching position",
+                        default=DEFAULT_MATCH_SCORE)
+    parser.add_argument("--mismatch-score", dest="mismatch_score", help="The score for a mismatching position",
+                        default=-DEFAULT_MISMATCH_SCORE)
+    parser.add_argument("--open-gap-score", dest="open_gap_score", help="The score for opening a gap",
+                        default=DEFAULT_OPEN_GAP_SCORE)
+    parser.add_argument("--extend-gap-score", dest="extend_gap_score", help="The score for extending a gap",
+                        default=DEFAULT_EXTEND_GAP_SCORE)
+    parser.add_argument("--chromosome", dest="chromosome",
+                        help="The chromosome to be used in the output VCF. Beware only one chromosome is supported!",
+                        default=DEFAULT_CHROMOSOME)
+
     args = parser.parse_args()
 
     assert os.path.exists(args.fasta), "Fasta file {} does not exist!".format(args.fasta)
@@ -124,9 +145,14 @@ def main():
 
     query = next(SeqIO.parse(args.fasta, "fasta"))
     reference = next(SeqIO.parse(args.reference, "fasta"))
-    variant_caller = AssemblyVariantCaller()
+    variant_caller = AssemblyVariantCaller(
+        match_score=float(args.match_score),
+        mismatch_score=float(args.mismatch_score),
+        open_gap_score=float(args.open_gap_score),
+        extend_gap_score=float(args.extend_gap_score)
+    )
     variants = variant_caller.call_variants(sequence=query.seq, reference=reference.seq)
-    write_vcf(mutations=variants, output_vcf=args.output_vcf)
+    write_vcf(mutations=variants, output_vcf=args.output_vcf, chromosome=args.chromosome)
 
 
 if __name__ == '__main__':

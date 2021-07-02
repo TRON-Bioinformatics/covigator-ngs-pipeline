@@ -1,12 +1,12 @@
 from unittest import TestCase
-
 from .assembly_variant_caller import AssemblyVariantCaller
 
 
 class TestCountryParser(TestCase):
 
     def test_assembly_variant_caller(self):
-        caller = AssemblyVariantCaller()
+        caller = AssemblyVariantCaller(
+            match_score=2, mismatch_score=-1, open_gap_score=-3, extend_gap_score=-0.1)
         # no mutations
         variants = caller.call_variants(sequence="ACGTACGT", reference="ACGTACGT")
         self.assertEqual(len(variants), 0)
@@ -50,7 +50,8 @@ class TestCountryParser(TestCase):
         self.assertEqual(snv.position, 9)
 
     def test_ambiguous_bases(self):
-        caller = AssemblyVariantCaller()
+        caller = AssemblyVariantCaller(
+            match_score=2, mismatch_score=-1, open_gap_score=-3, extend_gap_score=-0.1)
         # no mutations
         variants = caller.call_variants(sequence="ACGTACGT", reference="ACGTACGT")
         self.assertEqual(len(variants), 0)

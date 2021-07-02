@@ -24,7 +24,7 @@ or
 
 or
 
-- A single VCF file from the global alignment of the assembly agains the reference genome
+- A single VCF file from the global alignment of the assembly against the reference genome
 
 
 ## Pipeline details
@@ -33,10 +33,13 @@ When FASTQ files are provided the pipeline includes the following steps:
 - **Trimming**. `fastp` is used to trim reads with default values. This step also includes QC filtering.
 - **Alignment**. `BWA mem` is used for the alignment of single or paired end samples.
 - **BAM preprocessing**. BAM files are prepared and duplicate reads are marked using GATK and Picard tools.
+- **Coverage analysis**. `samtools coverage` and `samtools depth` are used to compute the horizontal and vertical 
+  coverage respectively.
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
   Subsequent processing of resulting VCF files is independent for each caller, except for iVar which does not produce a VCF file but a custom TSV file.
 - **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
-- **Variant consequence annotation**. `SnpEff` is employed to annotate the variant consequences of variants.
+- **Variant annotation**. `SnpEff` is employed to annotate the variant consequences of variants, 
+  `bcftools annotate` is employed to add additional annotations.
 
 Both single end and paired end FASTQ files are supported.
 
@@ -44,14 +47,14 @@ When a FASTA file is provided with a single assembly sequence the pipeline inclu
 - **Variant calling**. A Smith-Waterman global alignment is performed against the reference sequence to call SNVs and 
   indels. Indels longer than 50 bp and at the beginning or end of the assembly sequence are excluded. Any mutation where
   either reference or assembly contain a N is excluded.
-- **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
-- **Variant consequence annotation**. `SnpEff` is employed to annotate the variant consequences of variants.
+- **Variant normalization**. Same as described above.
+- **Variant annotation**. Same as described above.
 
 The FASTA file is expected to contain a single assembly sequence. 
 Bear in mind that only clonal variants can be called on the assembly.
 
-The alignment, BAM preprocessing and variant normalization pipelines were implemented in additional Nextflow pipelines 
-within the TronFlow initiative. 
+The alignment, BAM preprocessing and variant normalization pipelines are based on the implementations in additional 
+Nextflow pipelines within the TronFlow initiative. 
 The full details are available in their respective repositories:
 - https://github.com/TRON-Bioinformatics/tronflow-bwa (https://doi.org/10.5281/zenodo.4722852)
 - https://github.com/TRON-Bioinformatics/tronflow-bam-preprocessing (https://doi.org/10.5281/zenodo.4810918)
@@ -59,12 +62,12 @@ The full details are available in their respective repositories:
 
 The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
 These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
-Two files need to be provided: a sequence file in FASTA format and a gene ennotation file in GFFv3 format. Additionally, the FASTA needs several indexes: bwa indexes, .fai index and .dict index.
-These indexes can be generated with the following commands:
+Two files need to be provided: a sequence file in FASTA format and a gene ennotation file in GFFv3 format. 
+Additionally, the FASTA needs bwa indexes and .fai index.
+These indexes can be generated with the following two commands:
 ```
 bwa index reference.fasta
 samtools faidx reference.fasta
-gatk CreateSequenceDictionary -R reference.fasta
 ```
 
 The LoFreq variants are annotated on the `FILTER` column using the reported variant allele frequency 
@@ -72,6 +75,25 @@ The LoFreq variants are annotated on the `FILTER` column using the reported vari
 variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VAF >= 20 % and < 80 % are considered 
 `SUBCLONAL`. This thresholds can be changed with the parameters `--low_frequency_variant_threshold` and
 `--subclonal_variant_threshold`. Indels called by BCFtools are also annotated by VAF, but not SNVs.
+
+All variant calls are additionally annotated with:
+- ConsHMM conservation scores as reported in (Kwon, 2021)
+- Pfam domains as reported in Ensemble annotations.
+
+A variant in the output VCF will look as follows:
+```
+MN908947.3      21680   .       G       A       250     LOW_FREQUENCY   DP=1252;AF=0.015176;SB=4;DP4=551,679,11,8;ANN=A|missense_variant|MODERATE|S|gene-GU280_gp02|transcript|TRANSCRIPT_gene-GU280_gp02|protein_coding|1/1|c.118G>A|p.D40N|118/3822|118/3822|40/1273||;CONS_HMM_SARS_COV_2=0.57215;CONS_HMM_SARBECOVIRUS=0.57215;CONS_HMM_VERTEBRATE_COV=0;PFAM_NAME=bCoV_S1_N;PFAM_DESCRIPTION=Betacoronavirus-like spike glycoprotein S1, N-terminal
+```
+
+Where:
+- `INFO/DP` is the number of reads overlapping this position
+- `INFO/AF` is the VAF as reported by LoFreq (only avalable in LoFreq calls)
+- `INFO/ANN` are the SnpEff consequence annotations
+- `INFO/CONS_HMM_SARS_COV_2` is the ConsHMM conservation score in SARS-CoV-2
+- `INFO/CONS_HMM_SARBECOVIRUS` is the ConsHMM conservation score among Sarbecovirus
+- `INFO/CONS_HMM_VERTEBRATE_COV` is the ConsHMM conservation score among vertebrate Corona virus
+- `INFO/PFAM_NAME` is the Interpro name for the overlapping Pfam domains
+- `INFO/PFAM_DESCRIPTION` is the Interpro description for the overlapping Pfam domains
 
 
 ## Requirements
@@ -120,11 +142,20 @@ Optional input:
     * --subclonal_variant_threshold: VAF superior threshold to mark a variant as subclonal (default: 0.8)
     * --memory: the ammount of memory used by each job (default: 3g)
     * --cpus: the number of CPUs used by each job (default: 1)
-    * --initialize: start the initialization of the conda environments
-    * -- skip_lofreq: skips calling variants with LoFreq
-    * -- skip_gatk: skips calling variants with GATK
-    * -- skip_bcftools: skips calling variants with BCFTools
-    * -- skip_ivar: skips calling variants with iVar
+    * --initialize: initialize the conda environment
+    * --skip_lofreq: skips calling variants with LoFreq
+    * --skip_gatk: skips calling variants with GATK
+    * --skip_bcftools: skips calling variants with BCFTools
+    * --skip_ivar: skips calling variants with iVar
+    * --match_score: global alignment match score, only applicable for assemblies (default: 2)
+    * --mismatch_score: global alignment mismatch score, only applicable for assemblies (default: -1)
+    * --open_gap_score: global alignment open gap score, only applicable for assemblies (default: -3)
+    * --extend_gap_score: global alignment extend gap score, only applicable for assemblies (default: -0.1)
+    * --chromosome: chromosome for variant calls, only applicable for assemblies (default: "MN908947.3")
+    * --skip_sarscov2_annotations: skip some of the SARS-CoV-2 specific annotations (default: false)
+    * --snpeff_data: path to the SnpEff data folder, it will be useful to use the pipeline on other virus than SARS-CoV-2
+    * --snpeff_config: path to the SnpEff config file, it will be useful to use the pipeline on other virus than SARS-CoV-2
+    * --snpeff_organism: organism to annotate with SnpEff, it will be useful to use the pipeline on other virus than SARS-CoV-2
 
 Output:
     * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK and LoFreq when FASTQ files are
@@ -134,13 +165,14 @@ Output:
 
 ### Initializing the conda environments
 
-If you are planning to use it concurrently on multiple samples with conda, first initialize the environments by running:
+If you are planning to use it concurrently on multiple samples with conda, first initialize the conda environment, 
+otherwise concurrent sample executions will clash trying to create the same conda environment. Run:
 ```
 nextflow main.nf -profile conda --initialize
 ```
 
-This will create the necessary conda environments under `work/conda`. 
-This initialization is required under every work folder when using more than one variant caller.
+This will create the necessary conda environment under `work/conda`, subsequent concurrent executions will use the same
+conda environment.
 
 
 ## References
@@ -155,3 +187,4 @@ This initialization is required under every work folder when using more than one
 - Wilm, A., Aw, P. P. K., Bertrand, D., Yeo, G. H. T., Ong, S. H., Wong, C. H., Khor, C. C., Petric, R., Hibberd, M. L., & Nagarajan, N. (2012). LoFreq: A sequence-quality aware, ultra-sensitive variant caller for uncovering cell-population heterogeneity from high-throughput sequencing datasets. Nucleic Acids Research, 40(22), 11189–11201. https://doi.org/10.1093/nar/gks918
 - Grubaugh, N. D., Gangavarapu, K., Quick, J., Matteson, N. L., De Jesus, J. G., Main, B. J., Tan, A. L., Paul, L. M., Brackney, D. E., Grewal, S., Gurfield, N., Van Rompay, K. K. A., Isern, S., Michael, S. F., Coffey, L. L., Loman, N. J., & Andersen, K. G. (2019). An amplicon-based sequencing framework for accurately measuring intrahost virus diversity using PrimalSeq and iVar. Genome Biology, 20(1), 8. https://doi.org/10.1186/s13059-018-1618-7
 - Shifu Chen, Yanqing Zhou, Yaru Chen, Jia Gu; fastp: an ultra-fast all-in-one FASTQ preprocessor, Bioinformatics, Volume 34, Issue 17, 1 September 2018, Pages i884–i890, https://doi.org/10.1093/bioinformatics/bty560
+- Kwon, S. Bin, & Ernst, J. (2021). Single-nucleotide conservation state annotation of the SARS-CoV-2 genome. Communications Biology, 4(1), 1–11. https://doi.org/10.1038/s42003-021-02231-w

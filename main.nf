@@ -30,6 +30,12 @@ params.subclonal_variant_threshold = 0.8
 params.memory = "3g"
 params.cpus = 1
 params.keep_intermediate = false
+params.match_score = 2
+params.mismatch_score = -1
+params.open_gap_score = -3
+params.extend_gap_score = -0.1
+params.chromosome = "MN908947.3"
+params.skip_sarscov2_annotations = false
 
 if (params.help) {
     log.info params.help_message
@@ -75,6 +81,20 @@ if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_
     log.error "enable at least one variant caller"
     exit 1
 }
+
+if (!params.skip_sarscov2_annotations) {
+    conservation_sarscov2 = file(params.conservation_sarscov2)
+    conservation_sarscov2_header = file(params.conservation_sarscov2_header)
+    conservation_sarbecovirus = file(params.conservation_sarbecovirus)
+    conservation_sarbecovirus_header = file(params.conservation_sarbecovirus_header)
+    conservation_vertebrate = file(params.conservation_vertebrate)
+    conservation_vertebrate_header = file(params.conservation_vertebrate_header)
+    pfam_names = file(params.pfam_names)
+    pfam_descriptions = file(params.pfam_descriptions)
+    pfam_names_header = file(params.pfam_names_header)
+    pfam_descriptions_header = file(params.pfam_descriptions_header)
+}
+
 
 library = "paired"
 if (!params.fastq2) {
@@ -124,19 +144,9 @@ if (params.fastq1) {
                 set name, file("${name}.bam") into bam_files
 
             """
-            # --input_files needs to be forced, otherwise it is inherited from profile in tests
-            nextflow run ${params.tronflow_bwa} \
-            --input_name ${name} \
-            --input_fastq1 ${fastq1} \
-            --input_fastq2 ${fastq2} \
-            --input_files false \
-            --algorithm mem \
-            --library ${library} \
-            --output . \
-            --reference ${reference} \
-            --cpus ${task.cpus} --memory ${task.memory} \
-            -profile ${workflow.profile} \
-            -work-dir ${workflow.workDir}
+            bwa mem -t ${task.cpus} ${reference} ${fastq1} ${fastq2} | \
+            samtools view -uS - | \
+            samtools sort - > ${name}.bam
             """
         }
     }
@@ -179,18 +189,9 @@ if (params.fastq1) {
                 set name, file("${name}.bam") into bam_files
 
             """
-            # --input_files needs to be forced, otherwise it is inherited from profile in tests
-            nextflow run ${params.tronflow_bwa} \
-            --input_name ${name} \
-            --input_fastq1 ${fastq1} \
-            --input_files false \
-            --algorithm mem \
-            --library ${library} \
-            --output . \
-            --reference ${reference} \
-            --cpus ${task.cpus} --memory ${task.memory} \
-            -profile ${workflow.profile} \
-            -work-dir ${workflow.workDir}
+            bwa mem -t ${task.cpus} ${reference} ${fastq1} | \
+            samtools view -uS - | \
+            samtools sort - > ${name}.bam
             """
         }
     }
@@ -202,6 +203,9 @@ if (params.fastq1) {
         if (params.keep_intermediate) {
             publishDir "${params.output}/${params.name}", mode: "copy"
         }
+        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.deduplication_metrics.txt"
+        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.coverage.tsv"
+        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.depth.tsv"
 
         input:
             set name, file(bam) from bam_files
@@ -209,24 +213,61 @@ if (params.fastq1) {
         output:
             set name, file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai") into preprocessed_bams,
                 preprocessed_bams2, preprocessed_bams3, preprocessed_bams4
+            file "${name}.deduplication_metrics.txt"
+            file "${name}.coverage.tsv"
+            file "${name}.depth.tsv"
 
 
         """
-        # --input_files, --known_indels1 and --known_indels2 needs to be forced, otherwise it is inherited from test profile
-        nextflow run ${params.tronflow_bam_preprocessing} \
-        --input_bam ${bam} \
-        --input_files false \
-        --output . \
-        --reference ${reference} \
-        --skip_bqsr --skip_metrics \
-        --known_indels1 false --known_indels2 false \
-        --prepare_bam_cpus ${params.cpus} --prepare_bam_memory ${params.memory} \
-        --mark_duplicates_cpus ${params.cpus} --mark_duplicates_memory ${params.memory} \
-        -profile ${workflow.profile} \
-        -work-dir ${workflow.workDir}
+        gatk CleanSam \
+        --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
+        --INPUT ${bam} \
+        --OUTPUT /dev/stdout | \
+        gatk AddOrReplaceReadGroups \
+        --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
+        --VALIDATION_STRINGENCY SILENT \
+        --INPUT /dev/stdin \
+        --OUTPUT ${bam.baseName}.prepared.bam \
+        --REFERENCE_SEQUENCE ${reference} \
+        --RGPU 1 \
+        --RGID 1 \
+        --RGSM ${name} \
+        --RGLB 1 \
+        --RGPL ILLUMINA \
+        --SORT_ORDER queryname
 
-        mv ${name}/${name}.preprocessed.bam ${name}.preprocessed.bam
-        mv ${name}/${name}.preprocessed.bai ${name}.preprocessed.bai
+        gatk MarkDuplicates \
+        --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=tmp' \
+        --INPUT ${bam.baseName}.prepared.bam \
+        --METRICS_FILE ${name}.deduplication_metrics.txt \
+        --OUTPUT ${bam.baseName}.dedup.bam \
+        --REMOVE_DUPLICATES true
+
+        gatk SortSam \
+        --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=tmp' \
+        --INPUT ${bam.baseName}.dedup.bam \
+        --OUTPUT ${bam.baseName}.dedup.sorted.bam \
+        --SORT_ORDER coordinate
+
+        gatk BuildBamIndex --INPUT ${bam.baseName}.dedup.sorted.bam
+
+        gatk3 -Xmx${params.memory} -Djava.io.tmpdir=tmp -T RealignerTargetCreator \
+	    --input_file ${bam.baseName}.dedup.sorted.bam \
+	    --out ${bam.baseName}.RA.intervals \
+	    --reference_sequence ${reference}
+
+	    gatk3 -Xmx${params.memory} -Djava.io.tmpdir=tmp -T IndelRealigner \
+	    --input_file ${bam.baseName}.dedup.sorted.bam \
+	    --out ${name}.preprocessed.bam \
+	    --reference_sequence ${reference} \
+	    --targetIntervals ${bam.baseName}.RA.intervals \
+	    --consensusDeterminationModel USE_SW \
+	    --LODThresholdForCleaning 0.4 \
+	    --maxReadsInMemory 600000
+
+	    samtools coverage ${name}.preprocessed.bam > ${name}.coverage.tsv
+
+	    samtools depth -s -d 0 -H ${name}.preprocessed.bam > ${name}.depth.tsv
         """
     }
 
@@ -394,7 +435,12 @@ else if (params.fasta) {
         assembly_variant_caller.py \
         --fasta ${fasta} \
         --reference ${reference} \
-        --output-vcf ${name}.assembly.vcf
+        --output-vcf ${name}.assembly.vcf \
+        --match-score $params.match_score \
+        --mismatch-score $params.mismatch_score \
+        --open-gap-score $params.open_gap_score \
+        --extend-gap-score $params.extend_gap_score \
+        --chromosome $params.chromosome
         """
     }
 }
@@ -430,34 +476,87 @@ process variantNormalization {
     """
 }
 
-process variantAnnotation {
-    cpus params.cpus
-    memory params.memory
-    tag params.name
-    publishDir "${params.output}/${params.name}", mode: "copy"
+if (params.skip_sarscov2_annotations) {
+    process variantAnnotation {
+        cpus params.cpus
+        memory params.memory
+        tag params.name
+        publishDir "${params.output}/${params.name}", mode: "copy"
 
-    input:
-        set name, file(vcf) from normalized_vcf_files
+        input:
+            set name, file(vcf) from normalized_vcf_files
 
-    output:
-	    file("${vcf.baseName}.annotated.vcf.gz")
-	    file("${vcf.baseName}.annotated.vcf.gz.tbi")
+        output:
+            file("${vcf.baseName}.annotated.vcf.gz")
+            file("${vcf.baseName}.annotated.vcf.gz.tbi")
 
-    """
-    # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
-    cp ${params.snpeff_config} .
+        """
+        # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
+        cp ${params.snpeff_config} .
 
-    snpEff eff -dataDir ${params.snpeff_data} \
-    -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
-    Sars_cov_2.ASM985889v3.101  ${vcf} | \
-    bgzip -c > ${vcf.baseName}.annotated.vcf.gz
+        snpEff eff -dataDir ${params.snpeff_data} \
+        -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
+        ${params.snpeff_organism}  ${vcf} | \
+        bgzip -c > ${vcf.baseName}.annotated.vcf.gz
 
-    # TODO: include this step for GISAID data
-    #bcftools annotate \
-    #--annotations ${params.problematic_sites} \
-    #--columns FILTER \
-    #--output-type b - > ${vcf.baseName}.annotated.vcf.gz
+        tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
+        """
+    }
+} else {
+    process variantSarsCov2Annotation {
+        cpus params.cpus
+        memory params.memory
+        tag params.name
+        publishDir "${params.output}/${params.name}", mode: "copy"
 
-    tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
-    """
+        input:
+            set name, file(vcf) from normalized_vcf_files
+
+        output:
+            file("${vcf.baseName}.annotated.vcf.gz")
+            file("${vcf.baseName}.annotated.vcf.gz.tbi")
+
+        """
+        # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
+        cp ${params.snpeff_config} .
+
+        snpEff eff -dataDir ${params.snpeff_data} \
+        -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
+        Sars_cov_2.ASM985889v3.101  ${vcf} | \
+        bgzip -c | \
+        bcftools annotate \
+        --annotations ${conservation_sarscov2} \
+        --header-lines ${conservation_sarscov2_header} \
+        -c CHROM,FROM,TO,CONS_HMM_SARS_COV_2 \
+        --output-type z - | \
+        bcftools annotate \
+        --annotations ${conservation_sarbecovirus} \
+        --header-lines ${conservation_sarbecovirus_header} \
+        -c CHROM,FROM,TO,CONS_HMM_SARBECOVIRUS \
+        --output-type z - | \
+        bcftools annotate \
+        --annotations ${conservation_vertebrate} \
+        --header-lines ${conservation_vertebrate_header} \
+        -c CHROM,FROM,TO,CONS_HMM_VERTEBRATE_COV \
+        --output-type z - | \
+        bcftools annotate \
+        --annotations ${pfam_names} \
+        --header-lines ${pfam_names_header} \
+        -c CHROM,FROM,TO,PFAM_NAME \
+        --output-type z - | \
+        bcftools annotate \
+        --annotations ${pfam_descriptions} \
+        --header-lines ${pfam_descriptions_header} \
+        -c CHROM,FROM,TO,PFAM_DESCRIPTION \
+        --output-type z - > ${vcf.baseName}.annotated.vcf.gz
+
+        # TODO: include this step for GISAID data
+        #bcftools annotate \
+        #--annotations ${params.problematic_sites} \
+        #--columns FILTER \
+        #--output-type b - > ${vcf.baseName}.annotated.vcf.gz
+
+        tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
+        """
+    }
 }

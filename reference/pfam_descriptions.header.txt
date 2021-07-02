@@ -1,0 +1,1 @@
+##INFO=<ID=PFAM_DESCRIPTION,Number=.,Type=String,Description="Pfam domain description as reported in Ensembl annotations">
