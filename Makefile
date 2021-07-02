@@ -24,7 +24,6 @@ test:
 	nextflow main.nf -profile test,conda --name hCoV-19_NTXX \
 	--output output/test4 \
 	--fasta test_data/hCoV-19_NTXX.fasta
-	#python3 -m unittest bin/test_assembly_variant_caller.py
 
 quick_test:
 	nextflow main.nf -profile test,conda --name ERR4145453 \
@@ -62,3 +61,6 @@ check:
 	test -s output/test3/ERR4145453/ERR4145453.fastp_stats.json || { echo "Missing test 3 VCF output file!"; exit 1; }
 	test -s output/test3/ERR4145453/ERR4145453.fastp_stats.html || { echo "Missing test 3 VCF output file!"; exit 1; }
 	test -s output/test4/hCoV-19_NTXX/hCoV-19_NTXX.assembly.normalized.annotated.vcf.gz || { echo "Missing test 4 VCF output file!"; exit 1; }
+
+test_assembly_variant_caller:
+	python3 -m unittest bin/test_assembly_variant_caller.py

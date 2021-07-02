@@ -146,10 +146,10 @@ def main():
     query = next(SeqIO.parse(args.fasta, "fasta"))
     reference = next(SeqIO.parse(args.reference, "fasta"))
     variant_caller = AssemblyVariantCaller(
-        match_score=int(args.match_score),
-        mismatch_score=int(args.mismatch_score),
-        open_gap_score=int(args.open_gap_score),
-        extend_gap_score=int(args.extend_gap_score)
+        match_score=float(args.match_score),
+        mismatch_score=float(args.mismatch_score),
+        open_gap_score=float(args.open_gap_score),
+        extend_gap_score=float(args.extend_gap_score)
     )
     variants = variant_caller.call_variants(sequence=query.seq, reference=reference.seq)
     write_vcf(mutations=variants, output_vcf=args.output_vcf, chromosome=args.chromosome)
