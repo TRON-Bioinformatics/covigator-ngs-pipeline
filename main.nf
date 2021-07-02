@@ -240,10 +240,11 @@ if (params.fastq1) {
         --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=tmp' \
         --INPUT ${bam.baseName}.prepared.bam \
         --METRICS_FILE ${name}.deduplication_metrics.txt \
-        --OUTPUT /dev/stdout \
-        --REMOVE_DUPLICATES true | \
+        --OUTPUT ${bam.baseName}.dedup.bam \
+        --REMOVE_DUPLICATES true
+
         gatk SortSam \
-        --INPUT /dev/stdin \
+        --INPUT ${bam.baseName}.dedup.bam \
         --OUTPUT ${bam.baseName}.dedup.sorted.bam \
         --SORT_ORDER coordinate
 
