@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   test:
-    runs-on: openjdk:8u292-jre-buster
+    runs-on: openjdk:8u292-jre-slim-buster
 
     steps:
     - uses: actions/checkout@v2
