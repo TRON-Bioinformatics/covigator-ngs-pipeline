@@ -443,6 +443,31 @@ else if (params.fasta) {
         --chromosome $params.chromosome
         """
     }
+
+    process pangolin {
+        publishDir "${params.output}/${params.name}", mode: "copy"
+        tag "Lineage assignment with pangolin"
+        echo false
+        cpus 1
+
+        input:
+        file (fasta) from file(params.fasta)
+
+        output:
+        file("pangolin/lineage_report.csv") into lineage_report
+        file("logs/pangolin/${workflow.sessionId}.{log,err}")
+
+        shell:
+        '''
+    mkdir -p pangolin logs/pangolin
+
+    log_file=logs/pangolin/!{workflow.sessionId}.log
+    err_file=logs/pangolin/!{workflow.sessionId}.err
+
+    pangolin --version >> $log_file
+    pangolin --outdir pangolin/ !{fasta} 2>> $err_file >> $log_file
+  '''
+    }
 }
 
 process variantNormalization {
