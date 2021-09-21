@@ -1,5 +1,0 @@
-#!/bin/bash
-
-input_vcf=$1
-
-awk 'NR > 1 {OFS = "\t"; print $1,$2,$3,$4}' $input_vcf > ${input_vcf%.*}.tab
