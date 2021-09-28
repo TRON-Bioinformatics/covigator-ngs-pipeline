@@ -64,7 +64,7 @@ The full details are available in their respective repositories:
 
 The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
 These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
-Two files need to be provided: a sequence file in FASTA format and a gene ennotation file in GFFv3 format. 
+Two files need to be provided: a sequence file in FASTA format and a gene annotation file in GFFv3 format. 
 Additionally, the FASTA needs bwa indexes and .fai index.
 These indexes can be generated with the following two commands:
 ```
@@ -190,3 +190,18 @@ conda environment.
 - Grubaugh, N. D., Gangavarapu, K., Quick, J., Matteson, N. L., De Jesus, J. G., Main, B. J., Tan, A. L., Paul, L. M., Brackney, D. E., Grewal, S., Gurfield, N., Van Rompay, K. K. A., Isern, S., Michael, S. F., Coffey, L. L., Loman, N. J., & Andersen, K. G. (2019). An amplicon-based sequencing framework for accurately measuring intrahost virus diversity using PrimalSeq and iVar. Genome Biology, 20(1), 8. https://doi.org/10.1186/s13059-018-1618-7
 - Shifu Chen, Yanqing Zhou, Yaru Chen, Jia Gu; fastp: an ultra-fast all-in-one FASTQ preprocessor, Bioinformatics, Volume 34, Issue 17, 1 September 2018, Pages i884–i890, https://doi.org/10.1093/bioinformatics/bty560
 - Kwon, S. Bin, & Ernst, J. (2021). Single-nucleotide conservation state annotation of the SARS-CoV-2 genome. Communications Biology, 4(1), 1–11. https://doi.org/10.1038/s42003-021-02231-w
+
+
+## Resources
+
+SARS-CoV-2 ASM985889v3 references were downloaded from Ensembl on 6th of October 2020:
+- ftp://ftp.ensemblgenomes.org/pub/viruses/fasta/sars_cov_2/dna/Sars_cov_2.ASM985889v3.dna.toplevel.fa.gz
+- ftp://ftp.ensemblgenomes.org/pub/viruses/gff3/sars_cov_2/Sars_cov_2.ASM985889v3.101.gff3.gz
+
+ConsHMM mutation depletion scores downloaded on 1st of July 2021:
+- https://github.com/ernstlab/ConsHMM_CoV/blob/master/wuhCor1.mutDepletionConsHMM.bed
+- https://github.com/ernstlab/ConsHMM_CoV/blob/master/wuhCor1.mutDepletionSarbecovirusConsHMM.bed
+- https://github.com/ernstlab/ConsHMM_CoV/blob/master/wuhCor1.mutDepletionVertebrateCoVConsHMM.bed
+
+Gene annotations including Pfam domains downloaded from Ensembl on 25th of February 2021 from:
+- ftp://ftp.ensemblgenomes.org/pub/viruses/json/sars_cov_2/sars_cov_2.json
