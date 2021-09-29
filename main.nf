@@ -108,7 +108,7 @@ if (params.fastq1) {
             cpus params.cpus
             memory params.memory
             tag params.name
-            publishDir "${params.output}/${params.name}", mode: "copy", pattern: "*fastp_stats*"
+            publishDir "${params.output}", mode: "copy", pattern: "*fastp_stats*"
 
             input:
                 val name from params.name
@@ -156,7 +156,7 @@ if (params.fastq1) {
             cpus params.cpus
             memory params.memory
             tag params.name
-            publishDir "${params.output}/${params.name}", mode: "copy", pattern: "*fastp_stats*"
+            publishDir "${params.output}", mode: "copy", pattern: "*fastp_stats*"
 
             input:
                 val name from params.name
@@ -201,11 +201,11 @@ if (params.fastq1) {
         memory params.memory
         tag params.name
         if (params.keep_intermediate) {
-            publishDir "${params.output}/${params.name}", mode: "copy"
+            publishDir "${params.output}", mode: "copy"
         }
-        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.deduplication_metrics.txt"
-        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.coverage.tsv"
-        publishDir "${params.output}/${params.name}", mode: "copy", pattern: "${name}.depth.tsv"
+        publishDir "${params.output}", mode: "copy", pattern: "${name}.deduplication_metrics.txt"
+        publishDir "${params.output}", mode: "copy", pattern: "${name}.coverage.tsv"
+        publishDir "${params.output}", mode: "copy", pattern: "${name}.depth.tsv"
 
         input:
             set name, file(bam) from bam_files
@@ -279,7 +279,7 @@ if (params.fastq1) {
             memory params.memory
             tag params.name
             if (params.keep_intermediate) {
-                publishDir "${params.output}/${params.name}", mode: "copy"
+                publishDir "${params.output}", mode: "copy"
             }
 
             input:
@@ -319,7 +319,7 @@ if (params.fastq1) {
             memory params.memory
             tag params.name
             if (params.keep_intermediate) {
-                publishDir "${params.output}/${params.name}", mode: "copy"
+                publishDir "${params.output}", mode: "copy"
             }
 
             input:
@@ -359,7 +359,7 @@ if (params.fastq1) {
             memory params.memory
             tag params.name
             if (params.keep_intermediate) {
-                publishDir "${params.output}/${params.name}", mode: "copy"
+                publishDir "${params.output}", mode: "copy"
             }
 
             input:
@@ -387,7 +387,7 @@ if (params.fastq1) {
             cpus params.cpus
             memory params.memory
             tag params.name
-            publishDir "${params.output}/${params.name}", mode: "copy"
+            publishDir "${params.output}", mode: "copy"
 
             input:
                 set name, file(bam), file(bai) from preprocessed_bams4
@@ -421,7 +421,7 @@ else if (params.fasta) {
         memory params.memory
         tag params.name
         if (params.keep_intermediate) {
-            publishDir "${params.output}/${params.name}", mode: "copy"
+            publishDir "${params.output}", mode: "copy"
         }
 
         input:
@@ -450,7 +450,7 @@ process variantNormalization {
     memory params.memory
     tag params.name
     if (params.keep_intermediate) {
-        publishDir "${params.output}/${params.name}", mode: "copy"
+        publishDir "${params.output}", mode: "copy"
     }
 
     input:
@@ -481,7 +481,7 @@ if (params.skip_sarscov2_annotations) {
         cpus params.cpus
         memory params.memory
         tag params.name
-        publishDir "${params.output}/${params.name}", mode: "copy"
+        publishDir "${params.output}", mode: "copy"
 
         input:
             set name, file(vcf) from normalized_vcf_files
@@ -507,7 +507,7 @@ if (params.skip_sarscov2_annotations) {
         cpus params.cpus
         memory params.memory
         tag params.name
-        publishDir "${params.output}/${params.name}", mode: "copy"
+        publishDir "${params.output}", mode: "copy"
 
         input:
             set name, file(vcf) from normalized_vcf_files
