@@ -18,3 +18,4 @@ dependencies:
   - bioconda::vt=0.57721
   - bioconda::bwa=0.7.17
   - bioconda::samtools=1.12
+  - bioconda::pangolin=3.1.14

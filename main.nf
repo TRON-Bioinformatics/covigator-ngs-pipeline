@@ -9,6 +9,7 @@ include { bamPreprocessing } from './modules/03_bam_preprocessing'
 include { variantCallingBcfTools; variantCallingLofreq ; variantCallingGatk ; variantCallingIvar ; assemblyVariantCaller } from './modules/04_variant_calling'
 include { variantNormalization } from './modules/05_variant_normalization'
 include { variantAnnotation; variantSarsCov2Annotation } from './modules/06_variant_annotation'
+include { pangolinLineage } from './modules/07_lineage_annotation'
 
 
 params.help= false
@@ -200,6 +201,9 @@ workflow {
         // assembly variant calling
         assemblyVariantCaller(input_fastas, params.reference)
         vcfs_to_normalize = assemblyVariantCaller.out
+
+        // pangolin
+        pangolinLineage(input_fastas)
     }
 
     variantNormalization(vcfs_to_normalize, params.reference)
