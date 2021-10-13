@@ -37,6 +37,10 @@ params.extend_gap_score = -0.1
 params.chromosome = "MN908947.3"
 params.skip_sarscov2_annotations = false
 
+params.library = false
+params.input_fastqs_list = false
+params.input_fastas_list = false
+
 if (params.help) {
     log.info params.help_message
     exit 0
@@ -55,27 +59,98 @@ else {
     reference = file(params.reference)
 }
 
-if (!params.gff && !params.fasta) {
-    log.error "--gff is required"
-    exit 1
-}
-else {
-    gff = file(params.gff)
-}
 
-if (!params.name) {
-    log.error "--name is required"
-    exit 1
-}
-
-if (!params.fastq1 && !params.fasta) {
-    log.error "either --fastq1 or --fasta are required"
-    exit 1
-}
-else if (params.fastq1 && params.fasta) {
+if (params.fastq1 && params.fasta) {
     log.error "provide only --fastq1 or --fasta"
     exit 1
 }
+if (params.input_fastqs_list && params.input_fastas_list) {
+    log.error "provide only --input_fastqs_list or --input_fastas_list"
+    exit 1
+}
+
+input_fastqs = false
+input_fastas = false
+if (params.input_fastqs_list || params.fastq1) {
+
+    if (!params.gff && !params.fasta) {
+        log.error "--gff is required"
+        exit 1
+    }
+    else {
+        gff = file(params.gff)
+    }
+
+    // if independent FASTQ files are provided the value of library is overridden
+    if (params.fastq1 && params.fastq2) {
+        params.library = "single"
+    }
+    else if (params.fastq1 && params.fastq2) {
+        params.library = "paired"
+    }
+    else if (params.input_fastqs_list && !params.library) {
+        log.error "--library paired|single is required when --input_fastqs_list is provided"
+        exit 1
+    }
+
+    if (params.input_fastqs_list) {
+        if (params.library == "paired") {
+            Channel
+                .fromPath(params.input_fastqs_list)
+                .splitCsv(header: ['name', 'fastq1', 'fastq2'], sep: "\t")
+                .map{ row-> tuple(row.name, file(row.fastq1), file(row.fastq2)) }
+                .set { input_fastqs }
+        }
+        else {
+            Channel
+                .fromPath(params.input_fastqs_list)
+                .splitCsv(header: ['name', 'fastq'], sep: "\t")
+                .map{ row-> tuple(row.name, file(row.fastq)) }
+                .set { input_fastqs }
+        }
+    }
+    else {
+
+        if (!params.name) {
+            log.error "--name is required"
+            exit 1
+        }
+        if (params.fastq2) {
+            Channel
+                .fromList([tuple(params.name, file(params.fastq1), file(params.fastq2))])
+                .set { input_fastqs }
+        }
+        else {
+            Channel
+                .fromList([tuple(params.name, file(params.fastq1))])
+                .set { input_fastqs }
+        }
+    }
+}
+else if (params.input_fastas_list || params.fasta) {
+    if (params.input_fastas_list) {
+        Channel
+            .fromPath(params.input_fastas_list)
+            .splitCsv(header: ['name', 'fasta'], sep: "\t")
+            .map{ row-> tuple(row.name, file(row.fasta)) }
+            .set { input_fastas }
+    }
+    else {
+
+        if (!params.name) {
+            log.error "--name is required"
+            exit 1
+        }
+        Channel
+            .fromList([tuple(params.name, file(params.fasta))])
+            .set { input_fastas }
+    }
+}
+else {
+    log.error "missing some input data"
+    exit 1
+}
+
 
 if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_lofreq) {
     log.error "enable at least one variant caller"
@@ -96,13 +171,8 @@ if (!params.skip_sarscov2_annotations) {
 }
 
 
-library = "paired"
-if (!params.fastq2) {
-    library = "single"
-}
-
-if (params.fastq1) {
-    if (library == "paired") {
+if (input_fastqs) {
+    if (params.library == "paired") {
 
         process readTrimmingPairedEnd {
             cpus params.cpus
@@ -111,9 +181,7 @@ if (params.fastq1) {
             publishDir "${params.output}", mode: "copy", pattern: "*fastp_stats*"
 
             input:
-                val name from params.name
-                file fastq1 from file(params.fastq1)
-                file fastq2 from file(params.fastq2)
+                set val(name), file(fastq1), file(fastq2) from input_fastqs
 
             output:
                 set name, file("${fastq1.baseName}.trimmed.fq.gz"), file("${fastq2.baseName}.trimmed.fq.gz") into trimmed_fastqs
@@ -159,8 +227,7 @@ if (params.fastq1) {
             publishDir "${params.output}", mode: "copy", pattern: "*fastp_stats*"
 
             input:
-                val name from params.name
-                file fastq1 from file(params.fastq1)
+                set val(name), file(fastq1) from input_fastqs
 
             output:
                 set name, file("${fastq1.baseName}.trimmed.fq.gz") into trimmed_fastqs
@@ -414,7 +481,7 @@ if (params.fastq1) {
         }
     }
 }
-else if (params.fasta) {
+else if (input_fastas) {
 
     process assemblyVariantCaller {
         cpus params.cpus
@@ -425,8 +492,7 @@ else if (params.fasta) {
         }
 
         input:
-            val name from params.name
-            file fasta from file(params.fasta)
+            set val(name), file(fasta) from input_fastas
 
         output:
             set name, file("${name}.assembly.vcf") into vcfs_to_normalize
