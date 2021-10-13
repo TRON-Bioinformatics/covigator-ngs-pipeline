@@ -36,7 +36,6 @@ params.open_gap_score = -3
 params.extend_gap_score = -0.1
 params.chromosome = "MN908947.3"
 params.skip_sarscov2_annotations = false
-
 params.library = false
 params.input_fastqs_list = false
 params.input_fastas_list = false
@@ -73,7 +72,7 @@ input_fastqs = false
 input_fastas = false
 if (params.input_fastqs_list || params.fastq1) {
 
-    if (!params.gff && !params.fasta) {
+    if (!params.gff) {
         log.error "--gff is required"
         exit 1
     }

@@ -121,6 +121,18 @@ For assembly:
 nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --fasta <FASTA_FILE> --name example_run --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
 ```
 
+For batch processing of reads use `--input_fastqs_list` and `--name`.
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --input_fastqs_list <TSV_FILE> --library <paired|single> --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
+```
+where the TSV file contains two or three columns tab-separated columns without header. Columns: sample name, path to FASTQ 1 and optionally path to FASTQ 2. 
+
+For batch processing of assemblies use `--input_fastas_list`.
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --input_fastas_list <TSV_FILE> --library <paired|single> --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
+```
+where the TSV file contains two columns tab-separated columns without header. Columns: sample name and path to FASTA.
+
 All options available using `--help`:
 ```
 $ nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
@@ -133,8 +145,11 @@ Input:
     * --fasta: the FASTA file containing the assembly sequence (not compatible with --fastq1)
     * --name: the sample name, output files will be named after this name
     * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
-    * --gff: the GFFv3 gene annotations file (only optional with --fastq1)
+    * --gff: the GFFv3 gene annotations file (only required with --fastq1)
     * --output: the folder where to publish output
+    * --input_fastqs_list: alternative to --name and --fastq1 for batch processing
+    * --library: required only when using --input_fastqs
+    * --input_fastas_list: alternative to --name and --fasta for batch processing
 
 Optional input:
     * --fastq2: the second input FASTQ file
