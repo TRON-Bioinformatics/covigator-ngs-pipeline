@@ -12,7 +12,7 @@ process pangolinLineage {
     tuple val(name), file(fasta)
 
     output:
-    file("lineage_report.csv") into lineage_report
+    file("lineage_report.csv")
 
     shell:
     '''
