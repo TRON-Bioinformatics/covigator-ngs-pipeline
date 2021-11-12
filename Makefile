@@ -7,12 +7,9 @@ clean:
 	rm -rf .nextflow*
 
 test:
-	nextflow main.nf --help
-	nextflow main.nf -profile test,conda --initialize
-	nextflow main.nf -profile test,conda --name ERR4145453 \
-	--output output/test1 \
-	--fastq1 test_data/ERR4145453_1.fastq.gz \
-	--fastq2 test_data/ERR4145453_2.fastq.gz
+	bash tests/test_00.sh
+	bash tests/test_01.sh
+	bash tests/test_02.sh
 	nextflow main.nf -profile test,conda --name ERR4145453 \
 	--output output/test2 \
 	--fastq1 test_data/ERR4145453_1.fastq.gz --keep_intermediate
