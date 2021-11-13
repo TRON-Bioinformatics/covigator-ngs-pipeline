@@ -160,9 +160,6 @@ if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_
 
 
 workflow {
-    println "hey"
-    println library
-    println params.fastq2
     if (input_fastqs) {
         if (library == "paired") {
             readTrimmingPairedEnd(input_fastqs)
