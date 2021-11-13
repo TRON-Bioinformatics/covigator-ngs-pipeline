@@ -13,12 +13,14 @@ params.extend_gap_score = -0.1
 params.chromosome = "MN908947.3"
 
 
-process variantCallingBcfTools {
+process VARIANT_CALLING_BCFTOOLS {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+
+    conda (params.enable_conda ? "bioconda::bcftools=1.12" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -51,12 +53,14 @@ process variantCallingBcfTools {
 }
 
 
-process variantCallingLofreq {
+process VARIANT_CALLING_LOFREQ {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+
+    conda (params.enable_conda ? "bioconda::bcftools=1.12 bioconda::lofreq=2.1.5" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -89,12 +93,14 @@ process variantCallingLofreq {
 }
 
 
-process variantCallingGatk {
+process VARIANT_CALLING_GATK {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+
+    conda (params.enable_conda ? "bioconda::gatk4=4.2.0.0" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -116,10 +122,12 @@ process variantCallingGatk {
 }
 
 
-process variantCallingIvar {
+process VARIANT_CALLING_IVAR {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy"
+
+    conda (params.enable_conda ? "bioconda::ivar=1.3.1" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -148,12 +156,14 @@ process variantCallingIvar {
 }
 
 
-process assemblyVariantCaller {
+process VARIANT_CALLING_ASSEMBLY {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+
+    conda (params.enable_conda ? "conda-forge::python=3.8.5 conda-forge::biopython=1.79" : null)
 
     input:
         tuple val(name), file(fasta)

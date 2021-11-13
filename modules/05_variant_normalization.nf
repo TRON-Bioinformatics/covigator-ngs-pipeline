@@ -4,12 +4,14 @@ params.output = "."
 params.keep_intermediate = false
 
 
-process variantNormalization {
+process VARIANT_NORMALIZATION {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+
+    conda (params.enable_conda ? "bioconda::vt=0.57721 bioconda::bcftools=1.12" : null)
 
     input:
         tuple val(name), file(vcf)

@@ -12,10 +12,12 @@ params.conservation_vertebrate = false
 params.conservation_vertebrate_header = false
 
 
-process variantAnnotation {
+process VARIANT_ANNOTATION {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy"
+
+    conda (params.enable_conda ? "bioconda::snpeff=5.0 bioconda::bcftools=1.12" : null)
 
     input:
         tuple val(name), file(vcf)
@@ -38,10 +40,12 @@ process variantAnnotation {
 }
 
 
-process variantSarsCov2Annotation {
+process VARIANT_SARSCOV2_ANNOTATION {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy"
+
+    conda (params.enable_conda ? "bioconda::snpeff=5.0 bioconda::bcftools=1.12" : null)
 
     input:
         tuple val(name), file(vcf)
