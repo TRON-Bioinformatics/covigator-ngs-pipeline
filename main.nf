@@ -56,29 +56,29 @@ if (params.help) {
     log.info params.help_message
     exit 0
 }
-if (!params.output) {
+if (params.output == false) {
     log.error "--output is required"
     exit 1
 }
-if (!params.reference) {
+if (params.reference == false) {
     log.error "--reference is required"
     exit 1
 }
-if (params.fastq1 && params.fasta) {
+if (params.fastq1 != false && params.fasta != false) {
     log.error "provide only --fastq1 or --fasta"
     exit 1
 }
-if (params.input_fastqs_list && params.input_fastas_list) {
+if (params.input_fastqs_list != false && params.input_fastas_list != false) {
     log.error "provide only --input_fastqs_list or --input_fastas_list"
     exit 1
 }
 
 input_fastqs = false
 input_fastas = false
-if (params.input_fastqs_list || params.fastq1) {
+library = params.library
+if (params.input_fastqs_list != false || params.fastq1 != false) {
 
-    if (!params.gff) {
-        log.error "--gff is required"
+    if (params.gff == false) {
         exit 1
     }
     else {
@@ -86,19 +86,19 @@ if (params.input_fastqs_list || params.fastq1) {
     }
 
     // if independent FASTQ files are provided the value of library is overridden
-    if (params.fastq1 && params.fastq2) {
-        params.library = "single"
+    if (params.fastq1 != false && params.fastq2 == false) {
+        library = "single"
     }
-    else if (params.fastq1 && params.fastq2) {
-        params.library = "paired"
+    else if (params.fastq1 != false && params.fastq2 != false) {
+        library = "paired"
     }
-    else if (params.input_fastqs_list && !params.library) {
+    else if (params.input_fastqs_list && library == false) {
         log.error "--library paired|single is required when --input_fastqs_list is provided"
         exit 1
     }
 
     if (params.input_fastqs_list) {
-        if (params.library == "paired") {
+        if (library == "paired") {
             Channel
                 .fromPath(params.input_fastqs_list)
                 .splitCsv(header: ['name', 'fastq1', 'fastq2'], sep: "\t")
@@ -115,11 +115,11 @@ if (params.input_fastqs_list || params.fastq1) {
     }
     else {
 
-        if (!params.name) {
+        if (params.name == false) {
             log.error "--name is required"
             exit 1
         }
-        if (params.fastq2) {
+        if (params.fastq2 != false) {
             Channel
                 .fromList([tuple(params.name, file(params.fastq1), file(params.fastq2))])
                 .set { input_fastqs }
@@ -141,7 +141,7 @@ else if (params.input_fastas_list || params.fasta) {
     }
     else {
 
-        if (!params.name) {
+        if (params.name == false) {
             log.error "--name is required"
             exit 1
         }
@@ -161,9 +161,8 @@ if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_
 
 
 workflow {
-
     if (input_fastqs) {
-        if (params.library == "paired") {
+        if (library == "paired") {
             readTrimmingPairedEnd(input_fastqs)
             alignmentPairedEnd(readTrimmingPairedEnd.out[0], params.reference)
             bam_files = alignmentPairedEnd.out
