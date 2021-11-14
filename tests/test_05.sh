@@ -7,7 +7,7 @@
 echo "Running CoVigator pipeline test 5"
 source bin/assert.sh
 output=output/test5
-echo "hCoV-19_NTXX\t"`pwd`"/test_data/hCoV-19_NTXX.fasta\n" > test_data/test_input.txt
+echo -e "hCoV-19_NTXX\t"`pwd`"/test_data/hCoV-19_NTXX.fasta\n" > test_data/test_input.txt
 	nextflow main.nf -profile test,conda --input_fastas_list test_data/test_input.txt \
 	--output $output
 
