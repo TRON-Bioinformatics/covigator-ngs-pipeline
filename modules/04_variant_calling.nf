@@ -60,7 +60,7 @@ process VARIANT_CALLING_LOFREQ {
         publishDir "${params.output}", mode: "copy"
     }
 
-    conda (params.enable_conda ? "conda-forge::openssl=1.0.2 bioconda::bcftools=1.14 bioconda::lofreq=2.1.5" : null)
+    conda (params.enable_conda ? "conda-forge::libgcc-ng=9.4.0 bioconda::bcftools=1.14 bioconda::lofreq=2.1.5" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
