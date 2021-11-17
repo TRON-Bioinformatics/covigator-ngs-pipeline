@@ -52,7 +52,6 @@ process VARIANT_CALLING_BCFTOOLS {
     """
 }
 
-
 process VARIANT_CALLING_LOFREQ {
     cpus params.cpus
     memory params.memory
