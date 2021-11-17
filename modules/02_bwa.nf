@@ -7,7 +7,7 @@ process ALIGNMENT_PAIRED_END {
     memory params.memory
     tag params.name
 
-    conda (params.enable_conda ? "bioconda::bwa=0.7.17" : null)
+    conda (params.enable_conda ? "bioconda::bwa=0.7.17 bioconda::samtools=1.12" : null)
 
     input:
         tuple val(name), file(fastq1), file(fastq2)
@@ -28,7 +28,7 @@ process ALIGNMENT_SINGLE_END {
     memory params.memory
     tag params.name
 
-    conda (params.enable_conda ? "bioconda::bwa=0.7.17" : null)
+    conda (params.enable_conda ? "bioconda::bwa=0.7.17 bioconda::samtools=1.12" : null)
 
     input:
         tuple val(name), file(fastq1)
