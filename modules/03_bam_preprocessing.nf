@@ -54,20 +54,6 @@ process BAM_PREPROCESSING {
     --SORT_ORDER coordinate
 
     gatk BuildBamIndex --INPUT ${bam.baseName}.preprocessed.bam
-
-    #gatk3 -Xmx${params.memory} -Djava.io.tmpdir=tmp -T RealignerTargetCreator \
-    #--input_file ${bam.baseName}.dedup.sorted.bam \
-    #--out ${bam.baseName}.RA.intervals \
-    #--reference_sequence ${reference}
-
-    #gatk3 -Xmx${params.memory} -Djava.io.tmpdir=tmp -T IndelRealigner \
-    #--input_file ${bam.baseName}.dedup.sorted.bam \
-    #--out ${name}.preprocessed.bam \
-    #--reference_sequence ${reference} \
-    #--targetIntervals ${bam.baseName}.RA.intervals \
-    #--consensusDeterminationModel USE_SW \
-    #--LODThresholdForCleaning 0.4 \
-    #--maxReadsInMemory 600000
     """
 }
 
