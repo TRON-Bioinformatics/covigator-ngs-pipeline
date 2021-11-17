@@ -60,14 +60,14 @@ process VARIANT_CALLING_LOFREQ {
         publishDir "${params.output}", mode: "copy"
     }
 
-    conda (params.enable_conda ? "conda-forge::libgcc-ng=9.4.0 bioconda::bcftools=1.14 bioconda::lofreq=2.1.5" : null)
+    conda (params.enable_conda ? "bioconda::lofreq=2.1.5" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
         val(reference)
 
     output:
-        tuple val(name), file("${name}.lofreq.bcf")
+        tuple val(name), file("${name}.lofreq.vcf")
 
     """
     lofreq call \
@@ -76,8 +76,27 @@ process VARIANT_CALLING_LOFREQ {
     --min-mq ${params.min_mapping_quality} \
     --ref ${reference} \
     --call-indels \
-    <( lofreq indelqual --dindel --ref ${reference} ${bam} ) | \
-    bgzip -c > ${name}.lofreq.vcf.gz
+    <( lofreq indelqual --dindel --ref ${reference} ${bam} ) > ${name}.lofreq.vcf
+    """
+}
+
+process ANNOTATE_LOFREQ {
+    cpus params.cpus
+    memory params.memory
+    if (params.keep_intermediate) {
+        publishDir "${params.output}", mode: "copy"
+    }
+
+    conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
+
+    input:
+        tuple val(name), file(vcf)
+
+    output:
+        tuple val(name), file("${name}.lofreq.bcf")
+
+    """
+    bgzip ${vcf} > ${name}.lofreq.vcf.gz
 
     tabix -p vcf ${name}.lofreq.vcf.gz
 
@@ -92,7 +111,6 @@ process VARIANT_CALLING_LOFREQ {
     --output-type b - > ${name}.lofreq.bcf
     """
 }
-
 
 process VARIANT_CALLING_GATK {
     cpus params.cpus
