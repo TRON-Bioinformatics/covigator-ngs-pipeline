@@ -67,7 +67,7 @@ process VARIANT_CALLING_LOFREQ {
         val(reference)
 
     output:
-        tuple val(name), file("${name}.lofreq.vcf")
+        tuple val(name), file("${name}.lofreq.bcf")
 
     """
     lofreq call \
@@ -88,7 +88,8 @@ process VARIANT_CALLING_LOFREQ {
     --soft-filter LOW_FREQUENCY - | \
     bcftools filter \
     --exclude 'INFO/AF >= ${params.low_frequency_variant_threshold} && INFO/AF < ${params.subclonal_variant_threshold}' \
-    --soft-filter SUBCLONAL - > ${name}.lofreq.vcf
+    --soft-filter SUBCLONAL \
+    --output-type b - > ${name}.lofreq.bcf
     """
 }
 
@@ -100,14 +101,14 @@ process VARIANT_CALLING_GATK {
         publishDir "${params.output}", mode: "copy"
     }
 
-    conda (params.enable_conda ? "bioconda::gatk4=4.2.0.0" : null)
+    conda (params.enable_conda ? "bioconda::bcftools=1.14 bioconda::gatk4=4.2.0.0" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
         val(reference)
 
     output:
-        tuple val(name), file("${name}.gatk.vcf")
+        tuple val(name), file("${name}.gatk.bcf")
 
     """
     gatk HaplotypeCaller \
@@ -118,6 +119,8 @@ process VARIANT_CALLING_GATK {
     --min-base-quality-score ${params.min_base_quality} \
     --minimum-mapping-quality ${params.min_mapping_quality} \
     --annotation AlleleFraction
+
+    bcftools view --output-type b ${name}.gatk.vcf > ${name}.gatk.bcf
     """
 }
 

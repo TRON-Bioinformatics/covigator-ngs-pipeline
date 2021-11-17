@@ -9,7 +9,7 @@ include { BAM_PREPROCESSING; COVERAGE_ANALYSIS } from './modules/03_bam_preproce
 include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; VARIANT_CALLING_GATK ; VARIANT_CALLING_IVAR ; VARIANT_CALLING_ASSEMBLY } from './modules/04_variant_calling'
 include { VARIANT_NORMALIZATION } from './modules/05_variant_normalization'
 include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION } from './modules/06_variant_annotation'
-include { PANGOLIN_LINEAGE } from './modules/07_lineage_annotation'
+include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
 
 
 params.help= false
@@ -196,9 +196,13 @@ workflow {
             VARIANT_CALLING_IVAR(BAM_PREPROCESSING.out.preprocessed_bam, params.reference, gff)
             // TODO: transform iVar to a VCF and follow normalization...
         }
+
+        // pangolin from VCF
+        VCF2FASTA(vcfs_to_normalize, params.reference)
+        PANGOLIN_LINEAGE(VCF2FASTA.out)
     }
     else if (input_fastas) {
-        // pangolin
+        // pangolin from fasta
         PANGOLIN_LINEAGE(input_fastas)
 
         // assembly variant calling
