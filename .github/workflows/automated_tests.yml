@@ -18,18 +18,6 @@ jobs:
         apt-get update && apt-get --assume-yes install wget make procps software-properties-common
         wget -qO- https://get.nextflow.io | bash && cp nextflow /usr/local/bin/nextflow
         pip install virtualenv
-        # (Download the latest OpenSSL 1.0.2g binaries)
-        wget https://www.openssl.org/source/openssl-1.0.2l.tar.gz
-        # (Extract the tar ball to the local directory)
-        tar -xzvf openssl-1.0.2l.tar.gz
-        # (Enter extracted OpenSSL directory)
-        cd openssl-1.0.2l
-        #  (Configure binaries for compiling)
-        sudo ./config
-        # (install configured binaries)
-        sudo make install
-        # (This will create a sym link to the new binaries)
-        sudo ln -sf /usr/local/ssl/bin/openssl `which openssl`
     - name: Run tests
       run: |
         make
