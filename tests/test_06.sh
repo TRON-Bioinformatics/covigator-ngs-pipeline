@@ -8,7 +8,7 @@
 echo "Running CoVigator pipeline test 6"
 source bin/assert.sh
 output=output/test6
-echo "ERR4145453\t"`pwd`"/test_data/ERR4145453_1.fastq.gz\t"`pwd`"/test_data/ERR4145453_2.fastq.gz\n" > test_data/test_input.txt
+echo -e "ERR4145453\t"`pwd`"/test_data/ERR4145453_1.fastq.gz\t"`pwd`"/test_data/ERR4145453_2.fastq.gz\n" > test_data/test_input.txt
 	nextflow main.nf -profile test,conda --input_fastqs_list test_data/test_input.txt \
 	--library paired --output $output
 
