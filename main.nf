@@ -6,7 +6,7 @@ nextflow.enable.dsl = 2
 include { READ_TRIMMING_PAIRED_END; READ_TRIMMING_SINGLE_END } from './modules/01_fastp'
 include { ALIGNMENT_PAIRED_END; ALIGNMENT_SINGLE_END } from './modules/02_bwa'
 include { BAM_PREPROCESSING; COVERAGE_ANALYSIS } from './modules/03_bam_preprocessing'
-include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; ANNOTATE_LOFREQ; VARIANT_CALLING_GATK ;
+include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; VARIANT_CALLING_GATK ;
             VARIANT_CALLING_IVAR ; VARIANT_CALLING_ASSEMBLY } from './modules/04_variant_calling'
 include { VARIANT_NORMALIZATION } from './modules/05_variant_normalization'
 include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION } from './modules/06_variant_annotation'
@@ -184,9 +184,9 @@ workflow {
                 VARIANT_CALLING_BCFTOOLS.out : vcfs_to_normalize.concat(VARIANT_CALLING_BCFTOOLS.out)
         }
         if (!params.skip_lofreq) {
-            ANNOTATE_LOFREQ(VARIANT_CALLING_LOFREQ(BAM_PREPROCESSING.out.preprocessed_bam, params.reference))
+            VARIANT_CALLING_LOFREQ(BAM_PREPROCESSING.out.preprocessed_bam, params.reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
-                ANNOTATE_LOFREQ.out : vcfs_to_normalize.concat(ANNOTATE_LOFREQ.out)
+                VARIANT_CALLING_LOFREQ.out : vcfs_to_normalize.concat(VARIANT_CALLING_LOFREQ.out)
         }
         if (!params.skip_gatk) {
             VARIANT_CALLING_GATK(BAM_PREPROCESSING.out.preprocessed_bam, params.reference)
