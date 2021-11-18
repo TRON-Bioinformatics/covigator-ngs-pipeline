@@ -128,6 +128,7 @@ process VARIANT_CALLING_GATK {
         tuple val(name), file("${name}.gatk.bcf")
 
     """
+    mkdir tmp
     gatk HaplotypeCaller \
     --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
     --input $bam \
