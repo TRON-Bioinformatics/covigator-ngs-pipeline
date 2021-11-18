@@ -13,6 +13,9 @@ jobs:
         distribution: 'zulu' # See 'Supported distributions' for available options
         java-version: '11'
     - uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-update-conda: true
+        channels: defaults,conda-forge,bioconda
     - name: Install dependencies
       run: |
         apt-get update && apt-get --assume-yes install wget build-essential procps software-properties-common
