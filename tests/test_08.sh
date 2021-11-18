@@ -13,27 +13,16 @@ nextflow main.nf -profile test,conda --name ERR4145453 \
 --fastq2 test_data/ERR4145453_2.minimal.fastq.gz --skip_sarscov2_annotations \
 --skip_ivar --skip_bcftools --skip_gatk
 
-test -s $output/ERR4145453.bcftools.normalized.annotated.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
-test -s $output/ERR4145453.gatk.normalized.annotated.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/ERR4145453.lofreq.normalized.annotated.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
-test -s $output/ERR4145453.ivar.tsv || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/ERR4145453.fastp_stats.json || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/ERR4145453.fastp_stats.html || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/ERR4145453.coverage.tsv || { echo "Missing coverage output file!"; exit 1; }
 test -s $output/ERR4145453.depth.tsv || { echo "Missing depth output file!"; exit 1; }
 test -s $output/ERR4145453.depth.tsv || { echo "Missing deduplication metrics file!"; exit 1; }
-test -s $output/ERR4145453.bcftools.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
-test -s $output/ERR4145453.gatk.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 test -s $output/ERR4145453.lofreq.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 
 assert_eq `zcat $output/ERR4145453.lofreq.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 54 "Wrong number of variants"
 assert_eq `zcat $output/ERR4145453.lofreq.normalized.annotated.vcf.gz | grep -v '#' | grep PASS | wc -l` 2 "Wrong number of variants"
 assert_eq `zcat $output/ERR4145453.lofreq.normalized.annotated.vcf.gz | grep -v '#' | grep PFAM | wc -l` 0 "Wrong number of variants"
-assert_eq `zcat $output/ERR4145453.bcftools.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 13 "Wrong number of variants"
-assert_eq `zcat $output/ERR4145453.bcftools.normalized.annotated.vcf.gz | grep -v '#' | grep PFAM | wc -l` 0 "Wrong number of variants"
-assert_eq `zcat $output/ERR4145453.gatk.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 11 "Wrong number of variants"
-assert_eq `zcat $output/ERR4145453.gatk.normalized.annotated.vcf.gz | grep -v '#' | grep PFAM | wc -l` 0 "Wrong number of variants"
 
-assert_eq `cat $output/ERR4145453.gatk.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
-assert_eq `cat $output/ERR4145453.bcftools.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
 assert_eq `cat $output/ERR4145453.lofreq.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
