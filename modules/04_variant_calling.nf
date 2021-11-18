@@ -95,7 +95,7 @@ process ANNOTATE_LOFREQ {
         tuple val(name), file("${name}.lofreq.bcf")
 
     """
-    bgzip ${vcf} > ${name}.lofreq.vcf.gz
+    bgzip -c ${vcf} > ${name}.lofreq.vcf.gz
 
     tabix -p vcf ${name}.lofreq.vcf.gz
 
