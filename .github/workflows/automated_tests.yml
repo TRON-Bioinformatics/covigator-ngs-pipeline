@@ -26,6 +26,7 @@ jobs:
       with:
         path: |
           /home/runner/work/covigator-ngs-pipeline/covigator-ngs-pipeline/work/conda
+        key: ${{ runner.os }}-covigator-ngs-pipeline
     - name: Run tests
       run: |
         make
