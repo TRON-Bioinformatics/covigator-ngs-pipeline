@@ -31,9 +31,9 @@ test -s $output/ERR4145453.lofreq.pangolin.csv || { echo "Missing pangolin outpu
 test -s $output/ERR4145453.preprocessed.bam || { echo "Missing BAM file!"; exit 1; }
 test -s $output/ERR4145453.preprocessed.bai || { echo "Missing BAI file!"; exit 1; }
 
-assert_eq `zcat $output/ERR4145453.lofreq.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 2225 "Wrong number of variants"
+assert_eq `zcat $output/ERR4145453.lofreq.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 2224 "Wrong number of variants"
 assert_eq `zcat $output/ERR4145453.lofreq.normalized.annotated.vcf.gz | grep -v '#' | grep PASS | wc -l` 5 "Wrong number of variants"
-assert_eq `zcat $output/ERR4145453.bcftools.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 5 "Wrong number of variants"
+assert_eq `zcat $output/ERR4145453.bcftools.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 6 "Wrong number of variants"
 assert_eq `zcat $output/ERR4145453.gatk.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 6 "Wrong number of variants"
 
 assert_eq `cat $output/ERR4145453.gatk.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"

@@ -15,4 +15,4 @@ test -s $output/hCoV-19_NTXX.assembly.normalized.annotated.vcf.gz || { echo "Mis
 test -s $output/hCoV-19_NTXX.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 
 assert_eq `zcat $output/hCoV-19_NTXX.assembly.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 13 "Wrong number of variants"
-assert_eq `cat $output/ERR4145453.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
+assert_eq `cat $output/hCoV-19_NTXX.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
