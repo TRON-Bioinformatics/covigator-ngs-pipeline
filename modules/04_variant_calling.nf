@@ -129,6 +129,7 @@ process VARIANT_CALLING_GATK {
 
     """
     gatk HaplotypeCaller \
+    --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
     --input $bam \
     --output ${name}.gatk.vcf \
     --reference ${reference} \
