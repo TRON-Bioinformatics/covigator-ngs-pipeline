@@ -33,6 +33,6 @@ assert_eq `zcat $output/ERR4145453.bcftools.normalized.annotated.vcf.gz | grep -
 assert_eq `zcat $output/ERR4145453.gatk.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 6 "Wrong number of variants"
 assert_eq `zcat $output/ERR4145453.gatk.normalized.annotated.vcf.gz | grep -v '#' | grep PFAM | wc -l` 0 "Wrong number of variants"
 
-assert_eq `zcat $output/ERR4145453.gatk.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
-assert_eq `zcat $output/ERR4145453.bcftools.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
-assert_eq `zcat $output/ERR4145453.lofreq.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
+assert_eq `cat $output/ERR4145453.gatk.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
+assert_eq `cat $output/ERR4145453.bcftools.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
+assert_eq `cat $output/ERR4145453.lofreq.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
