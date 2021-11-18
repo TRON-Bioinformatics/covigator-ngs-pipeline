@@ -16,7 +16,7 @@ include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
 params.help= false
 params.initialize = false
 if (params.initialize) {
-    params.fastq1 = "$baseDir/test_data/ERR4145453_1.fastq.gz"
+    params.fastq1 = "$baseDir/test_data/ERR4145453_1.minimal.fastq.gz"
     params.skip_bcftools = true
     params.skip_ivar = true
     params.skip_gatk = true
