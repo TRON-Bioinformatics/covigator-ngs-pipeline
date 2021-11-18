@@ -10,7 +10,7 @@ source bin/assert.sh
 output=output/test2
 nextflow main.nf -profile test,conda --name test_data \
 --output $output \
---fastq1 test_data/test_data_1.minimal.fastq.gz --keep_intermediate \
+--fastq1 test_data/test_data_1.fastq.gz --keep_intermediate \
 --skip_ivar --skip_bcftools --skip_gatk
 
 test -s $output/test_data.lofreq.normalized.annotated.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
