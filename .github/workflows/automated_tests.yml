@@ -21,6 +21,11 @@ jobs:
         apt-get update && apt-get --assume-yes install wget build-essential procps software-properties-common
         wget -qO- https://get.nextflow.io | bash && cp nextflow /usr/local/bin/nextflow
         pip install virtualenv
+    - name: Cache conda environments
+      uses: actions/cache@v2
+      with:
+        path: |
+          /home/runner/work/covigator-ngs-pipeline/covigator-ngs-pipeline/work/conda
     - name: Run tests
       run: |
         make
