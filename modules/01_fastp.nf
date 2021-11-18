@@ -3,10 +3,12 @@ params.cpus = 1
 params.output = "."
 
 
-process readTrimmingPairedEnd {
+process READ_TRIMMING_PAIRED_END {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy", pattern: "*fastp_stats*"
+
+    conda (params.enable_conda ? "bioconda::fastp=0.20.1" : null)
 
     input:
         tuple val(name), file(fastq1), file(fastq2)
@@ -28,10 +30,12 @@ process readTrimmingPairedEnd {
     """
 }
 
-process readTrimmingSingleEnd {
+process READ_TRIMMING_SINGLE_END {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy", pattern: "*fastp_stats*"
+
+    conda (params.enable_conda ? "bioconda::fastp=0.20.1" : null)
 
     input:
         tuple val(name), file(fastq1)

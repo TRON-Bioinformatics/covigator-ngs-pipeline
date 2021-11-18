@@ -13,12 +13,14 @@ params.extend_gap_score = -0.1
 params.chromosome = "MN908947.3"
 
 
-process variantCallingBcfTools {
+process VARIANT_CALLING_BCFTOOLS {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+
+    conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -50,13 +52,14 @@ process variantCallingBcfTools {
     """
 }
 
-
-process variantCallingLofreq {
+process VARIANT_CALLING_LOFREQ {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+
+    conda (params.enable_conda ? "bioconda::lofreq=2.1.5" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -72,8 +75,27 @@ process variantCallingLofreq {
     --min-mq ${params.min_mapping_quality} \
     --ref ${reference} \
     --call-indels \
-    <( lofreq indelqual --dindel --ref ${reference} ${bam} ) | \
-    bgzip -c > ${name}.lofreq.vcf.gz
+    <( lofreq indelqual --dindel --ref ${reference} ${bam} ) > ${name}.lofreq.vcf
+    """
+}
+
+process ANNOTATE_LOFREQ {
+    cpus params.cpus
+    memory params.memory
+    if (params.keep_intermediate) {
+        publishDir "${params.output}", mode: "copy"
+    }
+
+    conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
+
+    input:
+        tuple val(name), file(vcf)
+
+    output:
+        tuple val(name), file("${name}.lofreq.bcf")
+
+    """
+    bgzip -c ${vcf} > ${name}.lofreq.vcf.gz
 
     tabix -p vcf ${name}.lofreq.vcf.gz
 
@@ -84,27 +106,31 @@ process variantCallingLofreq {
     --soft-filter LOW_FREQUENCY - | \
     bcftools filter \
     --exclude 'INFO/AF >= ${params.low_frequency_variant_threshold} && INFO/AF < ${params.subclonal_variant_threshold}' \
-    --soft-filter SUBCLONAL - > ${name}.lofreq.vcf
+    --soft-filter SUBCLONAL \
+    --output-type b - > ${name}.lofreq.bcf
     """
 }
 
-
-process variantCallingGatk {
+process VARIANT_CALLING_GATK {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
 
+    conda (params.enable_conda ? "bioconda::bcftools=1.14 bioconda::gatk4=4.2.0.0" : null)
+
     input:
         tuple val(name), file(bam), file(bai)
         val(reference)
 
     output:
-        tuple val(name), file("${name}.gatk.vcf")
+        tuple val(name), file("${name}.gatk.bcf")
 
     """
+    mkdir tmp
     gatk HaplotypeCaller \
+    --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
     --input $bam \
     --output ${name}.gatk.vcf \
     --reference ${reference} \
@@ -112,14 +138,18 @@ process variantCallingGatk {
     --min-base-quality-score ${params.min_base_quality} \
     --minimum-mapping-quality ${params.min_mapping_quality} \
     --annotation AlleleFraction
+
+    bcftools view --output-type b ${name}.gatk.vcf > ${name}.gatk.bcf
     """
 }
 
 
-process variantCallingIvar {
+process VARIANT_CALLING_IVAR {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy"
+
+    conda (params.enable_conda ? "bioconda::samtools=1.12 bioconda::ivar=1.3.1" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -148,12 +178,14 @@ process variantCallingIvar {
 }
 
 
-process assemblyVariantCaller {
+process VARIANT_CALLING_ASSEMBLY {
     cpus params.cpus
     memory params.memory
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+
+    conda (params.enable_conda ? "conda-forge::python=3.8.5 conda-forge::biopython=1.79" : null)
 
     input:
         tuple val(name), file(fasta)

@@ -3,18 +3,20 @@
 nextflow.enable.dsl = 2
 
 
-include { readTrimmingPairedEnd; readTrimmingSingleEnd } from './modules/01_fastp'
-include { alignmentPairedEnd; alignmentSingleEnd } from './modules/02_bwa'
-include { bamPreprocessing } from './modules/03_bam_preprocessing'
-include { variantCallingBcfTools; variantCallingLofreq ; variantCallingGatk ; variantCallingIvar ; assemblyVariantCaller } from './modules/04_variant_calling'
-include { variantNormalization } from './modules/05_variant_normalization'
-include { variantAnnotation; variantSarsCov2Annotation } from './modules/06_variant_annotation'
+include { READ_TRIMMING_PAIRED_END; READ_TRIMMING_SINGLE_END } from './modules/01_fastp'
+include { ALIGNMENT_PAIRED_END; ALIGNMENT_SINGLE_END } from './modules/02_bwa'
+include { BAM_PREPROCESSING; COVERAGE_ANALYSIS } from './modules/03_bam_preprocessing'
+include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; ANNOTATE_LOFREQ; VARIANT_CALLING_GATK ;
+            VARIANT_CALLING_IVAR ; VARIANT_CALLING_ASSEMBLY } from './modules/04_variant_calling'
+include { VARIANT_NORMALIZATION } from './modules/05_variant_normalization'
+include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION } from './modules/06_variant_annotation'
+include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
 
 
 params.help= false
 params.initialize = false
 if (params.initialize) {
-    params.fastq1 = "$baseDir/test_data/ERR4145453_1.fastq.gz"
+    params.fastq1 = "$baseDir/test_data/test_data_1.fastq.gz"
     params.skip_bcftools = true
     params.skip_ivar = true
     params.skip_gatk = true
@@ -162,51 +164,59 @@ if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_
 workflow {
     if (input_fastqs) {
         if (library == "paired") {
-            readTrimmingPairedEnd(input_fastqs)
-            alignmentPairedEnd(readTrimmingPairedEnd.out[0], params.reference)
-            bam_files = alignmentPairedEnd.out
+            READ_TRIMMING_PAIRED_END(input_fastqs)
+            ALIGNMENT_PAIRED_END(READ_TRIMMING_PAIRED_END.out[0], params.reference)
+            bam_files = ALIGNMENT_PAIRED_END.out
         }
         else {
-            readTrimmingSingleEnd(input_fastqs)
-            alignmentSingleEnd(readTrimmingSingleEnd.out[0], params.reference)
-            bam_files = alignmentSingleEnd.out
+            READ_TRIMMING_SINGLE_END(input_fastqs)
+            ALIGNMENT_SINGLE_END(READ_TRIMMING_SINGLE_END.out[0], params.reference)
+            bam_files = ALIGNMENT_SINGLE_END.out
         }
-        bamPreprocessing(bam_files, params.reference)
+        BAM_PREPROCESSING(bam_files, params.reference)
+        COVERAGE_ANALYSIS(BAM_PREPROCESSING.out.preprocessed_bam)
 
         // variant calling
         vcfs_to_normalize = null
         if (!params.skip_bcftools) {
-            variantCallingBcfTools(bamPreprocessing.out[0], params.reference)
+            VARIANT_CALLING_BCFTOOLS(BAM_PREPROCESSING.out.preprocessed_bam, params.reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
-                variantCallingBcfTools.out : vcfs_to_normalize.concat(variantCallingBcfTools.out)
+                VARIANT_CALLING_BCFTOOLS.out : vcfs_to_normalize.concat(VARIANT_CALLING_BCFTOOLS.out)
         }
         if (!params.skip_lofreq) {
-            variantCallingLofreq(bamPreprocessing.out[0], params.reference)
+            ANNOTATE_LOFREQ(VARIANT_CALLING_LOFREQ(BAM_PREPROCESSING.out.preprocessed_bam, params.reference))
             vcfs_to_normalize = vcfs_to_normalize == null?
-                variantCallingLofreq.out : vcfs_to_normalize.concat(variantCallingLofreq.out)
+                ANNOTATE_LOFREQ.out : vcfs_to_normalize.concat(ANNOTATE_LOFREQ.out)
         }
         if (!params.skip_gatk) {
-            variantCallingGatk(bamPreprocessing.out[0], params.reference)
+            VARIANT_CALLING_GATK(BAM_PREPROCESSING.out.preprocessed_bam, params.reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
-                variantCallingGatk.out : vcfs_to_normalize.concat(variantCallingGatk.out)
+                VARIANT_CALLING_GATK.out : vcfs_to_normalize.concat(VARIANT_CALLING_GATK.out)
         }
         if (!params.skip_ivar) {
-            variantCallingIvar(bamPreprocessing.out[0], params.reference, gff)
+            VARIANT_CALLING_IVAR(BAM_PREPROCESSING.out.preprocessed_bam, params.reference, gff)
             // TODO: transform iVar to a VCF and follow normalization...
         }
+
+        // pangolin from VCF
+        VCF2FASTA(vcfs_to_normalize, params.reference)
+        PANGOLIN_LINEAGE(VCF2FASTA.out)
     }
     else if (input_fastas) {
+        // pangolin from fasta
+        PANGOLIN_LINEAGE(input_fastas)
+
         // assembly variant calling
-        assemblyVariantCaller(input_fastas, params.reference)
-        vcfs_to_normalize = assemblyVariantCaller.out
+        VARIANT_CALLING_ASSEMBLY(input_fastas, params.reference)
+        vcfs_to_normalize = VARIANT_CALLING_ASSEMBLY.out
     }
 
-    variantNormalization(vcfs_to_normalize, params.reference)
+    VARIANT_NORMALIZATION(vcfs_to_normalize, params.reference)
 
     if (params.skip_sarscov2_annotations) {
-        variantAnnotation(variantNormalization.out)
+        VARIANT_ANNOTATION(VARIANT_NORMALIZATION.out)
     }
     else {
-        variantSarsCov2Annotation(variantNormalization.out)
+        VARIANT_SARSCOV2_ANNOTATION(VARIANT_NORMALIZATION.out)
     }
 }
