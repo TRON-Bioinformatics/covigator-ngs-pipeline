@@ -147,7 +147,7 @@ process VARIANT_CALLING_IVAR {
     memory params.memory
     publishDir "${params.output}", mode: "copy"
 
-    conda (params.enable_conda ? "bioconda::ivar=1.3.1" : null)
+    conda (params.enable_conda ? "bioconda::samtools=1.12 bioconda::ivar=1.3.1" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
