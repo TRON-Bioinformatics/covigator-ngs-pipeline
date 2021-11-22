@@ -11,6 +11,8 @@ include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; ANNOTATE_LOFREQ; VA
 include { VARIANT_NORMALIZATION } from './modules/05_variant_normalization'
 include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION } from './modules/06_variant_annotation'
 include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
+include { VAFATOR } from './modules/08_vafator'
+include { BGZIP } from './modules/09_compress_vcf'
 
 
 params.help= false
@@ -215,8 +217,18 @@ workflow {
 
     if (params.skip_sarscov2_annotations) {
         VARIANT_ANNOTATION(VARIANT_NORMALIZATION.out)
+        annotated_vcfs = VARIANT_ANNOTATION.out.annotated_vcfs
     }
     else {
         VARIANT_SARSCOV2_ANNOTATION(VARIANT_NORMALIZATION.out)
+        annotated_vcfs = VARIANT_SARSCOV2_ANNOTATION.out.annotated_vcfs
     }
+
+    if (input_fastqs) {
+        // we can only add technical annotations when we have the reads
+        VAFATOR(annotated_vcfs.combine(BAM_PREPROCESSING.out.preprocessed_bam, by: 0))
+        annotated_vcfs = VAFATOR.out.annotated_vcf
+    }
+
+    BGZIP(annotated_vcfs)
 }

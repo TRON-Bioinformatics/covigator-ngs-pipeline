@@ -74,7 +74,7 @@ process COVERAGE_ANALYSIS {
 
 
     """
-    samtools coverage ${name}.preprocessed.bam > ${name}.coverage.tsv
-    samtools depth -s -d 0 -H ${name}.preprocessed.bam > ${name}.depth.tsv
+    samtools coverage ${bam} > ${name}.coverage.tsv
+    samtools depth -s -d 0 -H ${bam} > ${name}.depth.tsv
     """
 }

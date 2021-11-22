@@ -13,7 +13,7 @@ nextflow main.nf -profile test,conda --name test_data \
 --fastq1 test_data/test_data_1.fastq.gz --keep_intermediate \
 --skip_ivar --skip_bcftools --skip_gatk
 
-test -s $output/test_data.lofreq.normalized.annotated.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
+test -s $output/test_data.lofreq.normalized.annotated.vaf.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.fastp_stats.json || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.fastp_stats.html || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.coverage.tsv || { echo "Missing coverage output file!"; exit 1; }
@@ -25,7 +25,7 @@ test -s $output/test_data.lofreq.pangolin.csv || { echo "Missing pangolin output
 test -s $output/test_data.preprocessed.bam || { echo "Missing BAM file!"; exit 1; }
 test -s $output/test_data.preprocessed.bai || { echo "Missing BAI file!"; exit 1; }
 
-assert_eq `zcat $output/test_data.lofreq.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 11 "Wrong number of variants"
-assert_eq `zcat $output/test_data.lofreq.normalized.annotated.vcf.gz | grep -v '#' | grep PASS | wc -l` 2 "Wrong number of variants"
+assert_eq `zcat $output/test_data.lofreq.normalized.annotated.vaf.vcf.gz | grep -v '#' | wc -l` 11 "Wrong number of variants"
+assert_eq `zcat $output/test_data.lofreq.normalized.annotated.vaf.vcf.gz | grep -v '#' | grep PASS | wc -l` 2 "Wrong number of variants"
 
 assert_eq `cat $output/test_data.lofreq.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"

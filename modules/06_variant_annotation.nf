@@ -10,21 +10,23 @@ params.conservation_sarbecovirus = false
 params.conservation_sarbecovirus_header = false
 params.conservation_vertebrate = false
 params.conservation_vertebrate_header = false
+params.keep_intermediate = false
 
 
 process VARIANT_ANNOTATION {
     cpus params.cpus
     memory params.memory
-    publishDir "${params.output}", mode: "copy"
+    if (params.keep_intermediate) {
+        publishDir "${params.output}", mode: "copy"
+    }
 
-    conda (params.enable_conda ? "bioconda::snpeff=5.0 bioconda::bcftools=1.12" : null)
+    conda (params.enable_conda ? "bioconda::snpeff=5.0" : null)
 
     input:
-        tuple val(name), file(vcf)
+    tuple val(name), file(vcf)
 
     output:
-        file("${vcf.baseName}.annotated.vcf.gz")
-        file("${vcf.baseName}.annotated.vcf.gz.tbi")
+    tuple val(name), file("${vcf.baseName}.annotated.vcf"), emit: annotated_vcfs
 
     """
     # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
@@ -32,10 +34,7 @@ process VARIANT_ANNOTATION {
 
     snpEff eff -dataDir ${params.snpeff_data} \
     -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
-    ${params.snpeff_organism}  ${vcf} | \
-    bgzip -c > ${vcf.baseName}.annotated.vcf.gz
-
-    tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
+    ${params.snpeff_organism}  ${vcf} > ${vcf.baseName}.annotated.vcf
     """
 }
 
@@ -43,16 +42,17 @@ process VARIANT_ANNOTATION {
 process VARIANT_SARSCOV2_ANNOTATION {
     cpus params.cpus
     memory params.memory
-    publishDir "${params.output}", mode: "copy"
+    if (params.keep_intermediate) {
+        publishDir "${params.output}", mode: "copy"
+    }
 
     conda (params.enable_conda ? "bioconda::snpeff=5.0 bioconda::bcftools=1.12" : null)
 
     input:
-        tuple val(name), file(vcf)
+    tuple val(name), file(vcf)
 
     output:
-        file("${vcf.baseName}.annotated.vcf.gz")
-        file("${vcf.baseName}.annotated.vcf.gz.tbi")
+    tuple val(name), file("${vcf.baseName}.annotated.vcf"), emit: annotated_vcfs
 
     """
     # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
@@ -85,15 +85,12 @@ process VARIANT_SARSCOV2_ANNOTATION {
     bcftools annotate \
     --annotations ${params.pfam_descriptions} \
     --header-lines ${params.pfam_descriptions_header} \
-    -c CHROM,FROM,TO,PFAM_DESCRIPTION \
-    --output-type z - > ${vcf.baseName}.annotated.vcf.gz
+    -c CHROM,FROM,TO,PFAM_DESCRIPTION - > ${vcf.baseName}.annotated.vcf
 
     # TODO: include this step for GISAID data
     #bcftools annotate \
     #--annotations ${params.problematic_sites} \
     #--columns FILTER \
     #--output-type b - > ${vcf.baseName}.annotated.vcf.gz
-
-    tabix -p vcf ${vcf.baseName}.annotated.vcf.gz
     """
 }
