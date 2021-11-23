@@ -157,7 +157,7 @@ process VARIANT_CALLING_IVAR {
         file(gff)
 
     output:
-        file("${name}.ivar.tsv")
+        tuple val(name), file("${name}.ivar.tsv")
 
     """
     samtools mpileup \
@@ -174,6 +174,32 @@ process VARIANT_CALLING_IVAR {
     -t 0.03 \
     -r ${reference} \
     -g ${gff}
+    """
+}
+
+process IVAR2VCF {
+    cpus params.cpus
+    memory params.memory
+    if (params.keep_intermediate) {
+        publishDir "${params.output}", mode: "copy"
+    }
+
+    conda (params.enable_conda ? "bioconda::bcftools=1.14 conda-forge::python=3.8.5 conda-forge::pandas=1.1.5 conda-forge::dataclasses=0.8 bioconda::pysam=0.17.0" : null)
+
+    input:
+        tuple val(name), file(tsv)
+        val(reference)
+
+    output:
+        tuple val(name), file("${name}.ivar.bcf")
+
+    """
+    ivar2vcf.py \
+    --fasta ${reference} \
+    --ivar ${tsv} \
+    --output-vcf ${name}.ivar.vcf
+
+    bcftools view --output-type b ${name}.ivar.vcf > ${name}.ivar.bcf
     """
 }
 
