@@ -15,6 +15,7 @@ nextflow main.nf -profile test,conda --name test_data \
 test -s $output/test_data.bcftools.normalized.annotated.vaf.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.gatk.normalized.annotated.vaf.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.lofreq.normalized.annotated.vaf.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
+test -s $output/test_data.ivar.normalized.annotated.vaf.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.ivar.tsv || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.fastp_stats.json || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.fastp_stats.html || { echo "Missing VCF output file!"; exit 1; }
@@ -24,6 +25,7 @@ test -s $output/test_data.depth.tsv || { echo "Missing deduplication metrics fil
 test -s $output/test_data.bcftools.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 test -s $output/test_data.gatk.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 test -s $output/test_data.lofreq.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
+test -s $output/test_data.ivar.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 
 assert_eq `zcat $output/test_data.lofreq.normalized.annotated.vaf.vcf.gz | grep -v '#' | wc -l` 54 "Wrong number of variants"
 assert_eq `zcat $output/test_data.lofreq.normalized.annotated.vaf.vcf.gz | grep -v '#' | grep 'vafator_af' | wc -l` 54 "Wrong number of variants"

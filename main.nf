@@ -7,7 +7,7 @@ include { READ_TRIMMING_PAIRED_END; READ_TRIMMING_SINGLE_END } from './modules/0
 include { ALIGNMENT_PAIRED_END; ALIGNMENT_SINGLE_END } from './modules/02_bwa'
 include { BAM_PREPROCESSING; COVERAGE_ANALYSIS } from './modules/03_bam_preprocessing'
 include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; ANNOTATE_LOFREQ; VARIANT_CALLING_GATK ;
-            VARIANT_CALLING_IVAR ; VARIANT_CALLING_ASSEMBLY } from './modules/04_variant_calling'
+            VARIANT_CALLING_IVAR ; VARIANT_CALLING_ASSEMBLY; IVAR2VCF } from './modules/04_variant_calling'
 include { VARIANT_NORMALIZATION } from './modules/05_variant_normalization'
 include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION } from './modules/06_variant_annotation'
 include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
@@ -197,7 +197,9 @@ workflow {
         }
         if (!params.skip_ivar) {
             VARIANT_CALLING_IVAR(BAM_PREPROCESSING.out.preprocessed_bam, params.reference, gff)
-            // TODO: transform iVar to a VCF and follow normalization...
+            IVAR2VCF(VARIANT_CALLING_IVAR.out, params.reference)
+            vcfs_to_normalize = vcfs_to_normalize == null?
+                IVAR2VCF.out : vcfs_to_normalize.concat(IVAR2VCF.out)
         }
 
         // pangolin from VCF
