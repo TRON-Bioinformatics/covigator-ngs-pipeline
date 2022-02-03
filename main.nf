@@ -6,10 +6,11 @@ nextflow.enable.dsl = 2
 include { READ_TRIMMING_PAIRED_END; READ_TRIMMING_SINGLE_END } from './modules/01_fastp'
 include { ALIGNMENT_PAIRED_END; ALIGNMENT_SINGLE_END } from './modules/02_bwa'
 include { BAM_PREPROCESSING; COVERAGE_ANALYSIS } from './modules/03_bam_preprocessing'
-include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; ANNOTATE_LOFREQ; VARIANT_CALLING_GATK ;
+include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; VARIANT_CALLING_GATK ;
             VARIANT_CALLING_IVAR ; VARIANT_CALLING_ASSEMBLY; IVAR2VCF } from './modules/04_variant_calling'
 include { VARIANT_NORMALIZATION } from './modules/05_variant_normalization'
-include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION } from './modules/06_variant_annotation'
+include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION;
+            VARIANT_VAF_ANNOTATION } from './modules/06_variant_annotation'
 include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
 include { VAFATOR } from './modules/08_vafator'
 include { BGZIP } from './modules/09_compress_vcf'
@@ -139,7 +140,7 @@ else if (params.input_fastas_list || params.fasta) {
         Channel
             .fromPath(params.input_fastas_list)
             .splitCsv(header: ['name', 'fasta'], sep: "\t")
-            .map{ row-> tuple(row.name, file(row.fasta)) }
+            .map{ row-> tuple(row.name, "assembly", file(row.fasta)) }
             .set { input_fastas }
     }
     else {
@@ -149,7 +150,7 @@ else if (params.input_fastas_list || params.fasta) {
             exit 1
         }
         Channel
-            .fromList([tuple(params.name, file(params.fasta))])
+            .fromList([tuple(params.name, "assembly", file(params.fasta))])
             .set { input_fastas }
     }
 }
@@ -186,9 +187,9 @@ workflow {
                 VARIANT_CALLING_BCFTOOLS.out : vcfs_to_normalize.concat(VARIANT_CALLING_BCFTOOLS.out)
         }
         if (!params.skip_lofreq) {
-            ANNOTATE_LOFREQ(VARIANT_CALLING_LOFREQ(BAM_PREPROCESSING.out.preprocessed_bam, params.reference))
+            VARIANT_CALLING_LOFREQ(BAM_PREPROCESSING.out.preprocessed_bam, params.reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
-                ANNOTATE_LOFREQ.out : vcfs_to_normalize.concat(ANNOTATE_LOFREQ.out)
+                VARIANT_CALLING_LOFREQ.out : vcfs_to_normalize.concat(VARIANT_CALLING_LOFREQ.out)
         }
         if (!params.skip_gatk) {
             VARIANT_CALLING_GATK(BAM_PREPROCESSING.out.preprocessed_bam, params.reference)
@@ -229,7 +230,8 @@ workflow {
     if (input_fastqs) {
         // we can only add technical annotations when we have the reads
         VAFATOR(annotated_vcfs.combine(BAM_PREPROCESSING.out.preprocessed_bam, by: 0))
-        annotated_vcfs = VAFATOR.out.annotated_vcf
+        VARIANT_VAF_ANNOTATION(VAFATOR.out.annotated_vcf)
+        annotated_vcfs = VARIANT_VAF_ANNOTATION.out.vaf_annotated
     }
 
     BGZIP(annotated_vcfs)

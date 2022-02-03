@@ -4,8 +4,6 @@ params.output = "."
 params.keep_intermediate = false
 params.min_mapping_quality = 20
 params.min_base_quality = 20
-params.low_frequency_variant_threshold = 0.2
-params.subclonal_variant_threshold = 0.8
 params.match_score = 2
 params.mismatch_score = -1
 params.open_gap_score = -3
@@ -27,7 +25,7 @@ process VARIANT_CALLING_BCFTOOLS {
         val(reference)
 
     output:
-        tuple val(name), file("${name}.bcftools.bcf")
+        tuple val(name), val("bcftools"), file("${name}.bcftools.bcf")
 
     """
     bcftools mpileup \
@@ -41,13 +39,7 @@ process VARIANT_CALLING_BCFTOOLS {
     bcftools call \
     --multiallelic-caller \
     --variants-only \
-     --ploidy 1 | \
-    bcftools filter \
-    --exclude 'INFO/IMF < ${params.low_frequency_variant_threshold}' \
-    --soft-filter LOW_FREQUENCY - | \
-    bcftools filter \
-    --exclude 'INFO/IMF >= ${params.low_frequency_variant_threshold} && INFO/IMF < ${params.subclonal_variant_threshold}' \
-    --soft-filter SUBCLONAL \
+     --ploidy 1 \
      --output-type b - > ${name}.bcftools.bcf
     """
 }
@@ -59,14 +51,14 @@ process VARIANT_CALLING_LOFREQ {
         publishDir "${params.output}", mode: "copy"
     }
 
-    conda (params.enable_conda ? "bioconda::lofreq=2.1.5" : null)
+    conda (params.enable_conda ? "bioconda::bcftools=1.14 bioconda::lofreq=2.1.5" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
         val(reference)
 
     output:
-        tuple val(name), file("${name}.lofreq.vcf")
+        tuple val(name), val("lofreq"), file("${name}.lofreq.bcf")
 
     """
     lofreq call \
@@ -76,38 +68,10 @@ process VARIANT_CALLING_LOFREQ {
     --ref ${reference} \
     --call-indels \
     <( lofreq indelqual --dindel --ref ${reference} ${bam} ) > ${name}.lofreq.vcf
-    """
-}
 
-process ANNOTATE_LOFREQ {
-    cpus params.cpus
-    memory params.memory
-    if (params.keep_intermediate) {
-        publishDir "${params.output}", mode: "copy"
-    }
-
-    conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
-
-    input:
-        tuple val(name), file(vcf)
-
-    output:
-        tuple val(name), file("${name}.lofreq.bcf")
-
-    """
-    bgzip -c ${vcf} > ${name}.lofreq.vcf.gz
-
-    tabix -p vcf ${name}.lofreq.vcf.gz
-
-    # annotates low frequency and subclonal variants
-    bcftools view -Ob ${name}.lofreq.vcf.gz | \
-    bcftools filter \
-    --exclude 'INFO/AF < ${params.low_frequency_variant_threshold}' \
-    --soft-filter LOW_FREQUENCY - | \
-    bcftools filter \
-    --exclude 'INFO/AF >= ${params.low_frequency_variant_threshold} && INFO/AF < ${params.subclonal_variant_threshold}' \
-    --soft-filter SUBCLONAL \
-    --output-type b - > ${name}.lofreq.bcf
+    bgzip -c ${name}.lofreq.vcf > ${name}.lofreq.vcf.gz
+    bcftools index ${name}.lofreq.vcf.gz
+    bcftools view --output-type b ${name}.lofreq.vcf.gz > ${name}.lofreq.bcf
     """
 }
 
@@ -125,7 +89,7 @@ process VARIANT_CALLING_GATK {
         val(reference)
 
     output:
-        tuple val(name), file("${name}.gatk.bcf")
+        tuple val(name), val("gatk"), file("${name}.gatk.bcf")
 
     """
     mkdir tmp
@@ -191,7 +155,7 @@ process IVAR2VCF {
         val(reference)
 
     output:
-        tuple val(name), file("${name}.ivar.bcf")
+        tuple val(name), val("ivar"), file("${name}.ivar.bcf")
 
     """
     ivar2vcf.py \
@@ -214,17 +178,17 @@ process VARIANT_CALLING_ASSEMBLY {
     conda (params.enable_conda ? "conda-forge::python=3.8.5 conda-forge::biopython=1.79" : null)
 
     input:
-        tuple val(name), file(fasta)
+        tuple val(name), val(caller), file(fasta)
         val(reference)
 
     output:
-        tuple val(name), file("${name}.assembly.vcf")
+        tuple val(name), val(caller), file("${name}.${caller}.vcf")
 
     """
     assembly_variant_caller.py \
     --fasta ${fasta} \
     --reference ${reference} \
-    --output-vcf ${name}.assembly.vcf \
+    --output-vcf ${name}.${caller}.vcf \
     --match-score $params.match_score \
     --mismatch-score $params.mismatch_score \
     --open-gap-score $params.open_gap_score \

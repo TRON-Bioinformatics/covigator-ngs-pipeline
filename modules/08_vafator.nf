@@ -18,10 +18,10 @@ process VAFATOR {
     conda (params.enable_conda ? "bioconda::vafator=1.1.4" : null)
 
     input:
-    tuple val(name), file(vcf), file(bam), file(bai)
+    tuple val(name), val(caller), file(vcf), file(bam), file(bai)
 
     output:
-    tuple val(name), file("${vcf.baseName}.vaf.vcf"), emit: annotated_vcf
+    tuple val(name), val(caller), file("${name}.${caller}.vaf.vcf"), emit: annotated_vcf
 
     script:
     mq_param = params.min_mapping_quality ? "--mapping-quality " + params.min_mapping_quality : ""
@@ -29,7 +29,7 @@ process VAFATOR {
     """
     vafator \
     --input-vcf ${vcf} \
-    --output-vcf ${vcf.baseName}.vaf.vcf \
+    --output-vcf ${name}.${caller}.vaf.vcf \
     --bam vafator ${bam} ${mq_param} ${bq_param}
     """
 }

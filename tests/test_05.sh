@@ -11,8 +11,8 @@ echo -e "test_data\t"`pwd`"/test_data/test_data.fasta\n" > test_data/test_input.
 nextflow main.nf -profile test,conda --input_fastas_list test_data/test_input.txt \
 	--output $output
 
-test -s $output/test_data.assembly.normalized.annotated.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
-test -s $output/test_data.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
+test -s $output/test_data.assembly.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
+test -s $output/test_data.assembly.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 
-assert_eq `zcat $output/test_data.assembly.normalized.annotated.vcf.gz | grep -v '#' | wc -l` 13 "Wrong number of variants"
-assert_eq `cat $output/test_data.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"
+assert_eq `zcat $output/test_data.assembly.vcf.gz | grep -v '#' | wc -l` 13 "Wrong number of variants"
+assert_eq `cat $output/test_data.assembly.pangolin.csv |  wc -l` 2 "Wrong number of pangolin results"

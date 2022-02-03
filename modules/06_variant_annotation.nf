@@ -11,6 +11,8 @@ params.conservation_sarbecovirus_header = false
 params.conservation_vertebrate = false
 params.conservation_vertebrate_header = false
 params.keep_intermediate = false
+params.low_frequency_variant_threshold = 0.2
+params.subclonal_variant_threshold = 0.8
 
 
 process VARIANT_ANNOTATION {
@@ -23,10 +25,10 @@ process VARIANT_ANNOTATION {
     conda (params.enable_conda ? "bioconda::snpeff=5.0" : null)
 
     input:
-    tuple val(name), file(vcf)
+    tuple val(name), val(caller), file(vcf)
 
     output:
-    tuple val(name), file("${vcf.baseName}.annotated.vcf"), emit: annotated_vcfs
+    tuple val(name), val(caller), file("${name}.${caller}.annotated.vcf"), emit: annotated_vcfs
 
     """
     # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
@@ -34,7 +36,39 @@ process VARIANT_ANNOTATION {
 
     snpEff eff -dataDir ${params.snpeff_data} \
     -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
-    ${params.snpeff_organism}  ${vcf} > ${vcf.baseName}.annotated.vcf
+    ${params.snpeff_organism}  ${vcf} > ${name}.${caller}.annotated.vcf
+    """
+}
+
+process VARIANT_VAF_ANNOTATION {
+    cpus params.cpus
+    memory params.memory
+    if (params.keep_intermediate) {
+        publishDir "${params.output}", mode: "copy"
+    }
+
+    conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
+
+    input:
+        tuple val(name), val(caller), file(vcf)
+
+    output:
+        tuple val(name), val(caller), file("${name}.${caller}.vcf"), emit: vaf_annotated
+
+    """
+    bgzip -c ${vcf} > ${name}.vcf.gz
+
+    tabix -p vcf ${name}.vcf.gz
+
+    # annotates low frequency and subclonal variants
+    bcftools view -Ob ${name}.vcf.gz | \
+    bcftools filter \
+    --exclude 'INFO/vafator_af < ${params.low_frequency_variant_threshold}' \
+    --soft-filter LOW_FREQUENCY - | \
+    bcftools filter \
+    --exclude 'INFO/vafator_af >= ${params.low_frequency_variant_threshold} && INFO/vafator_af < ${params.subclonal_variant_threshold}' \
+    --soft-filter SUBCLONAL \
+    --output-type v - > ${name}.${caller}.vcf
     """
 }
 
@@ -49,10 +83,10 @@ process VARIANT_SARSCOV2_ANNOTATION {
     conda (params.enable_conda ? "bioconda::snpeff=5.0 bioconda::bcftools=1.12" : null)
 
     input:
-    tuple val(name), file(vcf)
+    tuple val(name), val(caller), file(vcf)
 
     output:
-    tuple val(name), file("${vcf.baseName}.annotated.vcf"), emit: annotated_vcfs
+    tuple val(name), val(caller), file("${name}.${caller}.annotated.vcf"), emit: annotated_vcfs
 
     """
     # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
@@ -85,7 +119,7 @@ process VARIANT_SARSCOV2_ANNOTATION {
     bcftools annotate \
     --annotations ${params.pfam_descriptions} \
     --header-lines ${params.pfam_descriptions_header} \
-    -c CHROM,FROM,TO,PFAM_DESCRIPTION - > ${vcf.baseName}.annotated.vcf
+    -c CHROM,FROM,TO,PFAM_DESCRIPTION - > ${name}.${caller}.annotated.vcf
 
     # TODO: include this step for GISAID data
     #bcftools annotate \

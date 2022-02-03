@@ -14,11 +14,11 @@ process VARIANT_NORMALIZATION {
     conda (params.enable_conda ? "bioconda::vt=0.57721 bioconda::bcftools=1.12" : null)
 
     input:
-        tuple val(name), file(vcf)
+        tuple val(name), val(caller), file(vcf)
         val(reference)
 
     output:
-      tuple val(name), file("${vcf.baseName}.normalized.vcf")
+      tuple val(name), val(caller), file("${name}.${caller}.normalized.vcf")
 
     script:
     """
@@ -33,6 +33,6 @@ process VARIANT_NORMALIZATION {
     vt decompose_blocksub -a -p - | \
 
     # remove duplicates after normalisation
-    bcftools norm --rm-dup exact -o ${vcf.baseName}.normalized.vcf -
+    bcftools norm --rm-dup exact -o ${name}.${caller}.normalized.vcf -
     """
 }
