@@ -15,7 +15,7 @@ process VAFATOR {
         publishDir "${params.output}", mode: "copy"
     }
 
-    conda (params.enable_conda ? "bioconda::vafator=1.1.4" : null)
+    conda (params.enable_conda ? "bioconda::vafator=1.2.4" : null)
 
     input:
     tuple val(name), val(caller), file(vcf), file(bam), file(bai)
