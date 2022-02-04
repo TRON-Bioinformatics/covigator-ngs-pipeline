@@ -10,8 +10,8 @@ params.conservation_vertebrate_header = false
 params.keep_intermediate = false
 params.low_frequency_variant_threshold = 0.2
 params.subclonal_variant_threshold = 0.8
-params.min_mapping_quality = 20
-params.min_base_quality = 20
+params.vafator_min_mapping_quality = 0
+params.vafator_min_base_quality = 0
 
 
 process VARIANT_ANNOTATION {
@@ -141,8 +141,8 @@ process VAFATOR {
     tuple val(name), val(caller), file("${name}.${caller}.vaf.vcf"), emit: annotated_vcf
 
     script:
-    mq_param = params.min_mapping_quality ? "--mapping-quality " + params.min_mapping_quality : ""
-    bq_param = params.min_base_quality ? "--base-call-quality " + params.min_base_quality : ""
+    mq_param = params.vafator_min_mapping_quality != false ? "--mapping-quality " + params.vafator_min_mapping_quality : ""
+    bq_param = params.vafator_min_base_quality != false ? "--base-call-quality " + params.vafator_min_base_quality : ""
     """
     vafator \
     --input-vcf ${vcf} \
