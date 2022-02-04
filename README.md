@@ -9,7 +9,8 @@
 
 
 
-The Covigator pipeline processes SARS-CoV-2 FASTQ or FASTA files into annotated and normalized analysis ready VCF files. 
+The Covigator pipeline processes SARS-CoV-2 FASTQ or FASTA files into annotated and normalized analysis ready VCF files.
+It also classifies samples into lineages using pangolin.
 The pipeline is implemented in the Nextflow framework (Di Tommaso, 2017).
 
 ## Possible inputs
@@ -52,7 +53,7 @@ When a FASTA file is provided with a single assembly sequence the pipeline inclu
   indels. Indels longer than 50 bp and at the beginning or end of the assembly sequence are excluded. Any mutation where
   either reference or assembly contain an N is excluded.
 - **Variant normalization**. Same as described above.
-- **Variant annotation**. Same as described above.
+- **Variant annotation**. Same as described above with the exception of `VAFator`.
 - **Lineage determination**. `pangolin` is used for this purpose.
 
 The FASTA file is expected to contain a single assembly sequence. 
@@ -64,6 +65,8 @@ The full details are available in their respective repositories:
 - https://github.com/TRON-Bioinformatics/tronflow-bwa (https://doi.org/10.5281/zenodo.4722852)
 - https://github.com/TRON-Bioinformatics/tronflow-bam-preprocessing (https://doi.org/10.5281/zenodo.4810918)
 - https://github.com/TRON-Bioinformatics/tronflow-variant-normalization (https://doi.org/10.5281/zenodo.4875095)
+
+More information about VAFator available here https://github.com/TRON-Bioinformatics/vafator (https://doi.org/10.5281/zenodo.5565743).
 
 
 ## Variant annotations
@@ -78,7 +81,7 @@ All variant calls are additionally annotated with the following SARS-CoV-2 speci
 - ConsHMM conservation scores as reported in (Kwon, 2021)
 - Pfam domains as reported in Ensemble annotations.
 
-If analysing a different type of virus, disable the SARS-CoV-2 specific annotations with `--skip_sarscov2_annotations`.
+If analysing a different type of virus, the SARS-CoV-2 specific annotations are disabled when the parameter `--reference` is used.
 
 A variant in the output VCF will look as follows:
 ```
@@ -99,22 +102,27 @@ Where:
 ## Reference data
 
 The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
-These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
-Two files need to be provided: 
-- Reference sequence file in FASTA format
-- Gene annotation file in GFFv3 format. This is only required to run iVar
+No additional parameter needs to be provided to use the default SARS-CoV-2 reference genome.
 
-Additionally, the FASTA needs bwa indexes and .fai index.
+### Using a custom reference genome
+
+These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
+Two files need to be provided:
+- Use a custom reference genome by providing the parameter `--reference your.fasta`.
+- Gene annotation file in GFFv3 format `--gff your.gff`. This is only required to run iVar
+
+Additionally, the FASTA needs bwa indexes, .fai index and a .dict index.
 These indexes can be generated with the following two commands:
 ```
 bwa index reference.fasta
 samtools faidx reference.fasta
+gatk CreateSequenceDictionary --REFERENCE your.fasta
 ```
 
-### Using a custom reference genome
+**NOTE**: beware that for Nextflow to find these indices the reference needs to be passed as an absolute path.
 
-Use a custom reference genome by providing the parameter `--reference`.
 The SARS-CoV-2 specific annotations will be skipped when using a custom genome.
+
 In order to have SnpEff functional annotations available you will also need to provide three parameters:
 - `--snpeff_organism`: organism to annotate with SnpEff (ie: as registered in SnpEff)
 - `--snpeff_data`: path to the SnpEff data folder
@@ -198,9 +206,9 @@ Optional input:
     * --snpeff_organism: organism to annotate with SnpEff, it will be useful to use the pipeline on other virus than SARS-CoV-2
 
 Output:
-    * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK and LoFreq when FASTQ files are
-    provided or a single VCF obtained from a global alignment when a FASTA file is provided
-    * Output a TSV file output from iVar
+    * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK, LoFreq and iVar when FASTQ files are
+    provided or a single VCF obtained from a global alignment when a FASTA file is provided.
+    * A pangolin results file for each of the VCF files.
 ```
 
 ### Initializing the conda environments
