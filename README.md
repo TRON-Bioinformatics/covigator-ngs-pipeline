@@ -65,20 +65,6 @@ The full details are available in their respective repositories:
 - https://github.com/TRON-Bioinformatics/tronflow-bam-preprocessing (https://doi.org/10.5281/zenodo.4810918)
 - https://github.com/TRON-Bioinformatics/tronflow-variant-normalization (https://doi.org/10.5281/zenodo.4875095)
 
-## Reference data
-
-The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
-These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
-Two files need to be provided: 
-- Reference sequence file in FASTA format
-- Gene annotation file in GFFv3 format. This is only required to run iVar
-
-Additionally, the FASTA needs bwa indexes and .fai index.
-These indexes can be generated with the following two commands:
-```
-bwa index reference.fasta
-samtools faidx reference.fasta
-```
 
 ## Variant annotations
 
@@ -109,6 +95,30 @@ Where:
 - `INFO/PFAM_NAME` is the Interpro name for the overlapping Pfam domains
 - `INFO/PFAM_DESCRIPTION` is the Interpro description for the overlapping Pfam domains
 
+
+## Reference data
+
+The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
+These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
+Two files need to be provided: 
+- Reference sequence file in FASTA format
+- Gene annotation file in GFFv3 format. This is only required to run iVar
+
+Additionally, the FASTA needs bwa indexes and .fai index.
+These indexes can be generated with the following two commands:
+```
+bwa index reference.fasta
+samtools faidx reference.fasta
+```
+
+### Using a custom reference genome
+
+Use a custom reference genome by providing the parameter `--reference`.
+The SARS-CoV-2 specific annotations will be skipped when using a custom genome.
+In order to have SnpEff functional annotations available you will also need to provide three parameters:
+- `--snpeff_organism`: organism to annotate with SnpEff (ie: as registered in SnpEff)
+- `--snpeff_data`: path to the SnpEff data folder
+- `--snpeff_config`: path to the SnpEff config file
 
 ## Requirements
 
@@ -156,8 +166,6 @@ Input:
     * --fastq1: the first input FASTQ file (not compatible with --fasta)
     * --fasta: the FASTA file containing the assembly sequence (not compatible with --fastq1)
     * --name: the sample name, output files will be named after this name
-    * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
-    * --gff: the GFFv3 gene annotations file (only required with --fastq1)
     * --output: the folder where to publish output
     * --input_fastqs_list: alternative to --name and --fastq1 for batch processing
     * --library: required only when using --input_fastqs
@@ -165,6 +173,8 @@ Input:
 
 Optional input:
     * --fastq2: the second input FASTQ file
+    * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
+    * --gff: the GFFv3 gene annotations file (only required to run iVar)
     * --min_base_quality: minimum base call quality to take a base into account (default: 20)
     * --min_mapping_quality: minimum mapping quality to take a read into account (default: 20)
     * --low_frequency_variant_threshold: VAF threshold to mark a variant as low frequency (default: 0.2)

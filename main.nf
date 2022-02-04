@@ -84,6 +84,7 @@ if (params.reference == false) {
     snpeff_data = params.sarscov2_snpeff_data
     snpeff_config = params.sarscov2_snpeff_config
     snpeff_organism = params.sarscov2_snpeff_organism
+    skip_sarscov2_annotations = params.skip_sarscov2_annotations
 }
 else {
     log.info "Using custom reference genome: ${params.reference}"
@@ -92,6 +93,7 @@ else {
     snpeff_data = params.snpeff_data
     snpeff_config = params.snpeff_config
     snpeff_organism = params.snpeff_organism
+    skip_sarscov2_annotations = true
 }
 
 skip_snpeff = false
@@ -241,7 +243,7 @@ workflow {
         normalized_vcfs = VARIANT_ANNOTATION.out.annotated_vcfs
     }
 
-    if (! params.skip_sarscov2_annotations) {
+    if (! skip_sarscov2_annotations) {
         // only optionally add SARS-CoV-2 specific annotations
         VARIANT_SARSCOV2_ANNOTATION(normalized_vcfs)
         normalized_vcfs = VARIANT_SARSCOV2_ANNOTATION.out.annotated_vcfs
