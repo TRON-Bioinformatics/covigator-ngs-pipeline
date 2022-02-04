@@ -8,7 +8,6 @@ params.match_score = 2
 params.mismatch_score = -1
 params.open_gap_score = -3
 params.extend_gap_score = -0.1
-params.chromosome = "MN908947.3"
 
 
 process VARIANT_CALLING_BCFTOOLS {
@@ -192,7 +191,6 @@ process VARIANT_CALLING_ASSEMBLY {
     --match-score $params.match_score \
     --mismatch-score $params.mismatch_score \
     --open-gap-score $params.open_gap_score \
-    --extend-gap-score $params.extend_gap_score \
-    --chromosome $params.chromosome
+    --extend-gap-score $params.extend_gap_score
     """
 }

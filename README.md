@@ -69,7 +69,10 @@ The full details are available in their respective repositories:
 
 The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
 These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
-Two files need to be provided: a sequence file in FASTA format and a gene annotation file in GFFv3 format. 
+Two files need to be provided: 
+- Reference sequence file in FASTA format
+- Gene annotation file in GFFv3 format. This is only required to run iVar
+
 Additionally, the FASTA needs bwa indexes and .fai index.
 These indexes can be generated with the following two commands:
 ```
