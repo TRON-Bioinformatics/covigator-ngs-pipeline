@@ -8,7 +8,7 @@ process PANGOLIN_LINEAGE {
     memory params.memory
     publishDir "${params.output}", mode: "copy"
 
-    conda (params.enable_conda ? "bioconda::pangolin=3.1.16" : null)
+    conda (params.enable_conda ? "bioconda::pangolin=3.1.19" : null)
 
     input:
         tuple val(name), val(caller), file(fasta)
