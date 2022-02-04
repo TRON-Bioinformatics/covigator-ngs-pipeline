@@ -7,6 +7,7 @@ process READ_TRIMMING_PAIRED_END {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy", pattern: "*fastp_stats*"
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::fastp=0.20.1" : null)
 
@@ -34,6 +35,7 @@ process READ_TRIMMING_SINGLE_END {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy", pattern: "*fastp_stats*"
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::fastp=0.20.1" : null)
 

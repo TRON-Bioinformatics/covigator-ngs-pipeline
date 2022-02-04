@@ -10,6 +10,7 @@ process VARIANT_NORMALIZATION {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::vt=0.57721 bioconda::bcftools=1.12" : null)
 

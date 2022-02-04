@@ -7,6 +7,7 @@ process PANGOLIN_LINEAGE {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy"
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::pangolin=3.1.19" : null)
 
@@ -25,6 +26,7 @@ process PANGOLIN_LINEAGE {
 process VCF2FASTA {
     cpus params.cpus
     memory params.memory
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
 

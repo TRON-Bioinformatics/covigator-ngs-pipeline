@@ -20,6 +20,7 @@ process VARIANT_ANNOTATION {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::snpeff=5.0" : null)
 
@@ -48,6 +49,7 @@ process VARIANT_VAF_ANNOTATION {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
 
@@ -81,6 +83,7 @@ process VARIANT_SARSCOV2_ANNOTATION {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bcftools=1.12" : null)
 

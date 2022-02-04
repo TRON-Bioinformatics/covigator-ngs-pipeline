@@ -16,6 +16,7 @@ process VARIANT_CALLING_BCFTOOLS {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
 
@@ -49,6 +50,7 @@ process VARIANT_CALLING_LOFREQ {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bcftools=1.14 bioconda::lofreq=2.1.5" : null)
 
@@ -80,6 +82,7 @@ process VARIANT_CALLING_GATK {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bcftools=1.14 bioconda::gatk4=4.2.0.0" : null)
 
@@ -111,6 +114,7 @@ process VARIANT_CALLING_IVAR {
     cpus params.cpus
     memory params.memory
     publishDir "${params.output}", mode: "copy"
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::samtools=1.12 bioconda::ivar=1.3.1" : null)
 
@@ -146,6 +150,7 @@ process IVAR2VCF {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bcftools=1.14 conda-forge::python=3.8.5 conda-forge::pandas=1.1.5 conda-forge::dataclasses=0.8 bioconda::pysam=0.17.0" : null)
 
@@ -173,6 +178,7 @@ process VARIANT_CALLING_ASSEMBLY {
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
+    tag "${name}"
 
     conda (params.enable_conda ? "conda-forge::python=3.8.5 conda-forge::biopython=1.79" : null)
 
