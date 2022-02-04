@@ -192,7 +192,6 @@ Optional input:
     * --mismatch_score: global alignment mismatch score, only applicable for assemblies (default: -1)
     * --open_gap_score: global alignment open gap score, only applicable for assemblies (default: -3)
     * --extend_gap_score: global alignment extend gap score, only applicable for assemblies (default: -0.1)
-    * --chromosome: chromosome for variant calls, only applicable for assemblies (default: "MN908947.3")
     * --skip_sarscov2_annotations: skip some of the SARS-CoV-2 specific annotations (default: false)
     * --snpeff_data: path to the SnpEff data folder, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --snpeff_config: path to the SnpEff config file, it will be useful to use the pipeline on other virus than SARS-CoV-2
