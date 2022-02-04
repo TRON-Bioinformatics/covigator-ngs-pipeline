@@ -38,19 +38,22 @@ When FASTQ files are provided the pipeline includes the following steps:
 - **Coverage analysis**. `samtools coverage` and `samtools depth` are used to compute the horizontal and vertical 
   coverage respectively.
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
-  Subsequent processing of resulting VCF files is independent for each caller, except for iVar which does not produce a VCF file but a custom TSV file.
+  Subsequent processing of resulting VCF files is independent for each caller.
 - **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
-- **Variant annotation**. `SnpEff` is employed to annotate the variant consequences of variants, 
+- **Variant annotation**. `SnpEff` is employed to annotate the variant consequences of variants,
+  `VAFator` is employed to add technical annotations and finally
   `bcftools annotate` is employed to add additional annotations.
+- **Lineage determination**. `pangolin` is used for this purpose, this runs over the results from each of the variant callers separately.
 
 Both single end and paired end FASTQ files are supported.
 
 When a FASTA file is provided with a single assembly sequence the pipeline includes the following steps:
 - **Variant calling**. A Smith-Waterman global alignment is performed against the reference sequence to call SNVs and 
   indels. Indels longer than 50 bp and at the beginning or end of the assembly sequence are excluded. Any mutation where
-  either reference or assembly contain a N is excluded.
+  either reference or assembly contain an N is excluded.
 - **Variant normalization**. Same as described above.
 - **Variant annotation**. Same as described above.
+- **Lineage determination**. `pangolin` is used for this purpose.
 
 The FASTA file is expected to contain a single assembly sequence. 
 Bear in mind that only clonal variants can be called on the assembly.
@@ -62,34 +65,29 @@ The full details are available in their respective repositories:
 - https://github.com/TRON-Bioinformatics/tronflow-bam-preprocessing (https://doi.org/10.5281/zenodo.4810918)
 - https://github.com/TRON-Bioinformatics/tronflow-variant-normalization (https://doi.org/10.5281/zenodo.4875095)
 
-The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
-These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
-Two files need to be provided: a sequence file in FASTA format and a gene annotation file in GFFv3 format. 
-Additionally, the FASTA needs bwa indexes and .fai index.
-These indexes can be generated with the following two commands:
-```
-bwa index reference.fasta
-samtools faidx reference.fasta
-```
 
-The LoFreq variants are annotated on the `FILTER` column using the reported variant allele frequency 
+## Variant annotations
+
+The variants derived from a FASTQ file are annotated on the `FILTER` column using the VAFator variant allele frequency 
 (VAF) into `LOW_FREQUENCY`, `SUBCLONAL` and finally `PASS` variants correspond to clonal variants. By default, 
 variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VAF >= 20 % and < 80 % are considered 
 `SUBCLONAL`. This thresholds can be changed with the parameters `--low_frequency_variant_threshold` and
-`--subclonal_variant_threshold`. Indels called by BCFtools are also annotated by VAF, but not SNVs.
+`--subclonal_variant_threshold`.
 
-All variant calls are additionally annotated with:
+All variant calls are additionally annotated with the following SARS-CoV-2 specific annotations:
 - ConsHMM conservation scores as reported in (Kwon, 2021)
 - Pfam domains as reported in Ensemble annotations.
 
+If analysing a different type of virus, disable the SARS-CoV-2 specific annotations with `--skip_sarscov2_annotations`.
+
 A variant in the output VCF will look as follows:
 ```
-MN908947.3      21680   .       G       A       250     LOW_FREQUENCY   DP=1252;AF=0.015176;SB=4;DP4=551,679,11,8;ANN=A|missense_variant|MODERATE|S|gene-GU280_gp02|transcript|TRANSCRIPT_gene-GU280_gp02|protein_coding|1/1|c.118G>A|p.D40N|118/3822|118/3822|40/1273||;CONS_HMM_SARS_COV_2=0.57215;CONS_HMM_SARBECOVIRUS=0.57215;CONS_HMM_VERTEBRATE_COV=0;PFAM_NAME=bCoV_S1_N;PFAM_DESCRIPTION=Betacoronavirus-like spike glycoprotein S1, N-terminal
+MN908947.3      21680   .       G       A       250     LOW_FREQUENCY   vafator_dp=1252;vafator_af=0.015176;SB=4;DP4=551,679,11,8;ANN=A|missense_variant|MODERATE|S|gene-GU280_gp02|transcript|TRANSCRIPT_gene-GU280_gp02|protein_coding|1/1|c.118G>A|p.D40N|118/3822|118/3822|40/1273||;CONS_HMM_SARS_COV_2=0.57215;CONS_HMM_SARBECOVIRUS=0.57215;CONS_HMM_VERTEBRATE_COV=0;PFAM_NAME=bCoV_S1_N;PFAM_DESCRIPTION=Betacoronavirus-like spike glycoprotein S1, N-terminal
 ```
 
 Where:
-- `INFO/DP` is the number of reads overlapping this position
-- `INFO/AF` is the VAF as reported by LoFreq (only avalable in LoFreq calls)
+- `INFO/vafator_dp` is the number of reads overlapping this position
+- `INFO/vafator_af` is the fraction of reads supporting the mutation
 - `INFO/ANN` are the SnpEff consequence annotations
 - `INFO/CONS_HMM_SARS_COV_2` is the ConsHMM conservation score in SARS-CoV-2
 - `INFO/CONS_HMM_SARBECOVIRUS` is the ConsHMM conservation score among Sarbecovirus
@@ -97,6 +95,30 @@ Where:
 - `INFO/PFAM_NAME` is the Interpro name for the overlapping Pfam domains
 - `INFO/PFAM_DESCRIPTION` is the Interpro description for the overlapping Pfam domains
 
+
+## Reference data
+
+The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
+These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
+Two files need to be provided: 
+- Reference sequence file in FASTA format
+- Gene annotation file in GFFv3 format. This is only required to run iVar
+
+Additionally, the FASTA needs bwa indexes and .fai index.
+These indexes can be generated with the following two commands:
+```
+bwa index reference.fasta
+samtools faidx reference.fasta
+```
+
+### Using a custom reference genome
+
+Use a custom reference genome by providing the parameter `--reference`.
+The SARS-CoV-2 specific annotations will be skipped when using a custom genome.
+In order to have SnpEff functional annotations available you will also need to provide three parameters:
+- `--snpeff_organism`: organism to annotate with SnpEff (ie: as registered in SnpEff)
+- `--snpeff_data`: path to the SnpEff data folder
+- `--snpeff_config`: path to the SnpEff config file
 
 ## Requirements
 
@@ -144,8 +166,6 @@ Input:
     * --fastq1: the first input FASTQ file (not compatible with --fasta)
     * --fasta: the FASTA file containing the assembly sequence (not compatible with --fastq1)
     * --name: the sample name, output files will be named after this name
-    * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
-    * --gff: the GFFv3 gene annotations file (only required with --fastq1)
     * --output: the folder where to publish output
     * --input_fastqs_list: alternative to --name and --fastq1 for batch processing
     * --library: required only when using --input_fastqs
@@ -153,8 +173,12 @@ Input:
 
 Optional input:
     * --fastq2: the second input FASTQ file
-    * --min_base_quality: minimum base call quality to take a base into account (default: 20)
-    * --min_mapping_quality: minimum mapping quality to take a read into account (default: 20)
+    * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
+    * --gff: the GFFv3 gene annotations file (only required to run iVar)
+    * --min_base_quality: minimum base call quality to take a base into account for variant calling (default: 20)
+    * --min_mapping_quality: minimum mapping quality to take a read into account for variant calling (default: 20)
+    * --vafator_min_base_quality: minimum base call quality to take a base into account for VAF annotation (default: 0)
+    * --vafator_min_mapping_quality: minimum mapping quality to take a read into account for VAF annotation (default: 0)
     * --low_frequency_variant_threshold: VAF threshold to mark a variant as low frequency (default: 0.2)
     * --subclonal_variant_threshold: VAF superior threshold to mark a variant as subclonal (default: 0.8)
     * --memory: the ammount of memory used by each job (default: 3g)
@@ -168,7 +192,6 @@ Optional input:
     * --mismatch_score: global alignment mismatch score, only applicable for assemblies (default: -1)
     * --open_gap_score: global alignment open gap score, only applicable for assemblies (default: -3)
     * --extend_gap_score: global alignment extend gap score, only applicable for assemblies (default: -0.1)
-    * --chromosome: chromosome for variant calls, only applicable for assemblies (default: "MN908947.3")
     * --skip_sarscov2_annotations: skip some of the SARS-CoV-2 specific annotations (default: false)
     * --snpeff_data: path to the SnpEff data folder, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --snpeff_config: path to the SnpEff config file, it will be useful to use the pipeline on other virus than SARS-CoV-2

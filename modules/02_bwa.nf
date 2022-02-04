@@ -5,7 +5,7 @@ params.cpus = 1
 process ALIGNMENT_PAIRED_END {
     cpus params.cpus
     memory params.memory
-    tag params.name
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bwa=0.7.17 bioconda::samtools=1.12" : null)
 
@@ -26,7 +26,7 @@ process ALIGNMENT_PAIRED_END {
 process ALIGNMENT_SINGLE_END {
     cpus params.cpus
     memory params.memory
-    tag params.name
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::bwa=0.7.17 bioconda::samtools=1.12" : null)
 

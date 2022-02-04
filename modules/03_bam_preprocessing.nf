@@ -11,6 +11,7 @@ process BAM_PREPROCESSING {
         publishDir "${params.output}", mode: "copy"
     }
     publishDir "${params.output}", mode: "copy", pattern: "${name}.deduplication_metrics.txt"
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::gatk4=4.2.0.0" : null)
 
@@ -62,6 +63,7 @@ process COVERAGE_ANALYSIS {
     memory params.memory
     publishDir "${params.output}", mode: "copy", pattern: "${name}.coverage.tsv"
     publishDir "${params.output}", mode: "copy", pattern: "${name}.depth.tsv"
+    tag "${name}"
 
     conda (params.enable_conda ? "bioconda::samtools=1.12" : null)
 

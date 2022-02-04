@@ -10,18 +10,18 @@ DEFAULT_EXTEND_GAP_SCORE = -0.1
 DEFAULT_OPEN_GAP_SCORE = -3
 DEFAULT_MISMATCH_SCORE = 1
 DEFAULT_MATCH_SCORE = 2
-DEFAULT_CHROMOSOME = "MN908947.3"
 
 
 @dataclass
 class Variant:
+    chromosome: str
     position: int
     reference: str
     alternate: str
 
-    def to_vcf_line(self, chromosome):
+    def to_vcf_line(self):
         # transform 0-based position to 1-based position
-        return [chromosome, str(self.position + 1), ".", self.reference, self.alternate, ".", "PASS", "."]
+        return [self.chromosome, str(self.position + 1), ".", self.reference, self.alternate, ".", "PASS", "."]
 
 
 class AssemblyVariantCaller:
@@ -32,9 +32,9 @@ class AssemblyVariantCaller:
         self.open_gap_score = open_gap_score
         self.extend_gap_score = extend_gap_score
 
-    def call_variants(self, sequence: str, reference: str) -> List[Variant]:
+    def call_variants(self, sequence: str, reference: str, chromosome: str) -> List[Variant]:
         alignment = self._run_alignment(sequence=sequence, reference=reference)
-        variants = self._call_mutations(alignment)
+        variants = self._call_mutations(alignment, chromosome=chromosome)
         return variants
 
     def _run_alignment(self, sequence: str, reference: str) -> PairwiseAlignment:
@@ -49,7 +49,7 @@ class AssemblyVariantCaller:
         alignments = aligner.align(reference, sequence)
         return alignments[0]
 
-    def _call_mutations(self, alignment: PairwiseAlignment) -> List[Variant]:
+    def _call_mutations(self, alignment: PairwiseAlignment, chromosome: str) -> List[Variant]:
         # CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT
         # MN908947.3      9924    .       C       T       228     .
         # DP=139;VDB=0.784386;SGB=-0.693147;RPB=0.696296;MQB=1;MQSB=1;BQB=0.740741;MQ0F=0;AC=1;AN=1;DP4=2,0,123,12;MQ=60
@@ -69,6 +69,7 @@ class AssemblyVariantCaller:
                     ref = str(reference[prev_ref_end - 1: ref_start])
                     if not any(self._is_ambiguous_base(r) for r in ref):  # do not call deletions with Ns
                         variants.append(Variant(
+                            chromosome=chromosome,
                             position=prev_ref_end - 1,
                             reference=ref,
                             alternate=reference[prev_ref_end - 1]))
@@ -80,6 +81,7 @@ class AssemblyVariantCaller:
                     # do not call insertions with ambiguous bases
                     if not self._is_ambiguous_base(ref) and not any(self._is_ambiguous_base(a) for a in alt):
                         variants.append(Variant(
+                            chromosome=chromosome,
                             position=prev_ref_end - 1,
                             reference=ref,
                             alternate=ref + alt))
@@ -90,7 +92,11 @@ class AssemblyVariantCaller:
                 # contiguous SNVs are reported separately
                 # do not call insertions with ambiguous bases
                 if ref != alt and not self._is_ambiguous_base(ref) and not self._is_ambiguous_base(alt):
-                    variants.append(Variant(position=pos, reference=ref, alternate=alt))
+                    variants.append(Variant(
+                        chromosome=chromosome,
+                        position=pos,
+                        reference=ref,
+                        alternate=alt))
 
             prev_ref_end = ref_end
             prev_alt_end = alt_end
@@ -112,7 +118,7 @@ def write_vcf(mutations, output_vcf, chromosome):
         for row in header:
             vcf_out.write(row + "\n")
         for mutation in mutations:
-            vcf_out.write("\t".join(mutation.to_vcf_line(chromosome=chromosome)) + "\n")
+            vcf_out.write("\t".join(mutation.to_vcf_line()) + "\n")
 
 
 def main():
@@ -134,9 +140,6 @@ def main():
                         default=DEFAULT_OPEN_GAP_SCORE)
     parser.add_argument("--extend-gap-score", dest="extend_gap_score", help="The score for extending a gap",
                         default=DEFAULT_EXTEND_GAP_SCORE)
-    parser.add_argument("--chromosome", dest="chromosome",
-                        help="The chromosome to be used in the output VCF. Beware only one chromosome is supported!",
-                        default=DEFAULT_CHROMOSOME)
 
     args = parser.parse_args()
 
@@ -151,8 +154,8 @@ def main():
         open_gap_score=float(args.open_gap_score),
         extend_gap_score=float(args.extend_gap_score)
     )
-    variants = variant_caller.call_variants(sequence=query.seq, reference=reference.seq)
-    write_vcf(mutations=variants, output_vcf=args.output_vcf, chromosome=args.chromosome)
+    variants = variant_caller.call_variants(sequence=query.seq, reference=reference.seq, chromosome=reference.id)
+    write_vcf(mutations=variants, output_vcf=args.output_vcf, chromosome=reference.id)
 
 
 if __name__ == '__main__':

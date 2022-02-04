@@ -15,14 +15,14 @@ process BGZIP {
     conda (params.enable_conda ? "bioconda::samtools=1.12" : null)
 
     input:
-    tuple val(name), file(vcf)
+    tuple val(name), val(caller), file(vcf)
 
     output:
-    tuple val(name), file("${vcf}.gz"), file("${vcf}.gz.tbi"), emit: compressed_vcfs
+    tuple val(name), file("${name}.${caller}.vcf.gz"), file("${name}.${caller}.vcf.gz.tbi"), emit: compressed_vcfs
 
     script:
     """
-    bgzip -c ${vcf} > ${vcf}.gz
-    tabix -p vcf ${vcf}.gz
+    bgzip -c ${vcf} > ${name}.${caller}.vcf.gz
+    tabix -p vcf ${name}.${caller}.vcf.gz
     """
 }
