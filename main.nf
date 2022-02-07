@@ -16,25 +16,16 @@ include { BGZIP } from './modules/08_compress_vcf'
 
 
 params.help= false
-params.initialize = false
-if (params.initialize) {
-    params.fastq1 = "$baseDir/test_data/test_data_1.fastq.gz"
-    params.skip_bcftools = true
-    params.skip_ivar = true
-    params.skip_gatk = true
-    params.name = "init"
-}
-else {
-    params.fastq1 = false
-    params.skip_ivar = false
-    params.skip_bcftools = false
-    params.skip_gatk = false
-    params.name = false
-}
+
+params.fastq1 = false
+params.fastq2 = false
+params.fasta = false
+params.name = false
 
 params.skip_lofreq = false
-params.fasta = false
-params.fastq2 = false
+params.skip_ivar = false
+params.skip_bcftools = false
+params.skip_gatk = false
 
 // references
 params.reference = false

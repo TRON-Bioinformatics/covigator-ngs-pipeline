@@ -136,6 +136,24 @@ In order to have SnpEff functional annotations available you will also need to p
 
 ## How to run it
 
+### Testing
+
+To run the workflow on a test assembly dataset run:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda,test_fasta
+```
+
+Find the output in the folder `covigator_test_fasta`.
+
+To run the workflow on a test raw reads dataset run:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda,test_fastq
+```
+
+Find the output in the folder `covigator_test_fastq`.
+
+### Running
+
 For paired end reads:
 ```
 nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --fastq1 <FASTQ_FILE> --fastq2 <FASTQ_FILE> --name example_run --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
@@ -155,15 +173,30 @@ For batch processing of reads use `--input_fastqs_list` and `--name`.
 ```
 nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --input_fastqs_list <TSV_FILE> --library <paired|single> --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
 ```
-where the TSV file contains two or three columns tab-separated columns without header. Columns: sample name, path to FASTQ 1 and optionally path to FASTQ 2. 
+where the TSV file contains two or three columns tab-separated columns **without header**. Columns: sample name, path to FASTQ 1 and optionally path to FASTQ 2. 
+
+| Sample    | FASTQ 1                       | FASTQ 2 (optional column)     |
+|-----------|-------------------------------|-------------------------------|
+| sample1   | /path/to/sample1_fastq1.fastq | /path/to/sample1_fastq2.fastq |
+| sample2   | /path/to/sample2_fastq1.fastq | /path/to/sample2_fastq2.fastq |
+| ...       | ...                           | ...                           |
+
 
 For batch processing of assemblies use `--input_fastas_list`.
 ```
 nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --input_fastas_list <TSV_FILE> --library <paired|single> --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
 ```
-where the TSV file contains two columns tab-separated columns without header. Columns: sample name and path to FASTA.
+where the TSV file contains two columns tab-separated columns **without header**. Columns: sample name and path to FASTA.
 
-All options available using `--help`:
+| Sample    | FASTA                  | 
+|-----------|------------------------|
+| sample1   | /path/to/sample1.fasta |
+| sample2   | /path/to/sample2.fasta |
+| ...       | ...                    |
+
+### Getting help
+
+You can always contact us directly or create a GitHub issue, otherwise see all available options using `--help`:
 ```
 $ nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
@@ -191,7 +224,6 @@ Optional input:
     * --subclonal_variant_threshold: VAF superior threshold to mark a variant as subclonal (default: 0.8)
     * --memory: the ammount of memory used by each job (default: 3g)
     * --cpus: the number of CPUs used by each job (default: 1)
-    * --initialize: initialize the conda environment
     * --skip_lofreq: skips calling variants with LoFreq
     * --skip_gatk: skips calling variants with GATK
     * --skip_bcftools: skips calling variants with BCFTools
@@ -206,22 +238,15 @@ Optional input:
     * --snpeff_organism: organism to annotate with SnpEff, it will be useful to use the pipeline on other virus than SARS-CoV-2
 
 Output:
-    * Output a normalized, phased and annotated VCF file for each of BCFtools, GATK, LoFreq and iVar when FASTQ files are
+    * Output a VCF file for each of BCFtools, GATK, LoFreq and iVar when FASTQ files are
     provided or a single VCF obtained from a global alignment when a FASTA file is provided.
     * A pangolin results file for each of the VCF files.
+    * Only when FASTQs are provided:
+      * FASTP statistics
+      * Depth and breadth of coverage analysis results
+      * Picard's deduplication metrics
+      
 ```
-
-### Initializing the conda environments
-
-If you are planning to use it concurrently on multiple samples with conda, first initialize the conda environment, 
-otherwise concurrent sample executions will clash trying to create the same conda environment. Run:
-```
-nextflow main.nf -profile conda --initialize
-```
-
-This will create the necessary conda environment under `work/conda`, subsequent concurrent executions will use the same
-conda environment.
-
 
 ## References
 
