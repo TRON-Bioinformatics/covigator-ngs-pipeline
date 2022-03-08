@@ -230,12 +230,6 @@ workflow {
     VARIANT_NORMALIZATION(vcfs_to_normalize, reference)
     normalized_vcfs = VARIANT_NORMALIZATION.out
 
-    if (! skip_snpeff) {
-        // only when configured we run SnpEff
-        VARIANT_ANNOTATION(normalized_vcfs, snpeff_data, snpeff_config, snpeff_organism)
-        normalized_vcfs = VARIANT_ANNOTATION.out.annotated_vcfs
-    }
-
     if (! skip_sarscov2_annotations) {
         // only optionally add SARS-CoV-2 specific annotations
         VARIANT_SARSCOV2_ANNOTATION(normalized_vcfs)
@@ -249,7 +243,15 @@ workflow {
         normalized_vcfs = VARIANT_VAF_ANNOTATION.out.vaf_annotated
     }
 
+    // NOTE: phasing has to happen before SnpEff annotation for MNVs to be annotated correctly
     PHASING(normalized_vcfs, reference, gff)
+    normalized_vcfs = PHASING.out
 
-    BGZIP(PHASING.out)
+    if (! skip_snpeff) {
+        // only when configured we run SnpEff
+        VARIANT_ANNOTATION(normalized_vcfs, snpeff_data, snpeff_config, snpeff_organism)
+        normalized_vcfs = VARIANT_ANNOTATION.out.annotated_vcfs
+    }
+
+    BGZIP(normalized_vcfs)
 }
