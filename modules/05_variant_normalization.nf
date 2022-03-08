@@ -12,7 +12,7 @@ process VARIANT_NORMALIZATION {
     }
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::vt=0.57721 bioconda::bcftools=1.12" : null)
+    conda (params.enable_conda ? "bioconda::bcftools=1.12" : null)
 
     input:
         tuple val(name), val(caller), file(vcf)
@@ -29,9 +29,6 @@ process VARIANT_NORMALIZATION {
     # checks reference genome, decompose multiallelics, trim and left align indels
     bcftools norm --multiallelics -any --check-ref e --fasta-ref ${reference} \
     --old-rec-tag OLD_CLUMPED - | \
-
-    # decompose complex variants
-    vt decompose_blocksub -a -p - | \
 
     # remove duplicates after normalisation
     bcftools norm --rm-dup exact -o ${name}.${caller}.normalized.vcf -
