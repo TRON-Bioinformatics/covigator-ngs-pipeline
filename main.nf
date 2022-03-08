@@ -8,7 +8,7 @@ include { ALIGNMENT_PAIRED_END; ALIGNMENT_SINGLE_END } from './modules/02_bwa'
 include { BAM_PREPROCESSING; COVERAGE_ANALYSIS } from './modules/03_bam_preprocessing'
 include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; VARIANT_CALLING_GATK ;
             VARIANT_CALLING_IVAR ; VARIANT_CALLING_ASSEMBLY; IVAR2VCF } from './modules/04_variant_calling'
-include { VARIANT_NORMALIZATION } from './modules/05_variant_normalization'
+include { VARIANT_NORMALIZATION ; PHASING } from './modules/05_variant_normalization'
 include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION;
             VARIANT_VAF_ANNOTATION; VAFATOR } from './modules/06_variant_annotation'
 include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
@@ -249,5 +249,7 @@ workflow {
         normalized_vcfs = VARIANT_VAF_ANNOTATION.out.vaf_annotated
     }
 
-    BGZIP(normalized_vcfs)
+    PHASING(normalized_vcfs, reference, gff)
+
+    BGZIP(PHASING.out)
 }

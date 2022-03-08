@@ -11,8 +11,8 @@ class ClonalHaploidPhaser:
         self.vcf_reader = VCF(input_vcf)
         self.vcf_writer = Writer(output_vcf, self.vcf_reader)
         self.gtf = read_gtf(input_gtf)
-        self.cds_regions = self.gtf[self.gtf.feature == "CDS"]
-        self.cds_regions["uid"] = self.cds_regions[["start", "end"]].apply(lambda x: "{}:{}".format(x[0], x[1]), axis=1)
+        self.cds_regions = self.gtf.loc[self.gtf.feature == "CDS", :]
+        self.cds_regions.loc[:, "uid"] = self.cds_regions.loc[:, "start":"end"].apply(lambda x: "{}:{}".format(x[0], x[1]), axis=1)
         self.fasta = FastaFile(input_fasta)
 
     def _overlap_amino_acid(self, first_variant, first_overlapping_cds, second_variant, second_overlapping_cds) -> bool:
@@ -88,11 +88,11 @@ def main():
                         dest="vcf_in",
                         required=True,
                         help="Input vcf file listing somatic variants (expects sorted VCF).")
-    parser.add_argument("-g", "--input-gtf",
+    parser.add_argument("-g", "--gtf",
                         dest="gtf",
                         required=True,
                         help="Input GTF defining the coding regions.")
-    parser.add_argument("-f", "--input-fasta",
+    parser.add_argument("-f", "--fasta",
                         dest="fasta",
                         required=True,
                         help="Input FASTA reference genome.")

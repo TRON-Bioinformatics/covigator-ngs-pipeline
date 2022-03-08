@@ -6,7 +6,7 @@ from cyvcf2 import VCF
 
 class TestPhasing(TestCase):
 
-    def test_reference_genome_reader(self):
+    def test_phasing(self):
         os.makedirs("./output/phasing", exist_ok=True)
         output_vcf = "./output/phasing/test_data.merged.vcf.gz"
         if os.path.exists(output_vcf):
@@ -18,7 +18,7 @@ class TestPhasing(TestCase):
             input_fasta="./reference/Sars_cov_2.ASM985889v3.dna.toplevel.fa"
         ).run()
         self.assertTrue(os.path.exists(output_vcf))
-        self._assert_vcf(output_vcf, 56)
+        self._assert_vcf(output_vcf, 59)
 
     def _assert_vcf(self, vcf, expected_count_variants):
         vcf_reader = VCF(vcf)
