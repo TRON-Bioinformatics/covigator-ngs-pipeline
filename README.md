@@ -247,6 +247,7 @@ Optional input:
     * --snpeff_data: path to the SnpEff data folder, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --snpeff_config: path to the SnpEff config file, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --snpeff_organism: organism to annotate with SnpEff, it will be useful to use the pipeline on other virus than SARS-CoV-2
+    * --keep_intermediate: keep intermediate files (ie: BAM files and intermediate VCF files)
 
 Output:
     * Output a VCF file for each of BCFtools, GATK, LoFreq and iVar when FASTQ files are
