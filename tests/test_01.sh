@@ -10,7 +10,7 @@ output=output/test1
 nextflow main.nf -profile test,conda --name test_data \
 	--output $output \
 	--fastq1 test_data/test_data_1.fastq.gz \
-	--fastq2 test_data/test_data_2.fastq.gz
+	--fastq2 test_data/test_data_2.fastq.gz --keep_intermediate
 
 test -s $output/test_data.bcftools.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.gatk.vcf.gz || { echo "Missing VCF output file!"; exit 1; }

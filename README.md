@@ -40,7 +40,8 @@ When FASTQ files are provided the pipeline includes the following steps:
   coverage respectively.
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
   Subsequent processing of resulting VCF files is independent for each caller.
-- **Variant normalization**. `bcftools norm` and `vt` tools are employed to left align indels, trim variant calls and remove variant duplicates.
+- **Variant normalization**. `bcftools norm` is employed to left align indels, trim variant calls and remove variant duplicates.
+- **Phasing**. Clonal mutations (ie: VAF >= 0.8) occurring in the same amino acid are merged for its correct functional annotation.
 - **Variant annotation**. `SnpEff` is employed to annotate the variant consequences of variants,
   `VAFator` is employed to add technical annotations and finally
   `bcftools annotate` is employed to add additional annotations.
@@ -53,6 +54,7 @@ When a FASTA file is provided with a single assembly sequence the pipeline inclu
   indels. Indels longer than 50 bp and at the beginning or end of the assembly sequence are excluded. Any mutation where
   either reference or assembly contain an N is excluded.
 - **Variant normalization**. Same as described above.
+- **Phasing**. mutations occurring in the same amino acid are merged for its correct annotation.
 - **Variant annotation**. Same as described above with the exception of `VAFator`.
 - **Lineage determination**. `pangolin` is used for this purpose.
 
@@ -98,6 +100,15 @@ Where:
 - `INFO/PFAM_NAME` is the Interpro name for the overlapping Pfam domains
 - `INFO/PFAM_DESCRIPTION` is the Interpro description for the overlapping Pfam domains
 
+
+## Phasing limitations
+
+The phasing implementation is applicable only to clonal mutations. It assumes all clonal mutations are in phase and 
+hence it merges those occurring in the same amino acid.
+In order to phase intrahost mutations we would need to implement a read-backed phasing approach such as in WhatsHap 
+or GATK's ReadBackedPhasing. Unfortunately these tools do not support the scenario of a haploid organism with an
+undefined number of subclones.
+For this reason, phasing is implemented with custom Python code at `bin/phasing.py`.
 
 ## Reference data
 
@@ -236,6 +247,7 @@ Optional input:
     * --snpeff_data: path to the SnpEff data folder, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --snpeff_config: path to the SnpEff config file, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --snpeff_organism: organism to annotate with SnpEff, it will be useful to use the pipeline on other virus than SARS-CoV-2
+    * --keep_intermediate: keep intermediate files (ie: BAM files and intermediate VCF files)
 
 Output:
     * Output a VCF file for each of BCFtools, GATK, LoFreq and iVar when FASTQ files are
