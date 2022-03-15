@@ -30,7 +30,7 @@ class ClonalHaploidPhaser:
     def _get_middle_sequence(self, first_variant, second_variant):
         # NOTE: assumes single chromosome
         middle_sequence = ""
-        offset = second_variant.POS - first_variant.POS
+        offset = second_variant.POS - (first_variant.POS + len(first_variant.REF) - 1)
         if offset > 1:
             middle_sequence = self.fasta.fetch(
                 first_variant.CHROM, first_variant.POS, first_variant.POS - 1 + offset)
