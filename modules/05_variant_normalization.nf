@@ -12,7 +12,7 @@ process VARIANT_NORMALIZATION {
     }
     tag "${name}"
 
-    conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.12" : null)
+    conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.14" : null)
 
     input:
         tuple val(name), val(caller), file(vcf)
