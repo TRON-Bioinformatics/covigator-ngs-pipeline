@@ -28,7 +28,7 @@ process VCF2FASTA {
     memory params.memory
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
+    conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.14" : null)
 
     input:
         tuple val(name), val(caller), file(vcf)

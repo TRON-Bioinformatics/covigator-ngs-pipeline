@@ -18,7 +18,7 @@ process VARIANT_CALLING_BCFTOOLS {
     }
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::bcftools=1.14" : null)
+    conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.14" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -52,7 +52,7 @@ process VARIANT_CALLING_LOFREQ {
     }
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::bcftools=1.14 bioconda::lofreq=2.1.5" : null)
+    conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.14 bioconda::lofreq=2.1.5" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -84,7 +84,7 @@ process VARIANT_CALLING_GATK {
     }
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::bcftools=1.14 bioconda::gatk4=4.2.0.0" : null)
+    conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.14 bioconda::gatk4=4.2.0.0" : null)
 
     input:
         tuple val(name), file(bam), file(bai)
@@ -152,7 +152,7 @@ process IVAR2VCF {
     }
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::bcftools=1.14 conda-forge::python=3.8.5 conda-forge::pandas=1.1.5 conda-forge::dataclasses=0.8 bioconda::pysam=0.17.0" : null)
+    conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.14 conda-forge::python=3.8.5 conda-forge::pandas=1.1.5 conda-forge::dataclasses=0.8 bioconda::pysam=0.17.0" : null)
 
     input:
         tuple val(name), file(tsv)
