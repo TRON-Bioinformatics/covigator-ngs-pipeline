@@ -20,6 +20,20 @@ class TestPhasing(TestCase):
         self.assertTrue(os.path.exists(output_vcf))
         self._assert_vcf(output_vcf, 60)
 
+    def test_phasing_empty_vcf(self):
+        os.makedirs("./output/phasing", exist_ok=True)
+        output_vcf = "./output/phasing/test_data.merged.vcf.gz"
+        if os.path.exists(output_vcf):
+            os.remove(output_vcf)
+        ClonalHaploidPhaser(
+            input_vcf="./test_data/test_data.empty.vcf",
+            output_vcf=output_vcf,
+            input_gtf="./reference/Sars_cov_2.ASM985889v3.101.gff3",
+            input_fasta="./reference/Sars_cov_2.ASM985889v3.dna.toplevel.fa"
+        ).run()
+        self.assertTrue(os.path.exists(output_vcf))
+        self._assert_vcf(output_vcf, 0)
+
     def _assert_vcf(self, vcf, expected_count_variants):
         vcf_reader = VCF(vcf)
         count_variants = 0
