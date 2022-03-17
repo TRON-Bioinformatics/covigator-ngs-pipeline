@@ -71,7 +71,8 @@ class ClonalHaploidPhaser:
                 variants_buffer.append(variant)
 
         # writes last variant
-        variants_buffer.append(previous_variant)
+        if previous_variant:
+            variants_buffer.append(previous_variant)
 
         # sorts the variants by position before writing them all
         for variant in sorted(variants_buffer, key=lambda v: v.POS):
