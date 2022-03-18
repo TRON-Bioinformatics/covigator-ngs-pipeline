@@ -24,12 +24,14 @@ process BAM_PREPROCESSING {
         file("${name}.deduplication_metrics.txt")
 
     """
+    mkdir tmp
+
     gatk CleanSam \
-    --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
+    --java-options '-Xmx${params.memory} -Djava.io.tmpdir=./tmp' \
     --INPUT ${bam} \
     --OUTPUT /dev/stdout | \
     gatk AddOrReplaceReadGroups \
-    --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
+    --java-options '-Xmx${params.memory} -Djava.io.tmpdir=./tmp' \
     --VALIDATION_STRINGENCY SILENT \
     --INPUT /dev/stdin \
     --OUTPUT ${bam.baseName}.prepared.bam \
@@ -42,14 +44,14 @@ process BAM_PREPROCESSING {
     --SORT_ORDER queryname
 
     gatk MarkDuplicates \
-    --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=tmp' \
+    --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=./tmp' \
     --INPUT ${bam.baseName}.prepared.bam \
     --METRICS_FILE ${name}.deduplication_metrics.txt \
     --OUTPUT ${bam.baseName}.dedup.bam \
     --REMOVE_DUPLICATES true
 
     gatk SortSam \
-    --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=tmp' \
+    --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=./tmp' \
     --INPUT ${bam.baseName}.dedup.bam \
     --OUTPUT ${bam.baseName}.preprocessed.bam \
     --SORT_ORDER coordinate
