@@ -68,9 +68,9 @@ process VARIANT_CALLING_LOFREQ {
     --min-mq ${params.min_mapping_quality} \
     --ref ${reference} \
     --call-indels \
-    <( lofreq indelqual --dindel --ref ${reference} ${bam} ) > ${name}.lofreq.vcf
+    <( lofreq indelqual --dindel --ref ${reference} ${bam} ) | bgzip > ${name}.lofreq.vcf.gz
 
-    bgzip -c ${name}.lofreq.vcf > ${name}.lofreq.vcf.gz
+    # NOTE: adding the tabix index is a dirty fix to deal with LoFreq VCF missing the chromosome in the header
     bcftools index ${name}.lofreq.vcf.gz
     bcftools view --output-type b ${name}.lofreq.vcf.gz > ${name}.lofreq.bcf
     """

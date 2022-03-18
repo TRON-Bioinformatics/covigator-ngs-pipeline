@@ -17,9 +17,20 @@ process PANGOLIN_LINEAGE {
     output:
         file("${name}.${caller}.pangolin.csv")
 
+    when:
+        // only runs pangolin on LoFreq and the assembly results
+        caller == "lofreq" || caller == "assembly"
+
     shell:
     """
-    pangolin --outfile ${name}.${caller}.pangolin.csv ${fasta}
+    mkdir tmp
+
+    #--decompress-model
+    pangolin \
+    ${fasta} \
+    --outfile ${name}.${caller}.pangolin.csv \
+    --tempdir ./tmp \
+    --threads ${params.cpus}
     """
 }
 
