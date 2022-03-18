@@ -163,6 +163,12 @@ nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda,test_fast
 
 Find the output in the folder `covigator_test_fastq`.
 
+The above commands are useful to create the conda environments before hand.
+
+**NOTE**: pangolin is the most time-consuming step of the whole pipeline. To make it faster, locate the conda 
+environment that Nextflow created with pangolin (eg: `find $YOUR_NEXTFOW_CONDA_ENVS_FOLDER -name pangolin`) and run
+`pangolin --decompress-model`.
+
 ### Running
 
 For paired end reads:
@@ -204,6 +210,7 @@ where the TSV file contains two columns tab-separated columns **without header**
 | sample1   | /path/to/sample1.fasta |
 | sample2   | /path/to/sample2.fasta |
 | ...       | ...                    |
+
 
 ### Getting help
 
