@@ -79,7 +79,6 @@ if (params.reference == false) {
     snpeff_config = params.sarscov2_snpeff_config
     snpeff_organism = params.sarscov2_snpeff_organism
     skip_sarscov2_annotations = params.skip_sarscov2_annotations
-    primers = file(params.sarscov2_primers)
 }
 else {
     log.info "Using custom reference genome: ${params.reference}"
@@ -88,9 +87,10 @@ else {
     snpeff_data = params.snpeff_data
     snpeff_config = params.snpeff_config
     snpeff_organism = params.snpeff_organism
-    primers = params.primers ? file(params.primers) : false
     skip_sarscov2_annotations = true
 }
+
+primers = params.primers ? file(params.primers) : false
 
 skip_snpeff = false
 if (! snpeff_data || ! snpeff_config || ! snpeff_organism) {
@@ -252,8 +252,10 @@ workflow {
     }
 
     // NOTE: phasing has to happen before SnpEff annotation for MNVs to be annotated correctly
-    PHASING(normalized_vcfs, reference, gff)
-    normalized_vcfs = PHASING.out
+    if (params.gff) {
+        PHASING(normalized_vcfs, reference, gff)
+        normalized_vcfs = PHASING.out
+    }
 
     if (! skip_snpeff) {
         // only when configured we run SnpEff

@@ -36,6 +36,7 @@ When FASTQ files are provided the pipeline includes the following steps:
 - **Trimming**. `fastp` is used to trim reads with default values. This step also includes QC filtering.
 - **Alignment**. `BWA mem` is used for the alignment of single or paired end samples.
 - **BAM preprocessing**. BAM files are prepared and duplicate reads are marked using GATK and Picard tools.
+- **Primer trimming**. When a BED with primers is provided, these are trimmed from the reads using iVar. This is applicable to the results from all variant callers.
 - **Coverage analysis**. `samtools coverage` and `samtools depth` are used to compute the horizontal and vertical 
   coverage respectively.
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
@@ -109,6 +110,17 @@ In order to phase intrahost mutations we would need to implement a read-backed p
 or GATK's ReadBackedPhasing. Unfortunately these tools do not support the scenario of a haploid organism with an
 undefined number of subclones.
 For this reason, phasing is implemented with custom Python code at `bin/phasing.py`.
+
+## Primers trimming
+
+With some library preparation protocols such as ARTIC it is recommended to trim the primers from the reads.
+We have observed that if primers are not trimmed spurious mutations are being called specially SNVs with lower frequencies and long deletions.
+Also the variant allele frequencies of clonal mutations are underestimated.
+
+The BED files containing the primers for each ARTIC version can be found at https://github.com/artic-network/artic-ncov2019/tree/master/primer_schemes/nCoV-2019.
+
+If the adequate BED file is provided to the CoVigator pipeline with `--primers` the primers will be trimmed with iVar. 
+This affects the output of every variant caller, not only iVar.
 
 ## Reference data
 
@@ -230,10 +242,16 @@ Input:
     * --library: required only when using --input_fastqs
     * --input_fastas_list: alternative to --name and --fasta for batch processing
 
+Optional input only required to use a custom reference:
+    * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
+    * --gff: the GFFv3 gene annotations file (required to run iVar and to phase mutations from all variant callers)    
+    * --snpeff_data: path to the SnpEff data folder, it will be useful to use the pipeline on other virus than SARS-CoV-2
+    * --snpeff_config: path to the SnpEff config file, it will be useful to use the pipeline on other virus than SARS-CoV-2
+    * --snpeff_organism: organism to annotate with SnpEff, it will be useful to use the pipeline on other virus than SARS-CoV-2
+
 Optional input:
     * --fastq2: the second input FASTQ file
-    * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
-    * --gff: the GFFv3 gene annotations file (only required to run iVar)
+    * --primers: a BED file containing the primers used during library preparation. If provided primers are trimmed from the reads.
     * --min_base_quality: minimum base call quality to take a base into account for variant calling (default: 20)
     * --min_mapping_quality: minimum mapping quality to take a read into account for variant calling (default: 20)
     * --vafator_min_base_quality: minimum base call quality to take a base into account for VAF annotation (default: 0)
@@ -251,9 +269,6 @@ Optional input:
     * --open_gap_score: global alignment open gap score, only applicable for assemblies (default: -3)
     * --extend_gap_score: global alignment extend gap score, only applicable for assemblies (default: -0.1)
     * --skip_sarscov2_annotations: skip some of the SARS-CoV-2 specific annotations (default: false)
-    * --snpeff_data: path to the SnpEff data folder, it will be useful to use the pipeline on other virus than SARS-CoV-2
-    * --snpeff_config: path to the SnpEff config file, it will be useful to use the pipeline on other virus than SARS-CoV-2
-    * --snpeff_organism: organism to annotate with SnpEff, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --keep_intermediate: keep intermediate files (ie: BAM files and intermediate VCF files)
 
 Output:
