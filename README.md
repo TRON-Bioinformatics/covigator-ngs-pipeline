@@ -1,6 +1,6 @@
 ![CoVigator logo](images/CoVigator_logo_txt_nobg.png "CoVigator logo")
 
-# Covigator NGS pipeline: full variant detection pipeline for Sars-CoV-2
+# CoVigator pipeline: variant detection pipeline for Sars-CoV-2
 
 [![DOI](https://zenodo.org/badge/374669617.svg)](https://zenodo.org/badge/latestdoi/374669617)
 [![Run tests](https://github.com/TRON-Bioinformatics/covigator-ngs-pipeline/actions/workflows/automated_tests.yml/badge.svg?branch=master)](https://github.com/TRON-Bioinformatics/covigator-ngs-pipeline/actions/workflows/automated_tests.yml)
@@ -18,6 +18,8 @@ Although it is configured by default for SARS-CoV-2 it can be employed for the a
 if the required references are provided.
 
 The result of the pipeline is one or more annotated VCFs with the list of SNVs and indels ready for analysis.
+
+The results from the CoVigator pipeline populate our CoVigator dashboard [https://covigator.tron-mainz.de](https://covigator.tron-mainz.de) 
 
 **Table of Contents**
 
