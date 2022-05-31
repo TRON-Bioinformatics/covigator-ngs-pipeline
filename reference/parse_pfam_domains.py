@@ -14,6 +14,7 @@ for g in data["genes"]:
                         # from 1-based to 0-based
                         "start": int(g["start"]) + (int(p["start"]) * 3) - 1,
                         "end": int(g["start"]) + (int(p["end"]) * 3) - 1,
+                        "description": p["description"],
                         "interpro_name":p["interpro_name"],
                         "interpro_description": p["interpro_description"]
                     })
@@ -24,8 +25,13 @@ pfam_domains = sorted(pfam_domains, key=lambda x: x["start"])
 
 with open("pfam_names.bed", "w") as f:
     for d in pfam_domains:
-        f.write("\t".join([chromosome, str(d["start"]), str(d["end"]), d["interpro_name"]]) + "\n")
+        f.write("\t".join([chromosome, str(d["start"]), str(d["end"]), d["description"]]) + "\n")
 
 with open("pfam_descriptions.bed", "w") as f:
     for d in pfam_domains:
         f.write("\t".join([chromosome, str(d["start"]), str(d["end"]), d["interpro_description"]]) + "\n")
+
+with open("pfam_interpro_mapping.tsv", "w") as f:
+    f.write("\t".join(["pfam", "interpro"]) + "\n")
+    for d in pfam_domains:
+        f.write("\t".join(["'" + d["description"] + "'", "'" + d["interpro_name"] + "'"]) + "\n")
