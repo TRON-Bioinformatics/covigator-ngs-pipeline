@@ -119,7 +119,7 @@ process VARIANT_SARSCOV2_ANNOTATION {
     --header-lines ${params.pfam_descriptions_header} \
     -c CHROM,FROM,TO,PFAM_DESCRIPTION - > ${name}.${caller}.annotated_sarscov2.vcf
 
-    # TODO: include this step for GISAID data
+    # TODO: include this step for FASTA data
     #bcftools annotate \
     #--annotations ${params.problematic_sites} \
     #--columns FILTER \

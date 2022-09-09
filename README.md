@@ -34,8 +34,9 @@ The results from the CoVigator pipeline populate our CoVigator dashboard [https:
 
 ## Two pipelines in one
 
-In CoVigator we analyse samples from two different sources, ENA and GISAID. While from the first we get the raw reads in
-FASTQ format, from the second we obtain already assembled genomes in FASTA format. Each of these formats has to be 
+In CoVigator we analyse samples from two different formats, FASTQ files (e.g.: as provided by the European Nucleotide 
+Archive) and FASTA files containing a consensus assembly. While from the first we get the raw reads, 
+from the second we obtain already assembled genomes. Each of these formats has to be 
 analysed differently. Also, the output data that we can obtain from each of these is different.
 
 ![CoVigator pipeline](images/pipeline.drawio.png)
