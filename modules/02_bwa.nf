@@ -7,7 +7,7 @@ process ALIGNMENT_PAIRED_END {
     memory params.memory
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::bwa=0.7.17 bioconda::samtools=1.12" : null)
+    conda (params.enable_conda ? "bioconda::bwa-mem2=2.2.1 bioconda::samtools=1.12" : null)
 
     input:
         tuple val(name), file(fastq1), file(fastq2)
@@ -17,7 +17,7 @@ process ALIGNMENT_PAIRED_END {
         tuple val(name), file("${name}.bam")
 
     """
-    bwa mem -t ${task.cpus} ${reference} ${fastq1} ${fastq2} | \
+    bwa-mem2 mem -t ${task.cpus} ${reference} ${fastq1} ${fastq2} | \
     samtools view -uS - | \
     samtools sort - > ${name}.bam
     """
@@ -28,7 +28,7 @@ process ALIGNMENT_SINGLE_END {
     memory params.memory
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::bwa=0.7.17 bioconda::samtools=1.12" : null)
+    conda (params.enable_conda ? "bioconda::bwa-mem2=2.2.1 bioconda::samtools=1.12" : null)
 
     input:
         tuple val(name), file(fastq1)
@@ -38,7 +38,7 @@ process ALIGNMENT_SINGLE_END {
         tuple val(name), file("${name}.bam")
 
     """
-    bwa mem -t ${task.cpus} ${reference} ${fastq1} | \
+    bwa-mem2 mem -t ${task.cpus} ${params.reference} ${fastq1} | \
     samtools view -uS - | \
     samtools sort - > ${name}.bam
     """
