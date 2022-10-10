@@ -38,7 +38,7 @@ process ALIGNMENT_SINGLE_END {
         tuple val(name), file("${name}.bam")
 
     """
-    bwa-mem2 mem -t ${task.cpus} ${params.reference} ${fastq1} | \
+    bwa-mem2 mem -t ${task.cpus} ${reference} ${fastq1} | \
     samtools view -uS - | \
     samtools sort - > ${name}.bam
     """
