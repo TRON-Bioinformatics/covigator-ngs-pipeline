@@ -20,8 +20,7 @@ process BAM_PREPROCESSING {
         val(reference)
 
     output:
-        tuple val(name), file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai"), emit: preprocessed_bam
-        file("${name}.deduplication_metrics.txt")
+        tuple val(name), file("${name}.preprocessed.bam"), emit: preprocessed_bam
 
     """
     mkdir tmp
@@ -34,29 +33,45 @@ process BAM_PREPROCESSING {
     --java-options '-Xmx${params.memory} -Djava.io.tmpdir=./tmp' \
     --VALIDATION_STRINGENCY SILENT \
     --INPUT /dev/stdin \
-    --OUTPUT ${bam.baseName}.prepared.bam \
+    --OUTPUT ${bam.baseName}.preprocessed.bam \
     --REFERENCE_SEQUENCE ${reference} \
     --RGPU 1 \
     --RGID 1 \
     --RGSM ${name} \
     --RGLB 1 \
-    --RGPL ILLUMINA \
-    --SORT_ORDER queryname
+    --RGPL ILLUMINA
+    """
+}
 
-    gatk MarkDuplicates \
-    --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=./tmp' \
-    --INPUT ${bam.baseName}.prepared.bam \
-    --METRICS_FILE ${name}.deduplication_metrics.txt \
-    --OUTPUT ${bam.baseName}.dedup.bam \
-    --REMOVE_DUPLICATES true
+process MARK_DUPLICATES {
+    cpus params.cpus
+    memory params.memory
+    tag "${name}"
 
-    gatk SortSam \
-    --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=./tmp' \
-    --INPUT ${bam.baseName}.dedup.bam \
-    --OUTPUT ${bam.baseName}.preprocessed.bam \
-    --SORT_ORDER coordinate
+    conda (params.enable_conda ? "bioconda::sambamba=0.8.2" : null)
 
-    gatk BuildBamIndex --INPUT ${bam.baseName}.preprocessed.bam
+    input:
+        tuple val(name), file(bam)
+
+    output:
+        tuple val(name), file("${name}.dedupped.bam"), file("${name}.dedupped.bai"), emit: dedup_bams
+
+    """
+    mkdir tmp
+
+    sambamba sort -o /dev/stdout \
+        -t ${task.cpus} \
+        --tmpdir=./tmp \
+        ${bam} | \
+    sambamba markdup \
+        -r \
+        -t ${task.cpus} \
+        --tmpdir=./tmp \
+        /dev/stdin ${name}.dedupped.bam
+
+    sambamba index \
+        -t ${task.cpus} \
+        ${name}.dedupped.bam ${name}.dedupped.bai
     """
 }
 

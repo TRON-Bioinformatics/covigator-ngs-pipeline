@@ -5,7 +5,7 @@ nextflow.enable.dsl = 2
 
 include { READ_TRIMMING_PAIRED_END; READ_TRIMMING_SINGLE_END } from './modules/01_fastp'
 include { ALIGNMENT_PAIRED_END; ALIGNMENT_SINGLE_END } from './modules/02_bwa'
-include { BAM_PREPROCESSING; COVERAGE_ANALYSIS; PRIMER_TRIMMING_IVAR } from './modules/03_bam_preprocessing'
+include { BAM_PREPROCESSING; COVERAGE_ANALYSIS; PRIMER_TRIMMING_IVAR; MARK_DUPLICATES } from './modules/03_bam_preprocessing'
 include { VARIANT_CALLING_BCFTOOLS; VARIANT_CALLING_LOFREQ ; VARIANT_CALLING_GATK ;
             VARIANT_CALLING_IVAR ; VARIANT_CALLING_ASSEMBLY; IVAR2VCF } from './modules/04_variant_calling'
 include { VARIANT_NORMALIZATION ; PHASING } from './modules/05_variant_normalization'
@@ -192,31 +192,35 @@ workflow {
         }
         BAM_PREPROCESSING(bam_files, reference)
         preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bam
+
+        MARK_DUPLICATES(preprocessed_bams)
+        deduplicated_bams = MARK_DUPLICATES.out.dedup_bams
+
         if (primers) {
-            PRIMER_TRIMMING_IVAR(preprocessed_bams, primers)
-            preprocessed_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
+            PRIMER_TRIMMING_IVAR(deduplicated_bams, primers)
+            deduplicated_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
         }
-        COVERAGE_ANALYSIS(preprocessed_bams)
+        COVERAGE_ANALYSIS(deduplicated_bams)
 
         // variant calling
         vcfs_to_normalize = null
         if (!params.skip_bcftools) {
-            VARIANT_CALLING_BCFTOOLS(preprocessed_bams, reference)
+            VARIANT_CALLING_BCFTOOLS(deduplicated_bams, reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
                 VARIANT_CALLING_BCFTOOLS.out : vcfs_to_normalize.concat(VARIANT_CALLING_BCFTOOLS.out)
         }
         if (!params.skip_lofreq) {
-            VARIANT_CALLING_LOFREQ(preprocessed_bams, reference)
+            VARIANT_CALLING_LOFREQ(deduplicated_bams, reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
                 VARIANT_CALLING_LOFREQ.out : vcfs_to_normalize.concat(VARIANT_CALLING_LOFREQ.out)
         }
         if (!params.skip_gatk) {
-            VARIANT_CALLING_GATK(preprocessed_bams, reference)
+            VARIANT_CALLING_GATK(deduplicated_bams, reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
                 VARIANT_CALLING_GATK.out : vcfs_to_normalize.concat(VARIANT_CALLING_GATK.out)
         }
         if (!params.skip_ivar && gff) {
-            VARIANT_CALLING_IVAR(preprocessed_bams, reference, gff)
+            VARIANT_CALLING_IVAR(deduplicated_bams, reference, gff)
             IVAR2VCF(VARIANT_CALLING_IVAR.out, reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
                 IVAR2VCF.out : vcfs_to_normalize.concat(IVAR2VCF.out)
@@ -246,7 +250,7 @@ workflow {
 
     if (input_fastqs) {
         // we can only add technical annotations when we have the reads
-        VAFATOR(normalized_vcfs.combine(preprocessed_bams, by: 0))
+        VAFATOR(normalized_vcfs.combine(deduplicated_bams, by: 0))
         VARIANT_VAF_ANNOTATION(VAFATOR.out.annotated_vcf)
         normalized_vcfs = VARIANT_VAF_ANNOTATION.out.vaf_annotated
     }
