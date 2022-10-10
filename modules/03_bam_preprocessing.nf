@@ -40,22 +40,15 @@ process BAM_PREPROCESSING {
     --RGLB 1 \
     --RGPL ILLUMINA
 
-    # sorts by coordinates
-    sambamba sort -o ${name}.sorted.bam \
-        -t ${task.cpus} \
-        --tmpdir=./tmp \
-        ${name}.prepared.bam
-
-    # removes duplicates
+    # removes duplicates (sorted from the alignment process)
     sambamba markdup \
         -r \
         -t ${task.cpus} \
         --tmpdir=./tmp \
-        ${name}.sorted.bam ${name}.preprocessed.bam
+        ${name}.prepared.bam ${name}.preprocessed.bam
 
     # removes intermediate BAM files
     rm -f ${name}.prepared.bam
-    rm -f ${name}.sorted.bam
 
     # indexes the output BAM file
     sambamba index \
