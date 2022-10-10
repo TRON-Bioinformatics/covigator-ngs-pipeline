@@ -59,16 +59,23 @@ process MARK_DUPLICATES {
     """
     mkdir tmp
 
-    sambamba sort -o /dev/stdout \
+    # sorts by coordinates
+    sambamba sort -o ${name}.sorted.bam \
         -t ${task.cpus} \
         --tmpdir=./tmp \
-        ${bam} | \
+        ${bam}
+
+    # removes duplicates
     sambamba markdup \
         -r \
         -t ${task.cpus} \
         --tmpdir=./tmp \
-        /dev/stdin ${name}.dedupped.bam
+        ${name}.sorted.bam ${name}.dedupped.bam
 
+    # removes intermediate sorted BAM file
+    rm -f ${name}.sorted.bam
+
+    # indexes the output BAM file
     sambamba index \
         -t ${task.cpus} \
         ${name}.dedupped.bam ${name}.dedupped.bai
