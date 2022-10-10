@@ -23,7 +23,6 @@ test -s covigator_fastq_test/test.fastp_stats.json || { echo "Missing VCF output
 test -s covigator_fastq_test/test.fastp_stats.html || { echo "Missing VCF output file!"; exit 1; }
 test -s covigator_fastq_test/test.coverage.tsv || { echo "Missing coverage output file!"; exit 1; }
 test -s covigator_fastq_test/test.depth.tsv || { echo "Missing depth output file!"; exit 1; }
-test -s covigator_fastq_test/test.deduplication_metrics.txt || { echo "Missing deduplication metrics file!"; exit 1; }
 test -s covigator_fastq_test/test.bcftools.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 test -s covigator_fastq_test/test.gatk.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
 test -s covigator_fastq_test/test.lofreq.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }
