@@ -33,11 +33,13 @@ process VARIANT_ANNOTATION {
     output:
     tuple val(name), val(caller), file("${name}.${caller}.annotated.vcf"), emit: annotated_vcfs
 
+    script:
+    memory = "${params.memory}".replaceAll(" ", "").toLowerCase()
     """
     # for some reason the snpEff.config file needs to be in the folder where snpeff runs...
     cp ${snpeff_config} .
 
-    snpEff eff -dataDir ${snpeff_data} \
+    snpEff eff -Xmx${memory} -dataDir ${snpeff_data} \
     -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
     ${snpeff_organism}  ${vcf} > ${name}.${caller}.annotated.vcf
     """
