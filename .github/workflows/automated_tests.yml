@@ -29,4 +29,5 @@ jobs:
         key: ${{ runner.os }}-covigator-ngs-pipeline
     - name: Run tests
       run: |
+        export NXF_VER=22.04.5
         make
