@@ -26,6 +26,7 @@ params.skip_lofreq = false
 params.skip_ivar = false
 params.skip_bcftools = false
 params.skip_gatk = false
+params.skip_pangolin = false
 
 // references
 params.reference = false
@@ -191,7 +192,8 @@ workflow {
             bam_files = ALIGNMENT_SINGLE_END.out
         }
         BAM_PREPROCESSING(bam_files, reference)
-        preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bam
+        preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bams
+
         if (primers) {
             PRIMER_TRIMMING_IVAR(preprocessed_bams, primers)
             preprocessed_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
@@ -223,12 +225,16 @@ workflow {
         }
 
         // pangolin from VCF
-        VCF2FASTA(vcfs_to_normalize, reference)
-        PANGOLIN_LINEAGE(VCF2FASTA.out)
+        if (!params.skip_pangolin) {
+            VCF2FASTA(vcfs_to_normalize, reference)
+            PANGOLIN_LINEAGE(VCF2FASTA.out)
+        }
     }
     else if (input_fastas) {
-        // pangolin from fasta
-        PANGOLIN_LINEAGE(input_fastas)
+        if (!params.skip_pangolin) {
+            // pangolin from fasta
+            PANGOLIN_LINEAGE(input_fastas)
+        }
 
         // assembly variant calling
         VARIANT_CALLING_ASSEMBLY(input_fastas, reference)

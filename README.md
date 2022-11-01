@@ -45,8 +45,8 @@ analysed differently. Also, the output data that we can obtain from each of thes
 
 When FASTQ files are provided the pipeline includes the following steps:
 - **Trimming**. `fastp` is used to trim reads with default values. This step also includes QC filtering.
-- **Alignment**. `BWA mem` is used for the alignment of single or paired end samples.
-- **BAM preprocessing**. BAM files are prepared and duplicate reads are marked using GATK and Picard tools.
+- **Alignment**. `BWA mem 2` is used for the alignment of single or paired end samples.
+- **BAM preprocessing**. BAM files are prepared and duplicate reads are marked using GATK and Sambamba tools.
 - **Primer trimming**. When a BED with primers is provided, these are trimmed from the reads using iVar. This is applicable to the results from all variant callers.
 - **Coverage analysis**. `samtools coverage` and `samtools depth` are used to compute the horizontal and vertical 
   coverage respectively.
@@ -333,6 +333,7 @@ Optional input:
     * --skip_gatk: skips calling variants with GATK
     * --skip_bcftools: skips calling variants with BCFTools
     * --skip_ivar: skips calling variants with iVar
+    * --skip_pangolin: skips lineage determination with pangolin
     * --match_score: global alignment match score, only applicable for assemblies (default: 2)
     * --mismatch_score: global alignment mismatch score, only applicable for assemblies (default: -1)
     * --open_gap_score: global alignment open gap score, only applicable for assemblies (default: -3)
@@ -347,7 +348,6 @@ Output:
     * Only when FASTQs are provided:
       * FASTP statistics
       * Depth and breadth of coverage analysis results
-      * Picard's deduplication metrics
       
 ```
 
@@ -411,7 +411,7 @@ is a technical artifact that would need to be avoided.
 ## Bibliography
 
 - Di Tommaso, P., Chatzou, M., Floden, E. W., Barja, P. P., Palumbo, E., & Notredame, C. (2017). Nextflow enables reproducible computational workflows. Nature Biotechnology, 35(4), 316–319. https://doi.org/10.1038/nbt.3820
-- Li H. and Durbin R. (2009) Fast and accurate short read alignment with Burrows-Wheeler Transform. Bioinformatics, 25:1754-60. [PMID: 19451168]
+- Vasimuddin Md, Sanchit Misra, Heng Li, Srinivas Aluru. Efficient Architecture-Aware Acceleration of BWA-MEM for Multicore Systems. IEEE Parallel and Distributed Processing Symposium (IPDPS), 2019.
 - Adrian Tan, Gonçalo R. Abecasis and Hyun Min Kang. Unified Representation of Genetic Variants. Bioinformatics (2015) 31(13): 2202-2204](http://bioinformatics.oxfordjournals.org/content/31/13/2202) and uses bcftools [Li, H. (2011). A statistical framework for SNP calling, mutation discovery, association mapping and population genetical parameter estimation from sequencing data. Bioinformatics (Oxford, England), 27(21), 2987–2993. 10.1093/bioinformatics/btr509
 - Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, McCarthy SA, Davies RM, Li H. Twelve years of SAMtools and BCFtools. Gigascience. 2021 Feb 16;10(2):giab008. doi: 10.1093/gigascience/giab008. PMID: 33590861; PMCID: PMC7931819.
 - Van der Auwera GA, Carneiro M, Hartl C, Poplin R, del Angel G, Levy-Moonshine A, Jordan T, Shakir K, Roazen D, Thibault J, Banks E, Garimella K, Altshuler D, Gabriel S, DePristo M. (2013). From FastQ Data to High-Confidence Variant Calls: The Genome Analysis Toolkit Best Practices Pipeline. Curr Protoc Bioinformatics, 43:11.10.1-11.10.33. DOI: 10.1002/0471250953.bi1110s43.
@@ -422,3 +422,4 @@ is a technical artifact that would need to be avoided.
 - Shifu Chen, Yanqing Zhou, Yaru Chen, Jia Gu; fastp: an ultra-fast all-in-one FASTQ preprocessor, Bioinformatics, Volume 34, Issue 17, 1 September 2018, Pages i884–i890, https://doi.org/10.1093/bioinformatics/bty560
 - Kwon, S. Bin, & Ernst, J. (2021). Single-nucleotide conservation state annotation of the SARS-CoV-2 genome. Communications Biology, 4(1), 1–11. https://doi.org/10.1038/s42003-021-02231-w
 - Cock, P. J., Antao, T., Chang, J. T., Chapman, B. A., Cox, C. J., Dalke, A., et al. (2009). Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics, 25(11), 1422–1423.
+- Artem Tarasov, Albert J. Vilella, Edwin Cuppen, Isaac J. Nijman, Pjotr Prins, Sambamba: fast processing of NGS alignment formats, Bioinformatics, Volume 31, Issue 12, 15 June 2015, Pages 2032–2034, https://doi.org/10.1093/bioinformatics/btv098

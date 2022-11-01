@@ -7,21 +7,19 @@ params.keep_intermediate = false
 process BAM_PREPROCESSING {
     cpus params.cpus
     memory params.memory
+    tag "${name}"
     if (params.keep_intermediate) {
         publishDir "${params.output}", mode: "copy"
     }
-    publishDir "${params.output}", mode: "copy", pattern: "${name}.deduplication_metrics.txt"
-    tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::gatk4=4.2.0.0" : null)
+    conda (params.enable_conda ? "bioconda::gatk4=4.2.0.0 bioconda::sambamba=0.8.2" : null)
 
     input:
         tuple val(name), file(bam)
         val(reference)
 
     output:
-        tuple val(name), file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai"), emit: preprocessed_bam
-        file("${name}.deduplication_metrics.txt")
+        tuple val(name), file("${name}.preprocessed.bam"), file("${name}.preprocessed.bai"), emit: preprocessed_bams
 
     """
     mkdir tmp
@@ -34,29 +32,28 @@ process BAM_PREPROCESSING {
     --java-options '-Xmx${params.memory} -Djava.io.tmpdir=./tmp' \
     --VALIDATION_STRINGENCY SILENT \
     --INPUT /dev/stdin \
-    --OUTPUT ${bam.baseName}.prepared.bam \
+    --OUTPUT ${name}.prepared.bam \
     --REFERENCE_SEQUENCE ${reference} \
     --RGPU 1 \
     --RGID 1 \
     --RGSM ${name} \
     --RGLB 1 \
-    --RGPL ILLUMINA \
-    --SORT_ORDER queryname
+    --RGPL ILLUMINA
 
-    gatk MarkDuplicates \
-    --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=./tmp' \
-    --INPUT ${bam.baseName}.prepared.bam \
-    --METRICS_FILE ${name}.deduplication_metrics.txt \
-    --OUTPUT ${bam.baseName}.dedup.bam \
-    --REMOVE_DUPLICATES true
+    # removes duplicates (sorted from the alignment process)
+    sambamba markdup \
+        -r \
+        -t ${task.cpus} \
+        --tmpdir=./tmp \
+        ${name}.prepared.bam ${name}.preprocessed.bam
 
-    gatk SortSam \
-    --java-options '-Xmx${params.memory}  -Djava.io.tmpdir=./tmp' \
-    --INPUT ${bam.baseName}.dedup.bam \
-    --OUTPUT ${bam.baseName}.preprocessed.bam \
-    --SORT_ORDER coordinate
+    # removes intermediate BAM files
+    rm -f ${name}.prepared.bam
 
-    gatk BuildBamIndex --INPUT ${bam.baseName}.preprocessed.bam
+    # indexes the output BAM file
+    sambamba index \
+        -t ${task.cpus} \
+        ${name}.preprocessed.bam ${name}.preprocessed.bai
     """
 }
 
