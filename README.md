@@ -333,6 +333,7 @@ Optional input:
     * --skip_gatk: skips calling variants with GATK
     * --skip_bcftools: skips calling variants with BCFTools
     * --skip_ivar: skips calling variants with iVar
+    * --skip_pangolin: skips lineage determination with pangolin
     * --match_score: global alignment match score, only applicable for assemblies (default: 2)
     * --mismatch_score: global alignment mismatch score, only applicable for assemblies (default: -1)
     * --open_gap_score: global alignment open gap score, only applicable for assemblies (default: -3)
