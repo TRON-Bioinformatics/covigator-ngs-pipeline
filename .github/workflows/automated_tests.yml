@@ -15,7 +15,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
         auto-update-conda: true
-        channels: defaults,conda-forge,bioconda
+        channels: conda-forge,bioconda,defaults
     - name: Install dependencies
       run: |
         apt-get update && apt-get --assume-yes install wget build-essential procps software-properties-common libgsl0-dev
