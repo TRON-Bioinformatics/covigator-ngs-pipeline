@@ -38,6 +38,7 @@ process VCF2FASTA {
     cpus params.cpus
     memory params.memory
     tag "${name}"
+    publishDir "${params.output}", mode: "copy"
 
     conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.14" : null)
 
