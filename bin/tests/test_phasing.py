@@ -48,6 +48,20 @@ class TestPhasing(TestCase):
         self.assertTrue(os.path.exists(output_vcf))
         self._assert_vcf(output_vcf, 2)
 
+    def test_phasing_bug36_2_legitimate_overlapping_indels(self):
+        os.makedirs(os.path.join(os.path.dirname(__file__), "output/phasing"), exist_ok=True)
+        output_vcf = os.path.join(os.path.dirname(__file__), "output/phasing/test.bug36_2.merged.vcf.gz")
+        if os.path.exists(output_vcf):
+            os.remove(output_vcf)
+        ClonalHaploidPhaser(
+            input_vcf=os.path.join(os.path.dirname(__file__), "data/test_data.bug36_2.vcf"),
+            output_vcf=output_vcf,
+            input_gtf=os.path.join(os.path.dirname(__file__), "../../reference/Sars_cov_2.ASM985889v3.101.gff3"),
+            input_fasta=os.path.join(os.path.dirname(__file__), "../../reference/Sars_cov_2.ASM985889v3.dna.toplevel.fa")
+        ).run()
+        self.assertTrue(os.path.exists(output_vcf))
+        self._assert_vcf(output_vcf, 2)
+
     def _assert_vcf(self, vcf, expected_count_variants):
         vcf_reader = VCF(vcf)
         count_variants = 0
