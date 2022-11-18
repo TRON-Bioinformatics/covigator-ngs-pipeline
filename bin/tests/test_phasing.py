@@ -1,4 +1,5 @@
 import os.path
+import unittest
 from unittest import TestCase
 from bin.phasing import ClonalHaploidPhaser
 from cyvcf2 import VCF
