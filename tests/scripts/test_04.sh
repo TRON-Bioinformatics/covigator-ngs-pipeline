@@ -5,10 +5,10 @@
 ##################################################################################
 echo "Running CoVigator pipeline test 4"
 source bin/assert.sh
-output=output/test4
+output=tests/output/test4
 nextflow main.nf -profile test,conda --name test_data \
 	--output $output \
-	--fasta test_data/test_data.fasta
+	--fasta tests/test_data/test_data.fasta
 
 test -s $output/test_data.assembly.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.assembly.pangolin.csv || { echo "Missing pangolin output file!"; exit 1; }

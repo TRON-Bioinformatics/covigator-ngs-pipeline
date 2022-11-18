@@ -6,9 +6,9 @@
 ##################################################################################
 echo "Running CoVigator pipeline test 5"
 source bin/assert.sh
-output=output/test5
-echo -e "test_data\t"`pwd`"/test_data/test_data.fasta\n" > test_data/test_input.txt
-nextflow main.nf -profile test,conda --input_fastas_list test_data/test_input.txt \
+output=tests/output/test5
+echo -e "test_data\t"`pwd`"/test_data/test_data.fasta\n" > tests/test_data/test_input.txt
+nextflow main.nf -profile test,conda --input_fastas_list tests/test_data/test_input.txt \
 	--output $output
 
 test -s $output/test_data.assembly.vcf.gz || { echo "Missing VCF output file!"; exit 1; }

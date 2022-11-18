@@ -7,9 +7,9 @@
 ##################################################################################
 echo "Running CoVigator pipeline test 7"
 source bin/assert.sh
-output=output/test7
-echo -e "test_data\t"`pwd`"/test_data/test_data_1.fastq.gz\n" > test_data/test_input.txt
-nextflow main.nf -profile test,conda --input_fastqs_list test_data/test_input.txt \
+output=tests/output/test7
+echo -e "test_data\t"`pwd`"/tests/test_data/test_data_1.fastq.gz\n" > tests/test_data/test_input.txt
+nextflow main.nf -profile test,conda --input_fastqs_list tests/test_data/test_input.txt \
 --library single --output $output \
 --skip_ivar --skip_bcftools --skip_gatk
 
