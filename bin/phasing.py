@@ -51,7 +51,7 @@ class ClonalHaploidPhaser:
 
         variant: Variant
         for variant in self.vcf_reader:
-            if variant.FILTER is None:
+            if variant.FILTER is None and variant.INFO.get('vafator_af', 1.0) >= 0.8:
                 position = variant.POS
                 overlapping_cds = {cds.uid: (cds.start, cds.end) for _, cds in
                                    self.cds_regions[
@@ -76,7 +76,10 @@ class ClonalHaploidPhaser:
 
         # sorts the variants by position before writing them all
         for variant in sorted(variants_buffer, key=lambda v: v.POS):
-            self.vcf_writer.write_record(variant)
+            try:
+                self.vcf_writer.write_record(variant)
+            except Exception as e:
+                pass
 
         self.vcf_reader.close()
         self.vcf_writer.close()

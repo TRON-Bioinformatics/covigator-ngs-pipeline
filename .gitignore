@@ -4,8 +4,6 @@ work
 output
 condaenv
 .ipynb_checkpoints
-data
-data2
 benchmark*
 venv
 covigator_fastq_test
