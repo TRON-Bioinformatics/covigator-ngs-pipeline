@@ -223,12 +223,6 @@ workflow {
             vcfs_to_normalize = vcfs_to_normalize == null?
                 IVAR2VCF.out : vcfs_to_normalize.concat(IVAR2VCF.out)
         }
-
-        // pangolin from VCF
-        if (!params.skip_pangolin) {
-            VCF2FASTA(vcfs_to_normalize, reference)
-            PANGOLIN_LINEAGE(VCF2FASTA.out)
-        }
     }
     else if (input_fastas) {
         if (!params.skip_pangolin) {
@@ -243,6 +237,14 @@ workflow {
 
     VARIANT_NORMALIZATION(vcfs_to_normalize, reference)
     normalized_vcfs = VARIANT_NORMALIZATION.out
+
+    if (input_fastqs) {
+        // pangolin from VCF on the normalized VCFs
+        if (!params.skip_pangolin) {
+            VCF2FASTA(normalized_vcfs, reference)
+            PANGOLIN_LINEAGE(VCF2FASTA.out)
+        }
+    }
 
     if (! skip_sarscov2_annotations) {
         // only optionally add SARS-CoV-2 specific annotations
