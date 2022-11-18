@@ -258,7 +258,7 @@ workflow {
     }
 
     // NOTE: phasing has to happen before SnpEff annotation for MNVs to be annotated correctly
-    if (params.gff) {
+    if (gff) {
         PHASING(normalized_vcfs, reference, gff)
         normalized_vcfs = PHASING.out
     }
