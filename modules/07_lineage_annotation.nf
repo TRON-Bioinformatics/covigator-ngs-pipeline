@@ -51,12 +51,13 @@ process VCF2FASTA {
 
     shell:
     """
-    bcftools index ${vcf}
+    bcftools view -O b -o ${name}.bcf ${vcf}
+    bcftools index ${name}.bcf
 
     # GATK results have all FILTER="."
     bcftools consensus --fasta-ref ${reference} \
     --include 'FILTER="PASS" | FILTER="."' \
     --output ${name}.${caller}.fasta \
-    ${vcf}
+    ${name}.bcf
     """
 }
