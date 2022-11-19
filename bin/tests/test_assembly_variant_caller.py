@@ -1,5 +1,5 @@
 from unittest import TestCase
-from .assembly_variant_caller import AssemblyVariantCaller
+from bin.assembly_variant_caller import AssemblyVariantCaller
 
 
 class TestCountryParser(TestCase):

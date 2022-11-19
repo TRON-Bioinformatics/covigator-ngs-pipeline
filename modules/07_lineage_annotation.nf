@@ -38,6 +38,7 @@ process VCF2FASTA {
     cpus params.cpus
     memory params.memory
     tag "${name}"
+    publishDir "${params.output}", mode: "copy"
 
     conda (params.enable_conda ? "conda-forge::gsl=2.7 bioconda::bcftools=1.14" : null)
 
@@ -50,12 +51,13 @@ process VCF2FASTA {
 
     shell:
     """
-    bcftools index ${vcf}
+    bcftools view -O b -o ${name}.bcf ${vcf}
+    bcftools index ${name}.bcf
 
     # GATK results have all FILTER="."
     bcftools consensus --fasta-ref ${reference} \
     --include 'FILTER="PASS" | FILTER="."' \
     --output ${name}.${caller}.fasta \
-    ${vcf}
+    ${name}.bcf
     """
 }

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 import argparse
+import logging
+
 from cyvcf2 import VCF, Writer, Variant
 from gtfparse import read_gtf
 from pysam import FastaFile
@@ -44,6 +46,12 @@ class ClonalHaploidPhaser:
         merged_variant.ALT = [merged_variant.ALT[0] + middle_sequence + second_variant.ALT[0]]
         return first_variant
 
+    def _is_indel(self, variant):
+        result = False
+        if variant:
+            result = len(variant.REF) > 1 or len(variant.ALT[0]) > 1
+        return result
+
     def run(self):
         previous_overlapping_cds = {}
         previous_variant = None
@@ -51,16 +59,21 @@ class ClonalHaploidPhaser:
 
         variant: Variant
         for variant in self.vcf_reader:
-            if variant.FILTER is None:
+            if variant.FILTER is None and variant.INFO.get('vafator_af', 1.0) >= 0.8:
                 position = variant.POS
                 overlapping_cds = {cds.uid: (cds.start, cds.end) for _, cds in
                                    self.cds_regions[
                                        (self.cds_regions.start <= position) &
                                        (self.cds_regions.end >= position)].iterrows()}
-                if self._overlap_amino_acid(variant, overlapping_cds, previous_variant, previous_overlapping_cds):
+                overlapped_indels = self._is_indel(previous_variant) and self._is_indel(variant)
+                if self._overlap_amino_acid(variant, overlapping_cds, previous_variant, previous_overlapping_cds) \
+                        and not overlapped_indels:
                     # merge variants
                     previous_variant = self._merge_variants(first_variant=previous_variant, second_variant=variant)
                 else:
+                    if overlapped_indels:
+                        logging.warning("Two overlapped indels found with either FILTER=PASS or VAFs above 0.8. "
+                                        "Skipping phasing for these two...")
                     # write previous variant
                     if previous_variant is not None:
                         variants_buffer.append(previous_variant)
@@ -76,7 +89,10 @@ class ClonalHaploidPhaser:
 
         # sorts the variants by position before writing them all
         for variant in sorted(variants_buffer, key=lambda v: v.POS):
-            self.vcf_writer.write_record(variant)
+            try:
+                self.vcf_writer.write_record(variant)
+            except Exception as e:
+                pass
 
         self.vcf_reader.close()
         self.vcf_writer.close()

@@ -1,0 +1,53 @@
+##fileformat=VCFv4.0
+##FILTER=<ID=PASS,Description="All filters passed">
+##fileDate=20220224
+##source=lofreq call --min-bq 20 --min-alt-bq 20 --min-mq 20 --ref /home/priesgo/src/github/covigator-ngs-pipeline/reference/Sars_cov_2.ASM985889v3.dna.toplevel.fa --call-indels /dev/fd/63 
+##reference=/home/priesgo/src/github/covigator-ngs-pipeline/reference/Sars_cov_2.ASM985889v3.dna.toplevel.fa
+##INFO=<ID=DP,Number=1,Type=Integer,Description="Raw Depth">
+##INFO=<ID=AF,Number=1,Type=Float,Description="Allele Frequency">
+##INFO=<ID=SB,Number=1,Type=Integer,Description="Phred-scaled strand bias at this position">
+##INFO=<ID=DP4,Number=4,Type=Integer,Description="Counts for ref-forward bases, ref-reverse, alt-forward and alt-reverse bases">
+##INFO=<ID=INDEL,Number=0,Type=Flag,Description="Indicates that the variant is an INDEL.">
+##INFO=<ID=CONSVAR,Number=0,Type=Flag,Description="Indicates that the variant is a consensus variant (as opposed to a low frequency variant).">
+##INFO=<ID=HRUN,Number=1,Type=Integer,Description="Homopolymer length to the right of report indel position">
+##FILTER=<ID=min_dp_10,Description="Minimum Coverage 10">
+##FILTER=<ID=sb_fdr,Description="Strand-Bias Multiple Testing Correction: fdr corr. pvalue > 0.001000">
+##FILTER=<ID=min_snvqual_52,Description="Minimum SNV Quality (Phred) 52">
+##FILTER=<ID=min_indelqual_37,Description="Minimum Indel Quality (Phred) 37">
+##contig=<ID=MN908947.3>
+##bcftools_viewVersion=1.14+htslib-1.14
+##bcftools_viewCommand=view --output-type b test_data.lofreq.vcf.gz; Date=Thu Feb 24 15:58:56 2022
+##INFO=<ID=OLD_CLUMPED,Number=1,Type=String,Description="Original variant. Format: CHR|POS|REF|ALT|USED_ALT_IDX">
+##bcftools_normVersion=1.12+htslib-1.12
+##bcftools_normCommand=norm --multiallelics -any --check-ref e --fasta-ref /home/priesgo/src/github/covigator-ngs-pipeline/reference/Sars_cov_2.ASM985889v3.dna.toplevel.fa --old-rec-tag OLD_CLUMPED -; Date=Thu Feb 24 15:59:38 2022
+##FORMAT=<ID=PS,Number=1,Type=Integer,Description="ID for set of phased genotypes">
+##bcftools_normCommand=norm --rm-dup exact -o test_data.lofreq.normalized.vcf -; Date=Thu Feb 24 15:59:38 2022
+##SnpEffVersion="5.0e (build 2021-03-09 06:01), by Pablo Cingolani"
+##SnpEffCmd="SnpEff  -noStats -no-downstream -no-upstream -no-intergenic -no-intron -noShiftHgvs Sars_cov_2.ASM985889v3.101 test_data.lofreq.normalized.vcf "
+##INFO=<ID=ANN,Number=.,Type=String,Description="Functional annotations: 'Allele | Annotation | Annotation_Impact | Gene_Name | Gene_ID | Feature_Type | Feature_ID | Transcript_BioType | Rank | HGVS.c | HGVS.p | cDNA.pos / cDNA.length | CDS.pos / CDS.length | AA.pos / AA.length | Distance | ERRORS / WARNINGS / INFO'">
+##INFO=<ID=LOF,Number=.,Type=String,Description="Predicted loss of function effects for this variant. Format: 'Gene_Name | Gene_ID | Number_of_transcripts_in_gene | Percent_of_transcripts_affected'">
+##INFO=<ID=NMD,Number=.,Type=String,Description="Predicted nonsense mediated decay effects for this variant. Format: 'Gene_Name | Gene_ID | Number_of_transcripts_in_gene | Percent_of_transcripts_affected'">
+##INFO=<ID=CONS_HMM_SARS_COV_2,Number=1,Type=Float,Description="Mutation depletion score track based on significant enrichment/depletion of nonsingleton SARS-CoV-2 mutations (https://github.com/ernstlab/ConsHMM_CoV)">
+##bcftools_annotateVersion=1.12+htslib-1.12
+##bcftools_annotateCommand=annotate --annotations /home/priesgo/src/github/covigator-ngs-pipeline/reference/wuhCor1.mutDepletionConsHMM.bed.gz --header-lines /home/priesgo/src/github/covigator-ngs-pipeline/reference/wuhCor1.mutDepletionConsHMM.header.txt -c CHROM,FROM,TO,CONS_HMM_SARS_COV_2 --output-type z test_data.lofreq.annotated.vcf; Date=Thu Feb 24 16:00:28 2022
+##INFO=<ID=CONS_HMM_SARBECOVIRUS,Number=1,Type=Float,Description="30 ConsHMM conservation states learned from the Sarbecovirus sequence alignment (https://github.com/ernstlab/ConsHMM_CoV)">
+##bcftools_annotateCommand=annotate --annotations /home/priesgo/src/github/covigator-ngs-pipeline/reference/wuhCor1.mutDepletionSarbecovirusConsHMM.bed.gz --header-lines /home/priesgo/src/github/covigator-ngs-pipeline/reference/wuhCor1.mutDepletionSarbecovirusConsHMM.header.txt -c CHROM,FROM,TO,CONS_HMM_SARBECOVIRUS --output-type z -; Date=Thu Feb 24 16:00:28 2022
+##INFO=<ID=CONS_HMM_VERTEBRATE_COV,Number=1,Type=Float,Description="30 ConsHMM conservation states learned from the vertebrate CoV sequence alignment (https://github.com/ernstlab/ConsHMM_CoV)">
+##bcftools_annotateCommand=annotate --annotations /home/priesgo/src/github/covigator-ngs-pipeline/reference/wuhCor1.mutDepletionVertebrateCoVConsHMM.bed.gz --header-lines /home/priesgo/src/github/covigator-ngs-pipeline/reference/wuhCor1.mutDepletionVertebrateCoVConsHMM.header.txt -c CHROM,FROM,TO,CONS_HMM_VERTEBRATE_COV --output-type z -; Date=Thu Feb 24 16:00:28 2022
+##INFO=<ID=PFAM_NAME,Number=.,Type=String,Description="Pfam domain name as reported in Ensembl annotations">
+##bcftools_annotateCommand=annotate --annotations /home/priesgo/src/github/covigator-ngs-pipeline/reference/pfam_names.bed.gz --header-lines /home/priesgo/src/github/covigator-ngs-pipeline/reference/pfam_names.header.txt -c CHROM,FROM,TO,PFAM_NAME --output-type z -; Date=Thu Feb 24 16:00:28 2022
+##INFO=<ID=PFAM_DESCRIPTION,Number=.,Type=String,Description="Pfam domain description as reported in Ensembl annotations">
+##bcftools_annotateCommand=annotate --annotations /home/priesgo/src/github/covigator-ngs-pipeline/reference/pfam_descriptions.bed.gz --header-lines /home/priesgo/src/github/covigator-ngs-pipeline/reference/pfam_descriptions.header.txt -c CHROM,FROM,TO,PFAM_DESCRIPTION -; Date=Thu Feb 24 16:00:28 2022
+##vafator_command_line={"name": "vafator", "version": "1.2.5", "date": "Thu Feb 24 16:01:52 2022", "timestamp": 1645714912.869662, "input_vcf": "/home/priesgo/src/github/covigator-ngs-pipeline/work/1a/33f1538b4282b900aebefa602ca7f6/test_data.lofreq.annotated_sarscov2.vcf", "output_vcf": "/home/priesgo/src/github/covigator-ngs-pipeline/work/1a/33f1538b4282b900aebefa602ca7f6/test_data.lofreq.vaf.vcf", "bams": "vafator:/home/priesgo/src/github/covigator-ngs-pipeline/work/1a/33f1538b4282b900aebefa602ca7f6/test_data.preprocessed.bam", "mapping_quality_threshold": 0, "base_call_quality_threshold": 0}
+##INFO=<ID=vafator_af,Number=A,Type=Float,Description="Allele frequency for the alternate alleles in the vafator sample/s">
+##INFO=<ID=vafator_dp,Number=1,Type=Float,Description="Total depth of coverage in the vafator sample/s (independent of alleles)">
+##INFO=<ID=vafator_ac,Number=A,Type=Integer,Description="Allele count for the alternate alleles in the vafator sample/s">
+##bcftools_viewCommand=view -Ob test_data.vcf.gz; Date=Thu Feb 24 16:01:59 2022
+##FILTER=<ID=LOW_FREQUENCY,Description="Set if true: INFO/vafator_af < 0.2">
+##bcftools_filterVersion=1.14+htslib-1.14
+##bcftools_filterCommand=filter --exclude 'INFO/vafator_af < 0.2' --soft-filter LOW_FREQUENCY -; Date=Thu Feb 24 16:01:59 2022
+##FILTER=<ID=SUBCLONAL,Description="Set if true: INFO/vafator_af >= 0.2 && INFO/vafator_af < 0.8">
+##bcftools_filterCommand=filter --exclude 'INFO/vafator_af >= 0.2 && INFO/vafator_af < 0.8' --soft-filter SUBCLONAL --output-type v -; Date=Thu Feb 24 16:01:59 2022
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+MN908947.3	28361	.	GGAGAACGCA	G	177.149	PASS	DP=191;vafator_af=0.65021;vafator_ac=158;vafator_dp=243	GT:GQ	1:177
+MN908947.3	28362	.	GAGAACGCA	G	146.658	PASS	DP=49;vafator_af=0.0125;vafator_ac=3;vafator_dp=240	GT:GQ	1:147
