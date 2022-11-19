@@ -141,6 +141,7 @@ process VARIANT_CALLING_IVAR {
     --redo-BAQ \
     --min-BQ ${params.min_base_quality} \
     --min-MQ ${params.min_mapping_quality} \
+    --fasta-ref ${reference} \
     ${bam} | \
     ivar variants ${params.args_ivar} \
     -p ${name}.ivar \
