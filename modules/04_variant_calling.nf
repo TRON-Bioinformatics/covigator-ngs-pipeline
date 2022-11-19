@@ -9,6 +9,13 @@ params.mismatch_score = -1
 params.open_gap_score = -3
 params.extend_gap_score = -0.1
 
+params.args_bcftools_mpileup = ""
+params.args_bcftools_call = ""
+params.args_lofreq = ""
+params.args_gatk = ""
+params.args_ivar_samtools = ""
+params.args_ivar = ""
+
 
 process VARIANT_CALLING_BCFTOOLS {
     cpus params.cpus
@@ -28,7 +35,7 @@ process VARIANT_CALLING_BCFTOOLS {
         tuple val(name), val("bcftools"), file("${name}.bcftools.bcf")
 
     """
-    bcftools mpileup \
+    bcftools mpileup ${params.args_bcftools_mpileup} \
     --redo-BAQ \
     --max-depth 0 \
     --min-BQ ${params.min_base_quality} \
@@ -36,7 +43,7 @@ process VARIANT_CALLING_BCFTOOLS {
     --count-orphans \
     --fasta-ref ${reference} \
     --annotate AD ${bam} | \
-    bcftools call \
+    bcftools call ${params.args_bcftools_call} \
     --multiallelic-caller \
     --variants-only \
      --ploidy 1 \
@@ -62,7 +69,7 @@ process VARIANT_CALLING_LOFREQ {
         tuple val(name), val("lofreq"), file("${name}.lofreq.bcf")
 
     """
-    lofreq call \
+    lofreq call ${params.args_lofreq} \
     --min-bq ${params.min_base_quality} \
     --min-alt-bq ${params.min_base_quality} \
     --min-mq ${params.min_mapping_quality} \
@@ -95,7 +102,7 @@ process VARIANT_CALLING_GATK {
 
     """
     mkdir tmp
-    gatk HaplotypeCaller \
+    gatk HaplotypeCaller ${params.args_gatk} \
     --java-options '-Xmx${params.memory} -Djava.io.tmpdir=tmp' \
     --input $bam \
     --output ${name}.gatk.vcf \
@@ -127,7 +134,7 @@ process VARIANT_CALLING_IVAR {
         tuple val(name), file("${name}.ivar.tsv")
 
     """
-    samtools mpileup \
+    samtools mpileup ${params.args_ivar_samtools} \
     -aa \
     --count-orphans \
     --max-depth 0 \
@@ -135,7 +142,7 @@ process VARIANT_CALLING_IVAR {
     --min-BQ ${params.min_base_quality} \
     --min-MQ ${params.min_mapping_quality} \
     ${bam} | \
-    ivar variants \
+    ivar variants ${params.args_ivar} \
     -p ${name}.ivar \
     -q ${params.min_base_quality} \
     -t 0.03 \
