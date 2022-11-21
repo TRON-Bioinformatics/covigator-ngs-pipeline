@@ -104,6 +104,7 @@ if (! snpeff_data || ! snpeff_config || ! snpeff_organism) {
 
 input_fastqs = false
 input_fastas = false
+input_vcfs = false
 library = params.library
 if (params.input_fastqs_list != false || params.fastq1 != false) {
 
@@ -187,7 +188,7 @@ else if (params.input_vcfs_list != false || params.vcf != false) {
             exit 1
         }
         Channel
-            .fromList([tuple(params.name, "vcf", file(params.vcf))])
+            .fromList([tuple(params.name, "input", file(params.vcf))])
             .set { input_vcfs }
     }
 }
