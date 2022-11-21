@@ -19,4 +19,6 @@ test:
 	bash tests/scripts/test_08.sh
 	bash tests/scripts/test_09.sh
 	bash tests/scripts/test_10.sh
+	bash tests/scripts/test_11.sh
+	bash tests/scripts/test_12.sh
 	bash tests/scripts/test_python_unit_tests.sh

@@ -20,6 +20,7 @@ params.help= false
 params.fastq1 = false
 params.fastq2 = false
 params.fasta = false
+params.vcf = false
 params.name = false
 
 params.skip_lofreq = false
@@ -27,6 +28,7 @@ params.skip_ivar = false
 params.skip_bcftools = false
 params.skip_gatk = false
 params.skip_pangolin = false
+params.skip_normalization = false
 
 // references
 params.reference = false
@@ -54,6 +56,7 @@ params.skip_sarscov2_annotations = false
 params.library = false
 params.input_fastqs_list = false
 params.input_fastas_list = false
+params.input_vcfs_list = false
 
 if (params.help) {
     log.info params.help_message
@@ -169,6 +172,25 @@ else if (params.input_fastas_list || params.fasta) {
             .set { input_fastas }
     }
 }
+else if (params.input_vcfs_list != false || params.vcf != false) {
+	if (params.input_vcfs_list) {
+        Channel
+            .fromPath(params.input_vcfs_list)
+            .splitCsv(header: ['name', 'vcf'], sep: "\t")
+            .map{ row-> tuple(row.name, "input", file(row.vcf)) }
+            .set { input_vcfs }
+    }
+    else {
+
+        if (params.name == false) {
+            log.error "--name is required"
+            exit 1
+        }
+        Channel
+            .fromList([tuple(params.name, "vcf", file(params.vcf))])
+            .set { input_vcfs }
+    }
+}
 else {
     log.error "missing some input data"
     exit 1
@@ -234,11 +256,19 @@ workflow {
         VARIANT_CALLING_ASSEMBLY(input_fastas, reference)
         vcfs_to_normalize = VARIANT_CALLING_ASSEMBLY.out
     }
+    else if (input_vcfs) {
+    	vcfs_to_normalize = input_vcfs
+    }
 
-    VARIANT_NORMALIZATION(vcfs_to_normalize, reference)
-    normalized_vcfs = VARIANT_NORMALIZATION.out
+	if (! params.skip_normalization) {
+		VARIANT_NORMALIZATION(vcfs_to_normalize, reference)
+		normalized_vcfs = VARIANT_NORMALIZATION.out
+	}
+	else {
+		normalized_vcfs = vcfs_to_normalize
+	}
 
-    if (input_fastqs) {
+    if (input_fastqs || input_vcfs) {
         // pangolin from VCF on the normalized VCFs
         if (!params.skip_pangolin) {
             VCF2FASTA(normalized_vcfs, reference)

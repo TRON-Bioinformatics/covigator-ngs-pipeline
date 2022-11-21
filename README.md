@@ -267,6 +267,18 @@ nextflow run tron-bioinformatics/covigator-ngs-pipeline \
 [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
 ```
 
+For VCF:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline \
+[-r v0.10.0] \
+[-profile conda] \
+--vcf <VCF_FILE> \
+--name example_run \
+--output <OUTPUT_FOLDER> \
+[--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] \
+[--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
+```
+
 For batch processing of reads use `--input_fastqs_list` and `--name`.
 ```
 nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --input_fastqs_list <TSV_FILE> --library <paired|single> --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
@@ -292,6 +304,18 @@ where the TSV file contains two columns tab-separated columns **without header**
 | sample2   | /path/to/sample2.fasta |
 | ...       | ...                    |
 
+For batch processing of VCFs use `--input_vcfs_list`.
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --input_vcfs_list <TSV_FILE> --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
+```
+where the TSV file contains two columns tab-separated columns **without header**. Columns: sample name and path to VCF.
+
+| Sample    | FASTA                  |
+|-----------|------------------------|
+| sample1   | /path/to/sample1.vcf |
+| sample2   | /path/to/sample2.vcf |
+| ...       | ...                    |
+
 
 ### Getting help
 
@@ -303,13 +327,15 @@ Usage:
     nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda --help
 
 Input:
-    * --fastq1: the first input FASTQ file (not compatible with --fasta)
-    * --fasta: the FASTA file containing the assembly sequence (not compatible with --fastq1)
+    * --fastq1: the first input FASTQ file (not compatible with --fasta, nor --vcf)
+    * --fasta: the FASTA file containing the assembly sequence (not compatible with --fastq1, nor --vcf)
+    * --vcf: the VCF file containing mutations to analyze (not compatible with --fastq1, nor --fasta)
     * --name: the sample name, output files will be named after this name
     * --output: the folder where to publish output
     * --input_fastqs_list: alternative to --name and --fastq1 for batch processing
     * --library: required only when using --input_fastqs
     * --input_fastas_list: alternative to --name and --fasta for batch processing
+    * --input_vcfs_list: alternative to --name and --vcf for batch processing
 
 Optional input only required to use a custom reference:
     * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
