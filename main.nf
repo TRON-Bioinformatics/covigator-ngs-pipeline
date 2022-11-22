@@ -21,6 +21,7 @@ params.fastq1 = false
 params.fastq2 = false
 params.fasta = false
 params.vcf = false
+params.bam = false
 params.name = false
 
 params.skip_lofreq = false
@@ -57,6 +58,7 @@ params.library = false
 params.input_fastqs_list = false
 params.input_fastas_list = false
 params.input_vcfs_list = false
+params.input_bams_list = false
 
 if (params.help) {
     log.info params.help_message
@@ -105,6 +107,7 @@ if (! snpeff_data || ! snpeff_config || ! snpeff_organism) {
 input_fastqs = false
 input_fastas = false
 input_vcfs = false
+preprocessed_bams = false
 library = params.library
 if (params.input_fastqs_list != false || params.fastq1 != false) {
 
@@ -174,7 +177,7 @@ else if (params.input_fastas_list || params.fasta) {
     }
 }
 else if (params.input_vcfs_list != false || params.vcf != false) {
-	if (params.input_vcfs_list) {
+    if (params.input_vcfs_list) {
         Channel
             .fromPath(params.input_vcfs_list)
             .splitCsv(header: ['name', 'vcf'], sep: "\t")
@@ -196,6 +199,31 @@ else {
     log.error "missing some input data"
     exit 1
 }
+
+if (params.input_bams_list || params.bam) {
+    if (params.input_bams_list) {
+        Channel
+            .fromPath(params.input_bams_list)
+            .splitCsv(header: ['name', 'bam', 'bai'], sep: "\t")
+            .map{ row-> tuple(row.name, file(row.bam), file(row.bai)) }
+            .set { preprocessed_bams }
+    }
+    else {
+        if (params.name == false) {
+            log.error "--name is required"
+            exit 1
+        }
+        if (params.bai == false) {
+            log.error "--bai is required"
+            exit 1
+        }
+        Channel
+            .fromList([tuple(params.name, file(params.bam), file(params.bai))])
+            .set { preprocessed_bams }
+    }
+}
+
+
 if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_lofreq) {
     log.error "enable at least one variant caller"
     exit 1
@@ -258,16 +286,16 @@ workflow {
         vcfs_to_normalize = VARIANT_CALLING_ASSEMBLY.out
     }
     else if (input_vcfs) {
-    	vcfs_to_normalize = input_vcfs
+        vcfs_to_normalize = input_vcfs
     }
 
-	if (! params.skip_normalization) {
-		VARIANT_NORMALIZATION(vcfs_to_normalize, reference)
-		normalized_vcfs = VARIANT_NORMALIZATION.out
-	}
-	else {
-		normalized_vcfs = vcfs_to_normalize
-	}
+    if (! params.skip_normalization) {
+        VARIANT_NORMALIZATION(vcfs_to_normalize, reference)
+        normalized_vcfs = VARIANT_NORMALIZATION.out
+    }
+    else {
+        normalized_vcfs = vcfs_to_normalize
+    }
 
     if (input_fastqs || input_vcfs) {
         // pangolin from VCF on the normalized VCFs
@@ -283,7 +311,7 @@ workflow {
         normalized_vcfs = VARIANT_SARSCOV2_ANNOTATION.out.annotated_vcfs
     }
 
-    if (input_fastqs) {
+    if (preprocessed_bams) {
         // we can only add technical annotations when we have the reads
         VAFATOR(normalized_vcfs.combine(preprocessed_bams, by: 0))
         VARIANT_VAF_ANNOTATION(VAFATOR.out.annotated_vcf)

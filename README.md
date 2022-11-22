@@ -53,10 +53,10 @@ When FASTQ files are provided the pipeline includes the following steps:
 - **Variant calling**. Four different variant callers are employed: BCFtools, LoFreq, iVar and GATK. 
   Subsequent processing of resulting VCF files is independent for each caller.
 - **Variant normalization**. `bcftools norm` is employed to left align indels, trim variant calls and remove variant duplicates.
+- **Technical annotation**. `VAFator` is employed to add VAF and coverage annotations from the reads pileup.
 - **Phasing**. Clonal mutations (ie: VAF >= 0.8) occurring in the same amino acid are merged for its correct functional annotation.
-- **Variant annotation**. `SnpEff` is employed to annotate the variant consequences of variants,
-  `VAFator` is employed to add technical annotations and finally
-  `bcftools annotate` is employed to add additional annotations.
+- **Biological annotation**. `SnpEff` is employed to annotate the variant consequences of variants and
+  `bcftools annotate` is employed to add additional SARS-CoV-2 annotations.
 - **Lineage determination**. `pangolin` is used for this purpose, this runs over the results from each of the variant callers separately.
 
 Both single end and paired end FASTQ files are supported.
@@ -69,11 +69,20 @@ When a FASTA file is provided with a single assembly sequence the pipeline inclu
   either reference or assembly contain an N is excluded.
 - **Variant normalization**. Same as described above.
 - **Phasing**. mutations occurring in the same amino acid are merged for its correct annotation.
-- **Variant annotation**. Same as described above with the exception of `VAFator`.
+- **Biological annotation**. Same as described above.
 - **Lineage determination**. `pangolin` is used for this purpose.
 
 The FASTA file is expected to contain a single assembly sequence. 
 Bear in mind that only clonal variants can be called on the assembly.
+
+### Pipeline for VCF files
+
+When a VCF file is provided the pipeline includes the following steps:
+- **Variant normalization**. Same as described above.
+- **Technical annotation**. Same as described above (optional if BAM is provided)
+- **Phasing**. mutations occurring in the same amino acid are merged for its correct annotation.
+- **Biological annotation**. Same as described above
+- **Lineage determination**. `pangolin` is used for this purpose.
 
 ## Implementation
 
@@ -222,7 +231,7 @@ nextflow run tron-bioinformatics/covigator-ngs-pipeline -profile conda,test_fast
 
 Find the output in the folder `covigator_test_fastq`.
 
-The above commands are useful to create the conda environments before hand.
+The above commands are useful to create the conda environments beforehand.
 
 **NOTE**: pangolin is the most time-consuming step of the whole pipeline. To make it faster, locate the conda 
 environment that Nextflow created with pangolin (eg: `find $YOUR_NEXTFOW_CONDA_ENVS_FOLDER -name pangolin`) and run
@@ -279,6 +288,20 @@ nextflow run tron-bioinformatics/covigator-ngs-pipeline \
 [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
 ```
 
+As an optional input when processing directly VCF files you can provide BAM files to annotate VAFs:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline \
+[-r v0.10.0] \
+[-profile conda] \
+--vcf <VCF_FILE> \
+--bam <BAM_FILE> \
+--bai <BAI_FILE> \
+--name example_run \
+--output <OUTPUT_FOLDER> \
+[--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] \
+[--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
+```
+
 For batch processing of reads use `--input_fastqs_list` and `--name`.
 ```
 nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] --input_fastqs_list <TSV_FILE> --library <paired|single> --output <OUTPUT_FOLDER> [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
@@ -316,6 +339,25 @@ where the TSV file contains two columns tab-separated columns **without header**
 | sample2   | /path/to/sample2.vcf |
 | ...       | ...                    |
 
+Optionally, provide BAM files for batch processing of VCFs using `--input_bams_list`.
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline [-profile conda] \
+  --input_vcfs_list <TSV_FILE> \
+  --input_bams_list <TSV_FILE> \
+  --output <OUTPUT_FOLDER> \
+  [--reference <path_to_reference>/Sars_cov_2.ASM985889v3.fa] \
+  [--gff <path_to_reference>/Sars_cov_2.ASM985889v3.gff3]
+```
+where the BAMs TSV file contains three columns tab-separated columns **without header**. Columns: sample name, 
+path to BAM and path to BAI.
+
+| Sample    | BAM                  | BAI                  |
+|-----------|----------------------|----------------------|
+| sample1   | /path/to/sample1.bam | /path/to/sample1.bai |
+| sample2   | /path/to/sample2.bam | /path/to/sample2.bai |
+| ...       | ...                  | ...                  |
+
+
 
 ### Getting help
 
@@ -330,12 +372,15 @@ Input:
     * --fastq1: the first input FASTQ file (not compatible with --fasta, nor --vcf)
     * --fasta: the FASTA file containing the assembly sequence (not compatible with --fastq1, nor --vcf)
     * --vcf: the VCF file containing mutations to analyze (not compatible with --fastq1, nor --fasta)
+    * --bam: the BAM file containing reads to annotate VAFs on a VCF (not compatible with --fastq1, nor --fasta)
+    * --bai: the BAI index for a BAM file (not compatible with --fastq1, nor --fasta)
     * --name: the sample name, output files will be named after this name
     * --output: the folder where to publish output
     * --input_fastqs_list: alternative to --name and --fastq1 for batch processing
     * --library: required only when using --input_fastqs
     * --input_fastas_list: alternative to --name and --fasta for batch processing
     * --input_vcfs_list: alternative to --name and --vcf for batch processing
+    * --input_bams_list: alternative to --name, --vcf, --bam and --bai for batch processing
 
 Optional input only required to use a custom reference:
     * --reference: the reference genome FASTA file, *.fai, *.dict and bwa indexes are required.
