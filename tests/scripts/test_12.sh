@@ -16,6 +16,7 @@ nextflow main.nf -profile test,conda --name test_data \
 
 test -s $output/test_data.input.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 
-assert_eq `zcat $output/test_data.lofreq.vcf.gz | grep -v '#' | wc -l` 54 "Wrong number of variants"
-assert_eq `zcat $output/test_data.lofreq.vcf.gz | grep -v '#' | grep 'vafator_af' | wc -l` 54 "Wrong number of variants"
-assert_eq `zcat $output/test_data.lofreq.vcf.gz | grep -v '#' | grep PASS | wc -l` 2 "Wrong number of variants"
+assert_eq `zcat $output/test_data.input.vcf.gz | grep -v '#' | wc -l` 60 "Wrong number of variants"
+# there is one mutation missing vafator_af as these annotations are missing in the input
+assert_eq `zcat $output/test_data.input.vcf.gz | grep -v '#' | grep 'vafator_af' | wc -l` 59 "Wrong number of variants"
+assert_eq `zcat $output/test_data.input.vcf.gz | grep -v '#' | grep PASS | wc -l` 6 "Wrong number of variants"
