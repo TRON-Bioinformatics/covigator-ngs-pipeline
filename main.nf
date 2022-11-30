@@ -329,6 +329,7 @@ workflow {
         VARIANT_ANNOTATION(normalized_vcfs, snpeff_data, snpeff_config, snpeff_organism)
         normalized_vcfs = VARIANT_ANNOTATION.out.annotated_vcfs
     }
-
-    BGZIP(normalized_vcfs)
+    else {
+        BGZIP(normalized_vcfs)
+    }
 }
