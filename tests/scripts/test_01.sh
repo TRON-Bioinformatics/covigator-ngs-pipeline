@@ -16,7 +16,6 @@ test -s $output/test_data.bcftools.vcf.gz || { echo "Missing VCF output file!"; 
 test -s $output/test_data.gatk.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.lofreq.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.lofreq.vcf.gz.tbi || { echo "Missing VCF index output file!"; exit 1; }
-test -s $output/test_data.lofreq.annotated.vcf || { echo "Missing intermediate VCF output file!"; exit 1; }
 test -s $output/test_data.ivar.vcf.gz || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.ivar.tsv || { echo "Missing VCF output file!"; exit 1; }
 test -s $output/test_data.fastp_stats.json || { echo "Missing VCF output file!"; exit 1; }
