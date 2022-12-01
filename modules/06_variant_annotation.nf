@@ -17,9 +17,6 @@ params.vafator_min_base_quality = 0
 process VARIANT_ANNOTATION {
     cpus params.cpus
     memory params.memory
-    if (params.keep_intermediate) {
-        publishDir "${params.output}", mode: "copy", pattern: "*.annotated.vcf"
-    }
     publishDir "${params.output}", mode: "copy", pattern: "*.vcf.gz*"
     tag "${name}"
 
@@ -35,7 +32,6 @@ process VARIANT_ANNOTATION {
     tuple val(name), val(caller),
         file("${name}.${caller}.vcf.gz"),
         file("${name}.${caller}.vcf.gz.tbi"), emit: annotated_vcfs
-    file("${name}.${caller}.annotated.vcf")
 
     script:
     memory = "${params.memory}".replaceAll(" ", "").toLowerCase()
@@ -45,9 +41,8 @@ process VARIANT_ANNOTATION {
 
     snpEff eff -Xmx${memory} -dataDir ${snpeff_data} \
     -noStats -no-downstream -no-upstream -no-intergenic -no-intron -onlyProtein -hgvs1LetterAa -noShiftHgvs \
-    ${snpeff_organism}  ${vcf} > ${name}.${caller}.annotated.vcf
+    ${snpeff_organism}  ${vcf} | bgzip -c > ${name}.${caller}.vcf.gz
 
-    bgzip -c ${name}.${caller}.annotated.vcf > ${name}.${caller}.vcf.gz
     tabix -p vcf ${name}.${caller}.vcf.gz
     """
 }
