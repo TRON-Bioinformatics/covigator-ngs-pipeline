@@ -8,8 +8,9 @@ params.conservation_sarbecovirus_header = false
 params.conservation_vertebrate = false
 params.conservation_vertebrate_header = false
 params.keep_intermediate = false
-params.low_frequency_variant_threshold = 0.2
-params.subclonal_variant_threshold = 0.8
+params.low_frequency_variant_threshold = 0.02
+params.subclonal_variant_threshold = 0.5
+params.lq_clonal_variant_threshold = 0.8
 params.vafator_min_mapping_quality = 0
 params.vafator_min_base_quality = 0
 
@@ -76,6 +77,10 @@ process VARIANT_VAF_ANNOTATION {
     bcftools filter \
     --exclude 'INFO/vafator_af >= ${params.low_frequency_variant_threshold} && INFO/vafator_af < ${params.subclonal_variant_threshold}' \
     --soft-filter SUBCLONAL \
+    --output-type v - | \
+    bcftools filter \
+    --exclude 'INFO/vafator_af >= ${params.subclonal_variant_threshold} && INFO/vafator_af < ${params.lq_clonal_variant_threshold}' \
+    --soft-filter LOW_QUALITY_CLONAL \
     --output-type v - > ${name}.${caller}.vcf
     """
 }
