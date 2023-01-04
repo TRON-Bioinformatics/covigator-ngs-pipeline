@@ -126,13 +126,10 @@ process VARIANT_SARSCOV2_ANNOTATION {
     bcftools annotate \
     --annotations ${params.pfam_descriptions} \
     --header-lines ${params.pfam_descriptions_header} \
-    -c CHROM,FROM,TO,PFAM_DESCRIPTION - > ${name}.${caller}.annotated_sarscov2.vcf
-
-    # TODO: include this step for FASTA data
-    #bcftools annotate \
-    #--annotations ${params.problematic_sites} \
-    #--columns FILTER \
-    #--output-type b - > ${vcf.baseName}.annotated.vcf.gz
+    -c CHROM,FROM,TO,PFAM_DESCRIPTION - | \
+    bcftools annotate \
+    --annotations ${params.problematic_sites} \
+    --columns FILTER - > ${name}.${caller}.annotated_sarscov2.vcf
     """
 }
 
