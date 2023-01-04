@@ -105,10 +105,11 @@ Nextflow pipelines within the TronFlow initiative [https://tronflow-docs.readthe
 
 The variants derived from a FASTQ file are annotated on the `FILTER` column using the VAFator 
 (https://github.com/TRON-Bioinformatics/vafator) variant allele frequency 
-(VAF) into `LOW_FREQUENCY`, `SUBCLONAL` and finally `PASS` variants correspond to clonal variants. By default, 
-variants with a VAF < 20 % are considered `LOW_FREQUENCY` and variants with a VAF >= 20 % and < 80 % are considered 
-`SUBCLONAL`. This thresholds can be changed with the parameters `--low_frequency_variant_threshold` and
-`--subclonal_variant_threshold`.
+(VAF) into `LOW_FREQUENCY`, `SUBCLONAL`, `LOW_QUALITY_CLONAL` and finally `PASS` variants correspond to clonal variants. 
+By default, variants with a VAF < 2 % are considered `LOW_FREQUENCY`, variants with a VAF >= 2 % and < 50 % are 
+considered `SUBCLONAL` and variants with a VAF >= 50 % and < 80 % are considered `LOW_QUALITY_CLONAL`. 
+This thresholds can be changed with the parameters `--low_frequency_variant_threshold`,
+`--subclonal_variant_threshold` and `--low_quality_clonal_variant_threshold` respectively.
 
 VAFator technical annotations:
 
@@ -129,6 +130,10 @@ This are described in detail here [http://pcingola.github.io/SnpEff/se_inputoutp
 - `INFO/CONS_HMM_VERTEBRATE_COV` is the ConsHMM conservation score among vertebrate Corona virus
 - `INFO/PFAM_NAME` is the Interpro name for the overlapping Pfam domains
 - `INFO/PFAM_DESCRIPTION` is the Interpro description for the overlapping Pfam domains
+- `INFO/problematic` contains the filter provided in DeMaio et al. (2020) for problematic mutations
+
+According to DeMaio et al. (2020), mutations at the beginning (ie: POS <= 50) and end (ie: POS >= 29,804) of the 
+genome are filtered out
 
 This is an example of biological annotations of a missense mutation in the spike protein on the N-terminal subunit 1 domain.
 ```
@@ -198,14 +203,15 @@ Nevertheless, mutations with lower variant allele frequency (VAF) are challengin
 analytical errors.  
 
 Mutations are annotated on the `FILTER` column using the VAF into three categories: 
-- `LOW_FREQUENCY`: subset of intrahost mutations with lowest frequencies, potentially enriched with bad calls (VAF < 20 %).
-- `SUBCLONAL`: subset of intrahost mutations with higher frequencies (20 % <= VAF < 80 %).
+- `LOW_FREQUENCY`: subset of intrahost mutations with lowest frequencies, potentially enriched with false positive calls (VAF < 2 %).
+- `SUBCLONAL`: subset of intrahost mutations with higher frequencies (2 % <= VAF < 50 %).
+- `LOW_QUALITY_CLONAL`: subset of clonal mutations with lower frequencies (50 % <= VAF < 80 %).
 - `PASS` clonal mutations (VAF >= 80 %)
 
 Other low quality mutations are removed from the output.
 
-The VAF thresholds can be changed with the parameters `--low_frequency_variant_threshold` and
-`--subclonal_variant_threshold`.
+The VAF thresholds can be changed with the parameters `--low_frequency_variant_threshold`,
+`--subclonal_variant_threshold` and `--low_quality_clonal_variant_threshold`.
 
 ## How to run
 
@@ -481,7 +487,6 @@ Gene annotations including Pfam domains downloaded from Ensembl on 25th of Febru
 ## Future work
 
 - Primer trimming on an arbitrary sequencing library.
-- Validation of intrahost variant calls.
 - Pipeline for Oxford Nanopore technology.
 - Variant calls from assemblies contain an abnormally high number of deletions of size greater than 3 bp. This
 is a technical artifact that would need to be avoided.
