@@ -1,8 +1,7 @@
 #!/bin/bash
 
 ##################################################################################
-# FASTQ input
-# paired-end reads
+# VCF input
 ##################################################################################
 echo "Running CoVigator pipeline test 12"
 source bin/assert.sh

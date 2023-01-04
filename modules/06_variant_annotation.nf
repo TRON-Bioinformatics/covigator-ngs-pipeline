@@ -85,7 +85,11 @@ process VARIANT_VAF_ANNOTATION {
     """
 }
 
-
+/**
+Add SARS-CoV-2 specific annotations: conservation, Pfam domains and problematic sites.
+Also, according to problematic sites described in DeMaio et al. (2020) we filter out any variants at the beginning and
+end of the genome.
+*/
 process VARIANT_SARSCOV2_ANNOTATION {
     cpus params.cpus
     memory params.memory
@@ -127,9 +131,15 @@ process VARIANT_SARSCOV2_ANNOTATION {
     --annotations ${params.pfam_descriptions} \
     --header-lines ${params.pfam_descriptions_header} \
     -c CHROM,FROM,TO,PFAM_DESCRIPTION - | \
+    bcftools filter \
+    --exclude 'POS <= 55 | POS >= 29804' \
+    --output-type z - > annotated_sarscov2.vcf.gz
+
+    tabix -p vcf annotated_sarscov2.vcf.gz
+
     bcftools annotate \
     --annotations ${params.problematic_sites} \
-    --columns FILTER - > ${name}.${caller}.annotated_sarscov2.vcf
+    --columns INFO/problematic:=FILTER annotated_sarscov2.vcf.gz > ${name}.${caller}.annotated_sarscov2.vcf
     """
 }
 
