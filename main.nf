@@ -13,6 +13,11 @@ include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION;
             VARIANT_VAF_ANNOTATION; VAFATOR } from './modules/06_variant_annotation'
 include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
 include { BGZIP } from './modules/08_compress_vcf'
+include { FASTQC; NANOPLOT } from './modules/09_ont_qc'
+include { NANOFILT; PORECHOP; CHOPPER; PORECHOP_ABI; MINIMAP2 } from './modules/10_ont_preprocess'
+include { OPTIMUS_NO_PRIME; PRIMER_SOFTCLIP } from './modules/11_ont_primer_removal'
+include { NANOCALLER; CLAIR3 } from './modules/12_ont_variant_calling'
+
 
 
 params.help= false
@@ -60,6 +65,8 @@ params.input_fastqs_list = false
 params.input_fastas_list = false
 params.input_vcfs_list = false
 params.input_bams_list = false
+params.input_ont = false
+
 
 if (params.help) {
     log.info params.help_message
@@ -239,42 +246,55 @@ workflow {
             bam_files = ALIGNMENT_PAIRED_END.out
         }
         else {
-            READ_TRIMMING_SINGLE_END(input_fastqs)
-            ALIGNMENT_SINGLE_END(READ_TRIMMING_SINGLE_END.out[0], reference)
-            bam_files = ALIGNMENT_SINGLE_END.out
+	    if (params.input_ont) {
+	        FASTQC(input_fastqs)
+		PORECHOP(input_fastqs)
+		CHOPPER(PORECHOP.out.fq)
+		NANOPLOT(CHOPPER.out.fq)
+		input_bams = MINIMAP2(CHOPPER.out.fq).bam
+	    }
+	    else {
+                READ_TRIMMING_SINGLE_END(input_fastqs)
+                ALIGNMENT_SINGLE_END(READ_TRIMMING_SINGLE_END.out[0], reference)
+                bam_files = ALIGNMENT_SINGLE_END.out
         }
-        BAM_PREPROCESSING(bam_files, reference)
-        preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bams
+	if (params.input_ont) {
+	    preprocessed_bams = PRIMER_SOFTCLIP(OPTIMUS_NO_PRIME(input_bams).prediction)
+	}
+	else {
+            BAM_PREPROCESSING(bam_files, reference)
+            preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bams
 
-        if (primers) {
-            PRIMER_TRIMMING_IVAR(preprocessed_bams, primers)
-            preprocessed_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
-        }
-        COVERAGE_ANALYSIS(preprocessed_bams)
+            if (primers) {
+                PRIMER_TRIMMING_IVAR(preprocessed_bams, primers)
+                preprocessed_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
+            }
+            COVERAGE_ANALYSIS(preprocessed_bams)
 
         // variant calling
         vcfs_to_normalize = null
-        if (!params.skip_bcftools) {
+        if (!params.skip_bcftools && !params.input_ont) {
             VARIANT_CALLING_BCFTOOLS(preprocessed_bams, reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
                 VARIANT_CALLING_BCFTOOLS.out : vcfs_to_normalize.concat(VARIANT_CALLING_BCFTOOLS.out)
         }
-        if (!params.skip_lofreq) {
+        if (!params.skip_lofreq && !params.input_ont) {
             VARIANT_CALLING_LOFREQ(preprocessed_bams, reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
                 VARIANT_CALLING_LOFREQ.out : vcfs_to_normalize.concat(VARIANT_CALLING_LOFREQ.out)
         }
-        if (!params.skip_gatk) {
+        if (!params.skip_gatk && !params.input_ont) {
             VARIANT_CALLING_GATK(preprocessed_bams, reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
                 VARIANT_CALLING_GATK.out : vcfs_to_normalize.concat(VARIANT_CALLING_GATK.out)
         }
-        if (!params.skip_ivar && gff) {
+        if (!params.skip_ivar && gff && !params.input_ont) {
             VARIANT_CALLING_IVAR(preprocessed_bams, reference, gff)
             IVAR2VCF(VARIANT_CALLING_IVAR.out, reference)
             vcfs_to_normalize = vcfs_to_normalize == null?
                 IVAR2VCF.out : vcfs_to_normalize.concat(IVAR2VCF.out)
         }
+	
     }
     else if (input_fastas) {
         if (!params.skip_pangolin) {
@@ -313,6 +333,10 @@ workflow {
     }
 
     if (preprocessed_bams) {
+        if (params.input_ont) {
+	    CLAIR3(preprocessed_bams.bam)
+	    NANOCALLER(preprocessed_bams.bam)
+	}
         // we can only add technical annotations when we have the reads
         VAFATOR(normalized_vcfs.combine(preprocessed_bams, by: 0))
         VARIANT_VAF_ANNOTATION(VAFATOR.out.annotated_vcf)
