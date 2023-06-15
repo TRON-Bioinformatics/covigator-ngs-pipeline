@@ -168,29 +168,43 @@ This affects the output of every variant caller, not only iVar.
 The default SARS-CoV-2 reference files correspond to Sars_cov_2.ASM985889v3 and were downloaded from Ensembl servers.
 No additional parameter needs to be provided to use the default SARS-CoV-2 reference genome.
 
+
 #### Using a custom reference genome
 
 These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
 Two files need to be provided:
 - Use a custom reference genome by providing the parameter `--reference your.fasta`.
-- Gene annotation file in GFFv3 format `--gff your.gff`. This is only required to run iVar
+- Gene annotation file in GFFv3 format `--gff your.gff`.
 
-Additionally, the FASTA needs bwa indexes, .fai index and a .dict index.
+Additionally, the FASTA needs bwa-mem2 indexes, .fai index and a .dict index.
 These indexes can be generated with the following two commands:
 ```
-bwa index reference.fasta
+bwa-mem2 index reference.fasta
 samtools faidx reference.fasta
 gatk CreateSequenceDictionary --REFERENCE your.fasta
 ```
 
-**NOTE**: beware that for Nextflow to find these indices the reference needs to be passed as an absolute path.
+In order to have SnpEff functional annotations available you will need to prepare the new reference with SnpEff.
+- Step 1. Create a file `snpEff.config` or edit an existing one and add the line `your_genome_name.genome : your_genome_name`.
+- Step 2. Create the folder `your_genome_name` and copy the FASTA and GFF files there renaming them to `sequences.fa` and `genes.gff`.
+- Step 3. Run `snpEff build -gff3 -v your_genome_name` to build the SnpEff index `your_genome_name/snpEffectPredictor.bin`.
 
-The SARS-CoV-2 specific annotations will be skipped when using a custom genome.
-
-In order to have SnpEff functional annotations available you will also need to provide three parameters:
-- `--snpeff_organism`: organism to annotate with SnpEff (ie: as registered in SnpEff)
+When running CoVigator you will also need to provide three parameters:
+- `--snpeff_organism`: organism to annotate with SnpEff (eg: `your_genome_name`)
 - `--snpeff_data`: path to the SnpEff data folder
 - `--snpeff_config`: path to the SnpEff config file
+
+**NOTE**: beware that for Nextflow to find these indices the reference needs to be passed as an absolute path.
+
+**Limitations**
+
+- The SARS-CoV-2 specific annotations (ie: ConsHMM conservation and SARS-CoV-2 protein domains) will be skipped when 
+using a custom genome. 
+- Pangolin lineage will be still available, but it will return no results for no SARS-CoV-2 references, hence it is 
+advisable to disable it with `--skip_pangolin` unless you are using an alternative SARS-CoV-2 reference.
+- Custom references are supported for RNA or DNA viruses, single or double-stranded, but not for segmented viruses.
+- Double-stranded viruses with overlapping genes may pose problems for the phasing of the mutations.
+
 
 ### Intrahost mutations
 
