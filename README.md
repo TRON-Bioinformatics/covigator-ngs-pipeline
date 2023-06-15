@@ -39,7 +39,7 @@ Archive) and FASTA files containing a consensus assembly. While from the first w
 from the second we obtain already assembled genomes. Each of these formats has to be 
 analysed differently. Also, the output data that we can obtain from each of these is different.
 
-![CoVigator pipeline](images/pipeline.drawio.png)
+![CoVigator pipeline](images/supplementary_figure_01_pipeline.jpg)
 
 ### Pipeline for FASTQ files
 
