@@ -97,6 +97,12 @@ else {
     skip_sarscov2_annotations = true
 }
 
+if (params.different_virus) {
+    reference = file(params.reference)
+    gff = file(params.gff)
+    snpeff_organism = params.snpeff_organism
+}
+
 primers = params.primers ? file(params.primers) : false
 
 skip_snpeff = false
