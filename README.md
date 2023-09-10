@@ -171,13 +171,24 @@ No additional parameter needs to be provided to use the default SARS-CoV-2 refer
 
 #### Using a custom reference genome
 
-These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.
-Two files need to be provided:
-- Use a custom reference genome by providing the parameter `--reference your.fasta`.
-- Gene annotation file in GFFv3 format `--gff your.gff`.
+These references can be customised to use a different SARS-CoV-2 reference or to analyse a different virus.  
+Two files need to be provided:  
 
-Additionally, the FASTA needs bwa-mem2 indexes, .fai index and a .dict index.
-These indexes can be generated with the following two commands:
+- Use a custom reference genome by providing the parameter `--reference your.fasta`.
+- Gene annotation file in GFFv3 format `--gff your.gff`.  
+
+As well as an organism name for the SnpEff annotation:
+
+- Organism name to use in custom SnpEff database `--snpeff_organism`.
+
+**NOTE**: beware that for Nextflow to find these files the reference needs to be passed as an absolute path.
+
+When a custom reference genome is provided, the pipeline automatically generates a bwa-mem2 index
+in the case of fastq input and a custom SnpEff database for functional annotations using the steps 
+described below. The steps are listed here for documentation purposes and should __not be performed manually__.
+
+The reference genome FASTA needs to be indexed for different components of the pipeline.
+bwa-mem2 indices, .fai index and a .dict index can be generated with the following three commands:
 ```
 bwa-mem2 index reference.fasta
 samtools faidx reference.fasta
@@ -193,8 +204,6 @@ When running CoVigator you will also need to provide three parameters:
 - `--snpeff_organism`: organism to annotate with SnpEff (eg: `your_genome_name`)
 - `--snpeff_data`: path to the SnpEff data folder
 - `--snpeff_config`: path to the SnpEff config file
-
-**NOTE**: beware that for Nextflow to find these indices the reference needs to be passed as an absolute path.
 
 **Limitations**
 
