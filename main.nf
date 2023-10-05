@@ -260,8 +260,13 @@ workflow {
             PANGOLIN_LINEAGE(input_fastas)
         }
         else if (input_vcfs) {
-            VARIANT_NORMALIZATION(input_vcfs, reference)
-            normalized_vcfs = VARIANT_NORMALIZATION.out
+            if (! params.skip_normalization) {
+                VARIANT_NORMALIZATION(input_vcfs, reference)
+                normalized_vcfs = VARIANT_NORMALIZATION.out
+            }
+            else {
+                normalized_vcfs = input_vcfs
+            }
             VCF2FASTA(normalized_vcfs, reference)
             PANGOLIN_LINEAGE(VCF2FASTA.out)
         }

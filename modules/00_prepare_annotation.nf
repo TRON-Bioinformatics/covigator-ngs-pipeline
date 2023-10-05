@@ -18,6 +18,11 @@ process BWA_INDEX {
         path("reference/sequences.fa"), emit: reference
         path("reference/sequences.fa.fai"), emit: fai
         path("reference/sequences.dict"), emit: gatk_dict
+        path("reference/sequences.fa.0123")
+        path("reference/sequences.fa.amb")
+        path("reference/sequences.fa.ann")
+        path("reference/sequences.fa.bwt.2bit.64")
+        path("reference/sequences.fa.pac")
     
     script:
         memory = "${params.memory}".replaceAll(" ", "").toLowerCase()
