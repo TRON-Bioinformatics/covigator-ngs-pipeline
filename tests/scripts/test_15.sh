@@ -9,7 +9,7 @@ source bin/assert.sh
 output=tests/output/test15
 nextflow main.nf -profile conda --name test_data \
 	--output $output \
-	--vcf tests/test_data/test_data.lofreq.vcf \
+	--vcf $(pwd)/tests/test_data/test_data.lofreq.vcf \
     --lineage_mode
 
 test -s $output/test_data.input.fasta || { echo "Missing VCF2FASTA fasta file (lineage mode with vcf input)!"; exit 1; }

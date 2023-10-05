@@ -9,8 +9,8 @@ output=tests/output/test14
 nextflow main.nf -profile conda --name test_data \
 	--output $output \
 	--reference_generate \
-    --reference reference/Sars_cov_2.ASM985889v3.dna.toplevel.fa  \
-    --gff reference/Sars_cov_2.ASM985889v3.101.gff3 \
+    --reference $(pwd)/reference/Sars_cov_2.ASM985889v3.dna.toplevel.fa  \
+    --gff $(pwd)/reference/Sars_cov_2.ASM985889v3.101.gff3 \
     --snpeff_organism Sars_cov_2
 
 # Test reference genome related output
