@@ -22,4 +22,7 @@ test:
 	bash tests/scripts/test_11.sh
 	bash tests/scripts/test_12.sh
 	bash tests/scripts/test_13.sh
+        bash tests/scripts/test_14.sh
+        bash tests/scripts/test_15.sh
+        bash tests/scripts/test_16.sh
 	bash tests/scripts/test_python_unit_tests.sh
