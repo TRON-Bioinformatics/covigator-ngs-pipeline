@@ -19,7 +19,8 @@ process PANGOLIN_LINEAGE {
 
     when:
         // only runs pangolin on LoFreq and the assembly results
-        caller == "lofreq" || caller == "assembly"
+        // JoHa: added input to run lineage mode for vcf input
+        caller == "lofreq" || caller == "assembly" || caller == "input"
 
     shell:
     """

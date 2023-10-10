@@ -30,6 +30,7 @@ params.skip_bcftools = false
 params.skip_gatk = false
 params.skip_pangolin = false
 params.skip_normalization = false
+params.lineage_mode = false
 
 // references
 params.reference = false
@@ -39,7 +40,7 @@ params.gff = false
 //params.snpeff_config = false
 params.snpeff_organism = false
 params.primers = false
-params.different_virus = false
+params.reference_generate = false
 
 params.output = "."
 params.min_mapping_quality = 20
@@ -206,6 +207,11 @@ else if (params.input_vcfs_list != false || params.vcf != false) {
             .set { input_vcfs }
     }
 }
+else if(params.reference_generate) {
+    genome = params.reference
+    annotation = gff 
+    annotation_name = snpeff_organism
+}
 else {
     log.error "missing some input data"
     exit 1
@@ -240,119 +246,154 @@ if (params.skip_bcftools && params.skip_gatk && params.skip_ivar && params.skip_
     exit 1
 }
 
+// Lineage mode should only be used when running with assembly or VCF input
+// For FASTQ input we can run pangolin as regular rule
+if (params.lineage_mode && input_fastqs) {
+    log.error "lineage mode is only supported with fasta or VCF input"
+    exit 1
+}
 
 workflow {
-    if (params.reference) {
-        if (! skip_snpeff && gff) {
-            SNPEFF_DATABASE(reference, gff, snpeff_organism)
-            snpeff_data = SNPEFF_DATABASE.out.snpeff_data
-            snpeff_config = SNPEFF_DATABASE.out.snpeff_config
-        }
-
-    }
-    if (input_fastqs) {
-        if (params.reference) {
-            BWA_INDEX(reference)
-            reference = BWA_INDEX.out.reference
-        }
-        if (library == "paired") {
-            READ_TRIMMING_PAIRED_END(input_fastqs)
-            ALIGNMENT_PAIRED_END(READ_TRIMMING_PAIRED_END.out[0], reference)
-            bam_files = ALIGNMENT_PAIRED_END.out
-        }
-        else {
-            READ_TRIMMING_SINGLE_END(input_fastqs)
-            ALIGNMENT_SINGLE_END(READ_TRIMMING_SINGLE_END.out[0], reference)
-            bam_files = ALIGNMENT_SINGLE_END.out
-        }
-        BAM_PREPROCESSING(bam_files, reference)
-        preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bams
-
-        if (primers) {
-            PRIMER_TRIMMING_IVAR(preprocessed_bams, primers)
-            preprocessed_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
-        }
-        COVERAGE_ANALYSIS(preprocessed_bams)
-
-        // variant calling
-        vcfs_to_normalize = null
-        if (!params.skip_bcftools) {
-            VARIANT_CALLING_BCFTOOLS(preprocessed_bams, reference)
-            vcfs_to_normalize = vcfs_to_normalize == null?
-                VARIANT_CALLING_BCFTOOLS.out : vcfs_to_normalize.concat(VARIANT_CALLING_BCFTOOLS.out)
-        }
-        if (!params.skip_lofreq) {
-            VARIANT_CALLING_LOFREQ(preprocessed_bams, reference)
-            vcfs_to_normalize = vcfs_to_normalize == null?
-                VARIANT_CALLING_LOFREQ.out : vcfs_to_normalize.concat(VARIANT_CALLING_LOFREQ.out)
-        }
-        if (!params.skip_gatk) {
-            VARIANT_CALLING_GATK(preprocessed_bams, reference)
-            vcfs_to_normalize = vcfs_to_normalize == null?
-                VARIANT_CALLING_GATK.out : vcfs_to_normalize.concat(VARIANT_CALLING_GATK.out)
-        }
-        if (!params.skip_ivar && gff) {
-            VARIANT_CALLING_IVAR(preprocessed_bams, reference, gff)
-            IVAR2VCF(VARIANT_CALLING_IVAR.out, reference)
-            vcfs_to_normalize = vcfs_to_normalize == null?
-                IVAR2VCF.out : vcfs_to_normalize.concat(IVAR2VCF.out)
-        }
-    }
-    else if (input_fastas) {
-        if (!params.skip_pangolin) {
-            // pangolin from fasta
+    if (params.lineage_mode) {
+        log.info "Running lineage mode. In this mode only Pangolin is executed on either fasta or VCF"
+        if (input_fastas) {
             PANGOLIN_LINEAGE(input_fastas)
         }
-
-        // assembly variant calling
-        VARIANT_CALLING_ASSEMBLY(input_fastas, reference)
-        vcfs_to_normalize = VARIANT_CALLING_ASSEMBLY.out
-    }
-    else if (input_vcfs) {
-        vcfs_to_normalize = input_vcfs
-    }
-
-    if (! params.skip_normalization) {
-        VARIANT_NORMALIZATION(vcfs_to_normalize, reference)
-        normalized_vcfs = VARIANT_NORMALIZATION.out
-    }
-    else {
-        normalized_vcfs = vcfs_to_normalize
-    }
-
-    if (input_fastqs || input_vcfs) {
-        // pangolin from VCF on the normalized VCFs
-        if (!params.skip_pangolin) {
+        else if (input_vcfs) {
+            if (! params.skip_normalization) {
+                VARIANT_NORMALIZATION(input_vcfs, reference)
+                normalized_vcfs = VARIANT_NORMALIZATION.out
+            }
+            else {
+                normalized_vcfs = input_vcfs
+            }
             VCF2FASTA(normalized_vcfs, reference)
             PANGOLIN_LINEAGE(VCF2FASTA.out)
         }
     }
-
-    if (! skip_sarscov2_annotations) {
-        // only optionally add SARS-CoV-2 specific annotations
-        VARIANT_SARSCOV2_ANNOTATION(normalized_vcfs)
-        normalized_vcfs = VARIANT_SARSCOV2_ANNOTATION.out.annotated_vcfs
-    }
-
-    if (preprocessed_bams) {
-        // we can only add technical annotations when we have the reads
-        VAFATOR(normalized_vcfs.combine(preprocessed_bams, by: 0))
-        VARIANT_VAF_ANNOTATION(VAFATOR.out.annotated_vcf)
-        normalized_vcfs = VARIANT_VAF_ANNOTATION.out.vaf_annotated
-    }
-
-    // NOTE: phasing has to happen before SnpEff annotation for MNVs to be annotated correctly
-    if (gff) {
-        PHASING(normalized_vcfs, reference, gff)
-        normalized_vcfs = PHASING.out
-    }
-
-    if (! skip_snpeff) {
-        // only when configured we run SnpEff
-        VARIANT_ANNOTATION(normalized_vcfs, snpeff_data, snpeff_config, snpeff_organism)
-        normalized_vcfs = VARIANT_ANNOTATION.out.annotated_vcfs
+    else if (params.reference_generate) {
+        log.info "Running genome/annotation generate mode. This step generates only bwa and snpEff databases..."
+        // Custom reference mode. This mode is added to prepare the reference just once when processing many samples
+        if (genome) {
+            BWA_INDEX(genome)
+            if (!skip_snpeff) {
+                SNPEFF_DATABASE(genome, gff, snpeff_organism)
+            }
+        }
     }
     else {
-        BGZIP(normalized_vcfs)
+        // Run genome and annotation steps for single sample 
+        if (params.reference) {
+            if (! skip_snpeff && gff) {
+                SNPEFF_DATABASE(reference, gff, snpeff_organism)
+                snpeff_data = SNPEFF_DATABASE.out.snpeff_data
+                snpeff_config = SNPEFF_DATABASE.out.snpeff_config
+            }
+
+        }
+        if (input_fastqs) {
+            if (params.reference) {
+                BWA_INDEX(reference)
+                reference = BWA_INDEX.out.reference
+            }
+            if (library == "paired") {
+                READ_TRIMMING_PAIRED_END(input_fastqs)
+                ALIGNMENT_PAIRED_END(READ_TRIMMING_PAIRED_END.out[0], reference)
+                bam_files = ALIGNMENT_PAIRED_END.out
+            }
+            else {
+                READ_TRIMMING_SINGLE_END(input_fastqs)
+                ALIGNMENT_SINGLE_END(READ_TRIMMING_SINGLE_END.out[0], reference)
+                bam_files = ALIGNMENT_SINGLE_END.out
+            }
+            BAM_PREPROCESSING(bam_files, reference)
+            preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bams
+
+            if (primers) {
+                PRIMER_TRIMMING_IVAR(preprocessed_bams, primers)
+                preprocessed_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
+            }
+            COVERAGE_ANALYSIS(preprocessed_bams)
+
+            // variant calling
+            vcfs_to_normalize = null
+            if (!params.skip_bcftools) {
+                VARIANT_CALLING_BCFTOOLS(preprocessed_bams, reference)
+                vcfs_to_normalize = vcfs_to_normalize == null?
+                    VARIANT_CALLING_BCFTOOLS.out : vcfs_to_normalize.concat(VARIANT_CALLING_BCFTOOLS.out)
+            }
+            if (!params.skip_lofreq) {
+                VARIANT_CALLING_LOFREQ(preprocessed_bams, reference)
+                vcfs_to_normalize = vcfs_to_normalize == null?
+                    VARIANT_CALLING_LOFREQ.out : vcfs_to_normalize.concat(VARIANT_CALLING_LOFREQ.out)
+            }
+            if (!params.skip_gatk) {
+                VARIANT_CALLING_GATK(preprocessed_bams, reference)
+                vcfs_to_normalize = vcfs_to_normalize == null?
+                    VARIANT_CALLING_GATK.out : vcfs_to_normalize.concat(VARIANT_CALLING_GATK.out)
+            }
+            if (!params.skip_ivar && gff) {
+                VARIANT_CALLING_IVAR(preprocessed_bams, reference, gff)
+                IVAR2VCF(VARIANT_CALLING_IVAR.out, reference)
+                vcfs_to_normalize = vcfs_to_normalize == null?
+                    IVAR2VCF.out : vcfs_to_normalize.concat(IVAR2VCF.out)
+            }
+        }
+        else if (input_fastas) {
+            if (!params.skip_pangolin) {
+                // pangolin from fasta
+                PANGOLIN_LINEAGE(input_fastas)
+            }
+            // assembly variant calling
+            VARIANT_CALLING_ASSEMBLY(input_fastas, reference)
+            vcfs_to_normalize = VARIANT_CALLING_ASSEMBLY.out
+        }
+        else if (input_vcfs) {
+            vcfs_to_normalize = input_vcfs
+        }
+
+        if (! params.skip_normalization) {
+            VARIANT_NORMALIZATION(vcfs_to_normalize, reference)
+            normalized_vcfs = VARIANT_NORMALIZATION.out
+        }
+        else {
+            normalized_vcfs = vcfs_to_normalize
+        }
+
+        if (input_fastqs || input_vcfs) {
+            // pangolin from VCF on the normalized VCFs
+            if (!params.skip_pangolin) {
+                VCF2FASTA(normalized_vcfs, reference)
+                PANGOLIN_LINEAGE(VCF2FASTA.out)
+            }
+        }
+
+        if (! skip_sarscov2_annotations) {
+            // only optionally add SARS-CoV-2 specific annotations
+            VARIANT_SARSCOV2_ANNOTATION(normalized_vcfs)
+            normalized_vcfs = VARIANT_SARSCOV2_ANNOTATION.out.annotated_vcfs
+        }
+
+        if (preprocessed_bams) {
+            // we can only add technical annotations when we have the reads
+            VAFATOR(normalized_vcfs.combine(preprocessed_bams, by: 0))
+            VARIANT_VAF_ANNOTATION(VAFATOR.out.annotated_vcf)
+            normalized_vcfs = VARIANT_VAF_ANNOTATION.out.vaf_annotated
+        }
+
+        // NOTE: phasing has to happen before SnpEff annotation for MNVs to be annotated correctly
+        if (gff) {
+            PHASING(normalized_vcfs, reference, gff)
+            normalized_vcfs = PHASING.out
+        }
+
+        if (! skip_snpeff) {
+            // only when configured we run SnpEff
+            VARIANT_ANNOTATION(normalized_vcfs, snpeff_data, snpeff_config, snpeff_organism)
+            normalized_vcfs = VARIANT_ANNOTATION.out.annotated_vcfs
+        }
+        else {
+            BGZIP(normalized_vcfs)
+        }
     }
 }
