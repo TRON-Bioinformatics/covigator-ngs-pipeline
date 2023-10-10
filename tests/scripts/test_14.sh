@@ -15,7 +15,7 @@ nextflow main.nf -profile conda --name test_data \
 
 # Test reference genome related output
 test -s $output/reference/sequences.fa.fai || { echo "Missing fasta index file!"; exit 1; }
-test -s $output/reference/sequences.fa.dict || { echo "Missing GATK dict file!"; exit 1; }
+test -s $output/reference/sequences.dict || { echo "Missing GATK dict file!"; exit 1; }
 
 # Test bwa index files are present
 test -s $output/reference/sequences.fa.0123 || { echo "Missing bwa 0123 index file!"; exit 1; }
