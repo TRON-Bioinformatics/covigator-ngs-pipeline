@@ -236,6 +236,12 @@ Other low quality mutations are removed from the output.
 The VAF thresholds can be changed with the parameters `--low_frequency_variant_threshold`,
 `--subclonal_variant_threshold` and `--low_quality_clonal_variant_threshold`.
 
+### Lineage only mode
+
+At some point, it might be desirable to run only the lineage determination to obtain only the pangolin calls
+of a sample. To solve this problem, we have implemented the lineage-only mode, which can be executed by specifying the option
+"--lineage_mode" option. Please note that this mode can only be used with FASTA or VCF as input.
+
 ## How to run
 
 ### Requirements
@@ -386,6 +392,17 @@ path to BAM and path to BAI.
 | sample2   | /path/to/sample2.bam | /path/to/sample2.bai |
 | ...       | ...                  | ...                  |
 
+
+For lineage-only:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline \
+[-r v0.10.0] \
+[-profile conda] \
+--fasta <FASTA_FILE> \
+--name example_run \
+--output <OUTPUT_FOLDER> \
+--lineage_mode
+```
 
 
 ### Getting help
