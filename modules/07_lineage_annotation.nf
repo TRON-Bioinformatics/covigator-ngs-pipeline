@@ -9,7 +9,7 @@ process PANGOLIN_LINEAGE {
     publishDir "${params.output}", mode: "copy"
     tag "${name}"
 
-    conda (params.enable_conda ? "bioconda::pangolin=4.1.2" : null)
+    conda (params.enable_conda ? "bioconda::pangolin=4.3" : null)
 
     input:
         tuple val(name), val(caller), file(fasta)
