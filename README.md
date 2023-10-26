@@ -186,6 +186,9 @@ As well as an organism name for the SnpEff annotation:
 When a custom reference genome is provided, the pipeline automatically generates a bwa-mem2 index
 in the case of fastq input and a custom SnpEff database for functional annotations using the steps 
 described below. The steps are listed here for documentation purposes and should __not be performed manually__.
+If the indexes should be reused for multiple runs, they can be generated permanently with the 
+--reference_generate option. Afterwards the generated references can either be set in the 
+nextflow.config file or set via command line arguments of the workflow.
 
 The reference genome FASTA needs to be indexed for different components of the pipeline.
 bwa-mem2 indices, .fai index and a .dict index can be generated with the following three commands:
@@ -235,6 +238,12 @@ Other low quality mutations are removed from the output.
 
 The VAF thresholds can be changed with the parameters `--low_frequency_variant_threshold`,
 `--subclonal_variant_threshold` and `--low_quality_clonal_variant_threshold`.
+
+### Lineage only mode
+
+At some point, it might be desirable to run only the lineage determination to obtain the pangolin calls
+of a sample. To solve this problem, we have implemented the lineage-only mode, which can be executed by specifying the option
+"--lineage_mode" option. Please note that this mode can only be used with FASTA or VCF as input.
 
 ## How to run
 
@@ -387,6 +396,29 @@ path to BAM and path to BAI.
 | ...       | ...                  | ...                  |
 
 
+For lineage-only:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline \
+[-r v0.10.0] \
+[-profile conda] \
+--fasta <FASTA_FILE> \
+--name example_run \
+--output <OUTPUT_FOLDER> \
+--lineage_mode
+```
+
+For preparation of custom references:
+```
+nextflow run tron-bioinformatics/covigator-ngs-pipeline \
+[-r v0.10.0] \
+[-profile conda] \
+--reference <path_to_reference>/<custom_genome>.fasta \
+--gff <path_to_reference>/<custom_genome_annotation>.gff3
+--output <OUTPUT_FOLDER> \
+--snpeff_organism <name_of_organism>
+--reference_generate
+```
+
 
 ### Getting help
 
@@ -417,6 +449,7 @@ Optional input only required to use a custom reference:
     * --snpeff_data: path to the SnpEff data folder, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --snpeff_config: path to the SnpEff config file, it will be useful to use the pipeline on other virus than SARS-CoV-2
     * --snpeff_organism: organism to annotate with SnpEff, it will be useful to use the pipeline on other virus than SARS-CoV-2
+    * --reference_generate: Run reference generate to prepare reusable custom reference
 
 Optional input:
     * --fastq2: the second input FASTQ file
