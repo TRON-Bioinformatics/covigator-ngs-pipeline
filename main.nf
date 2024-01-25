@@ -248,28 +248,28 @@ workflow {
         else {
 	    if (params.input_ont) {
 	        FASTQC(input_fastqs)
-		PORECHOP(input_fastqs)
-		CHOPPER(PORECHOP.out.fq)
-		NANOPLOT(CHOPPER.out.fq)
-		input_bams = MINIMAP2(CHOPPER.out.fq).bam
+		    PORECHOP(input_fastqs)
+		    CHOPPER(PORECHOP.out.fq)
+		    NANOPLOT(CHOPPER.out.fq)
+		    input_bams = MINIMAP2(CHOPPER.out.fq).bam
 	    }
 	    else {
-                READ_TRIMMING_SINGLE_END(input_fastqs)
-                ALIGNMENT_SINGLE_END(READ_TRIMMING_SINGLE_END.out[0], reference)
-                bam_files = ALIGNMENT_SINGLE_END.out
+            READ_TRIMMING_SINGLE_END(input_fastqs)
+            ALIGNMENT_SINGLE_END(READ_TRIMMING_SINGLE_END.out[0], reference)
+            bam_files = ALIGNMENT_SINGLE_END.out
         }
 	if (params.input_ont) {
 	    preprocessed_bams = PRIMER_SOFTCLIP(OPTIMUS_NO_PRIME(input_bams).prediction)
 	}
 	else {
-            BAM_PREPROCESSING(bam_files, reference)
-            preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bams
+        BAM_PREPROCESSING(bam_files, reference)
+        preprocessed_bams = BAM_PREPROCESSING.out.preprocessed_bams
 
-            if (primers) {
-                PRIMER_TRIMMING_IVAR(preprocessed_bams, primers)
-                preprocessed_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
-            }
-            COVERAGE_ANALYSIS(preprocessed_bams)
+        if (primers) {
+            PRIMER_TRIMMING_IVAR(preprocessed_bams, primers)
+            preprocessed_bams = PRIMER_TRIMMING_IVAR.out.trimmed_bam
+        }
+        COVERAGE_ANALYSIS(preprocessed_bams)
 
         // variant calling
         vcfs_to_normalize = null
