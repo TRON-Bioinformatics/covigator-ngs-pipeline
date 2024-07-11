@@ -1,3 +1,21 @@
+> **:construction: Maintenance Update: :construction:**
+>
+> The CoVigator pipeline is presently not under active maintenance. Users are
+> advised that there won't be regular updates or bug fixes.
+>
+> We welcome any contibutions of interested individuals. Feel free to fork
+> the project to continue its development or submit patches to the orginal repository.
+> As our field of research is cancer in general, we would be grateful for any help in making this pipeline compatible with other viruses.
+>
+> Thank you for your understanding.
+
+---
+
+
+
+
+
+
 ![CoVigator logo](images/CoVigator_logo_txt_nobg.png "CoVigator logo")
 
 # CoVigator pipeline: variant detection pipeline for Sars-CoV-2
