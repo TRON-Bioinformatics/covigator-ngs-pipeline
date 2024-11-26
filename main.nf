@@ -14,7 +14,6 @@ include { VARIANT_ANNOTATION; VARIANT_SARSCOV2_ANNOTATION;
 include { PANGOLIN_LINEAGE; VCF2FASTA } from './modules/07_lineage_annotation'
 include { BGZIP } from './modules/08_compress_vcf'
 
-
 params.help= false
 
 params.fastq1 = false
